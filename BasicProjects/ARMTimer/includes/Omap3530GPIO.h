@@ -11,6 +11,10 @@
 
 #include <inttypes.h>
 
+#define INPUT 0x1
+#define OUTPUT 0x0
+
+
 /* Offset address for GPIO-Modules 1 to 6 */
 #define GPIO1_BASE (0x48310000)
 #define GPIO2_BASE (0x49050000)

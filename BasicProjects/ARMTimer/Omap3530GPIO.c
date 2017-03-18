@@ -5,12 +5,12 @@
  *      Author: Mathias
  */
 
-#include "Omap3530GPIO.h"
-#include "Common.h"
+#include <includes/Common.h>
+#include <includes/Omap3530GPIO.h>
 
 void digitalWrite(uint8_t pin, uint8_t val)
 {
-    uint64_t* out = GPIO_BASE_ADDR(pin) + GPIO_DATAOUT;
+    uint32_t* out = (uint32_t*) GPIO_BASE_ADDR(pin) + GPIO_DATAOUT;
 
     if (val == LOW)
     {
@@ -24,7 +24,7 @@ void digitalWrite(uint8_t pin, uint8_t val)
 
 uint8_t digitalRead(uint8_t pin)
 {
-    uint64_t* in = GPIO_BASE_ADDR(pin) + GPIO_DATAIN;
+    uint32_t* in = (uint32_t*) GPIO_BASE_ADDR(pin) + GPIO_DATAIN;
 
     if (*in & GPIO_PIN_POS(pin))
     {
@@ -38,7 +38,7 @@ uint8_t digitalRead(uint8_t pin)
 
 void pinMode(uint8_t pin, uint8_t mode)
 {
-    uint64_t* gpio_dir_ctr = GPIO_BASE_ADDR(pin) + GPIO_OE;
+    uint32_t* gpio_dir_ctr = (uint32_t*)  GPIO_BASE_ADDR(pin) + GPIO_OE;
 
     if (mode == INPUT)
     {

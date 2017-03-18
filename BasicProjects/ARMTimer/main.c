@@ -1,9 +1,9 @@
+#include <includes/Common.h>
+#include <includes/Omap3530GPIO.h>
+#include <includes/Omap3530Timer.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include "Common.h"
-#include "BeagleBoardC4.h"
-#include "Omap3530GPIO.h"
-#include "Omap3530Timer.h"
+#include "includes/BeagleBoardC4.h"
 
 int main(void)
 {
