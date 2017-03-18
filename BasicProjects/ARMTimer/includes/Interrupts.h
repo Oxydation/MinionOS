@@ -57,7 +57,7 @@ void init_irq(void);
 void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr);
 static void dispatch_interrupts(void);
 
-extern void get_pending_irqs(uint8_t * pendingIrqs);
+extern uint8_t * get_pending_irqs(void);
 extern void enable_irq(uint8_t irq_nr);
 
 #endif /* INCLUDES_INTERRUPTS_H_ */
