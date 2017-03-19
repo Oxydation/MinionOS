@@ -55,9 +55,62 @@ typedef void (*InterruptHandler_t) (void);
 
 void init_irq(void);
 void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr);
-static void dispatch_interrupts(void);
+void dispatch_interrupts(void);
 
 extern uint8_t * get_pending_irqs(void);
 extern void enable_irq(uint8_t irq_nr);
+
+
+/* IRQ Sources, check Page 1053 */
+/*      Source      M_IRQ_x     Description*/
+#define SDMA_IRQ_0  12  // System DMA request 0
+#define SDMA_IRQ_1  13  // System DMA request 1
+#define SDMA_IRQ_2  14  // System DMA request 2
+#define SDMA_IRQ_3  15  // System DMA request 3
+
+#define GPMC_IRQ    20  // General-purpose memory controller module
+
+#define GPIO1_MPU_IRQ   29 //  GPIO module 1
+#define GPIO2_MPU_IRQ   30 //  GPIO module 2
+#define GPIO3_MPU_IRQ   31 //  GPIO module 3
+#define GPIO4_MPU_IRQ   32 //  GPIO module 4
+#define GPIO5_MPU_IRQ   33 //  GPIO module 5
+#define GPIO6_MPU_IRQ   34 //  GPIO module 6
+
+#define GPT1_IRQ    36  // General-purpose Timer 1
+#define GPT2_IRQ    37
+#define GPT3_IRQ    38
+#define GPT4_IRQ    39
+#define GPT5_IRQ    40
+#define GPT6_IRQ    41
+#define GPT7_IRQ    42
+#define GPT8_IRQ    43
+#define GPT9_IRQ    44
+#define GPT10_IRQ   45
+#define GPT11_IRQ   46
+#define GPT12_IRQ   47
+
+#define I2C1_IRQ    56  // I2C Module 1
+#define I2C2_IRQ    57  // I2C Module 2
+#define I2C3_IRQ    61  // I2C Module 3
+
+#define SPI1_IRQ    65  // Mc SPI module 1
+#define SPI2_IRQ    66  // Mc SPI module 2
+#define SPI3_IRQ    91  // MC SPI module 3
+
+#define UART1_IRQ   72  // UART Module 1
+#define UART2_IRQ   73  // UART Module 2
+#define UART3_IRQ   74  // UART Module 3
+
+#define OHCI_IRQ    76  // OHCI Controller HSUSB MP Host Interrupt
+#define EHCI_IRQ    77  // EHCI controller HSUSB MP Host Interrupt
+
+#define MMC1_IRQ    83  // MMC/SD Module 1
+#define MMC2_IRQ    86  // MMC/SD Module 2
+
+#define HSUSB_MC_NINT   92  // High-Speed USB OTG controller
+#define HSUSB_DMA_NINT  93  // High-Speed USB OTG DMA controller
+
+#define MMC3_IRQ    94  // MMC/SD Module 3
 
 #endif /* INCLUDES_INTERRUPTS_H_ */

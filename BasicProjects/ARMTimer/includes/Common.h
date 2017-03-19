@@ -3,6 +3,7 @@
  *
  *  Created on: 15 Mar 2017
  *      Author: Mathias
+ * Description: Provides common tools to improve and simplify usage of the system.
  */
 
 #ifndef COMMON_H_
