@@ -20,7 +20,7 @@
 #define TMR_PRESCALE_256 (7<2)
 
 /* Timer base address */
-#define GPTIMER1_BASE   (0x48313000)
+#define GPTIMER1_BASE   (0x48318000)
 #define GPTIMER2_BASE   (0x49032000)
 #define GPTIMER3_BASE   (0x49034000)
 #define GPTIMER4_BASE   (0x49036000)
@@ -33,6 +33,7 @@
 #define GPTIMER11_BASE  (0x48088000)
 #define GPTIMER12_BASE  (0x48304000)
 
+#define GPTIMER_TIDR      (0x0000)
 #define GPTIMER_TIOCP_CFG (0x0010)
 #define GPTIMER_TISTAT    (0x0014)
 #define GPTIMER_TISR      (0x0018)

@@ -6,9 +6,23 @@
 #include <includes/Omap3530Timer.h>
 #include <includes/Interrupts.h>
 
+uint8_t on = TRUE;
+
+#pragma INTERRUPT(handler_test, IRQ);
 void handler_test(void)
 {
-    printf("handliiing");
+    if (on)
+    {
+        digitalWrite(GPIO_USR1_LED, HIGH);
+        digitalWrite(GPIO_USR2_LED, LOW);
+        on = FALSE;
+    }
+    else
+    {
+        digitalWrite(GPIO_USR1_LED, LOW);
+        digitalWrite(GPIO_USR2_LED, HIGH);
+        on = TRUE;
+    }
 }
 
 int main(void)
@@ -16,14 +30,17 @@ int main(void)
     volatile long i = 0;
     printf("Hello World!\n");
 
-
     register_interrupt_handler(&handler_test, GPT2_IRQ);
 
-    // Enable Overflow interrupt
-    set_32 (GPTIMER2_BASE + GPTIMER_TIER, TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
+    // Clear timer load value
+    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0x0);
 
-    // Turn on GPTIMER3, it will reload at overflow
-    set_32 (GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
+    // Enable Overflow interrupt
+    set_32(GPTIMER2_BASE + GPTIMER_TIER,
+           TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
+
+    // Turn on GPTIMER2, it will reload at overflow
+    set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
 
     // Set output direction
     pinMode(GPIO_USR1_LED, OUTPUT);
@@ -31,21 +48,21 @@ int main(void)
 
     while (1)
     {
-        // Turn LED1 on and LED 2 off
-        digitalWrite(GPIO_USR1_LED, HIGH);
-        digitalWrite(GPIO_USR2_LED, LOW);
-        for (i = 0; i < 2000000L; i++)
-        {
+        /*// Turn LED1 on and LED 2 off
+         digitalWrite(GPIO_USR1_LED, HIGH);
+         digitalWrite(GPIO_USR2_LED, LOW);
+         for (i = 0; i < 2000000L; i++)
+         {
 
-        }
+         }
 
-        // Turn LED 1 off and LED 2 on
-        digitalWrite(GPIO_USR1_LED, LOW);
-        digitalWrite(GPIO_USR2_LED, HIGH);
-        for (i = 0; i < 2000000L; i++)
-        {
+         // Turn LED 1 off and LED 2 on
+         digitalWrite(GPIO_USR1_LED, LOW);
+         digitalWrite(GPIO_USR2_LED, HIGH);
+         for (i = 0; i < 2000000L; i++)
+         {
 
-        }
+         }*/
     }
     return 0;
 }
