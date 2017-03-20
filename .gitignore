@@ -2,3 +2,5 @@
 /BasicProjects/.metadata
 /BasicProjects/RemoteSystemsTempFiles
 *Debug/
+*.settings/
+/BasicProjects/ARMTimer/.settings
