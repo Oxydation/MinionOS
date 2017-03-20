@@ -41,25 +41,27 @@
 #define INTCPS_ILR(m)       INTERRUPT_BASE + 0x0100 + (0x4 * m)
 
 /* Further definitions */
-#define INTCPS_ILR_FIQ            BIT0
-#define INTCPS_SIR_IRQ_MASK       (0x7F) // to get the bitfild (check page 1060)
-#define INTCPS_CONTROL_NEWIRQAGR  BIT0
-#define INTCPS_CONTROL_NEWFIQAGR  BIT1
+#define INTCPS_ILR_FIQ              (1<<0)
+#define INTCPS_SIR_IRQ_MASK         (0x7F) // to get the bitfild (check page 1060)
+#define INTCPS_CONTROL_NEWIRQAGR    (1<<0)
+#define INTCPS_CONTROL_NEWFIQAGR    (1<<1)
 
 #define ACTIVE_IRQ_NUM  ((*(uint_32*)INTCPS_SIR_IRQ) &INTCPS_SIR_IRQ_MASK) // gets the active IRQ number
 
 extern void enable_interrupts();
 extern void disable_interrupts();
 
-typedef void (*InterruptHandler_t) (void);
+typedef void (*InterruptHandler_t)(void);
 
 void init_irq(void);
 void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr);
-void dispatch_interrupts(void);
+//__irq void dispatch_interrupts(void);
 
-extern uint8_t * get_pending_irqs(void);
-extern void enable_irq(uint8_t irq_nr);
-
+extern void get_pending_irqs(uint8_t * pendingIrqs);
+extern void enable_irq_source(uint8_t irq_source);
+extern void disable_irq_source(uint8_t irq_source);
+void disable_all_interrupt_sources();
+uint8_t get_irq_source_state(uint8_t irq_source);
 
 /* IRQ Sources, check Page 1053 */
 /*      Source      M_IRQ_x     Description*/

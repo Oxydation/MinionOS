@@ -13,25 +13,28 @@ static InterruptHandler_t gInterruptHandlers[NROF_IR_VECTORS] = { 0 };
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
  */
-void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
+void register_interrupt_handler(InterruptHandler_t  handler, uint8_t irq_nr)
 {
-    enable_irq(irq_nr);
+    enable_irq_source(irq_nr);
     gInterruptHandlers[irq_nr] = handler; // set handler at given irq
 }
+
+#pragma INTERRUPT ( dispatch_interrupts )
 
 /*
  * Dispatches the interrupts, if an interrupt is pending.
  * If a handler for the given IRQ is set, then the handler will be called.
  */
-void dispatch_interrupts(void)
+void dispatch_interrupts(void) //
 {
-    uint8_t pendingIrq[NROF_IR_VECTORS];
+    uint8_t pendingIrqs[NROF_IR_VECTORS];
     // get pending irqs and store in pendingIrq bool array
 
+    get_pending_irqs(pendingIrqs);
     int i = 0;
     for (i = 0; i < NROF_IR_VECTORS; i++)
     {
-        if (pendingIrq[i])
+        if (pendingIrqs[i])
         {
             InterruptHandler_t handler = gInterruptHandlers[i];
             if (handler != 0)

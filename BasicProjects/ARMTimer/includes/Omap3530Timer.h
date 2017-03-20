@@ -70,14 +70,14 @@
 #define TISR_MAT_IT_FLAG_CLEAR  BIT0
 #define TISR_CLEAR_ALL          (TISR_TCAR_IT_FLAG_CLEAR | TISR_OVF_IT_FLAG_CLEAR | TISR_MAT_IT_FLAG_CLEAR)
 
-#define TCLR_AR_AUTORELOAD      BIT1
+#define TCLR_AR_AUTORELOAD      (1UL << 1)
 #define TCLR_AR_ONESHOT         (0UL << 1)
-#define TCLR_ST_ON              BIT0
+#define TCLR_ST_ON              (1UL << 0)
 #define TCLR_ST_OFF             (0UL << 0)
 
 #define TIER_TCAR_IT_ENABLE     (BIT2
 #define TIER_TCAR_IT_DISABLE    (0UL << 2)
-#define TIER_OVF_IT_ENABLE      BIT1
+#define TIER_OVF_IT_ENABLE      (1UL << 1)
 #define TIER_OVF_IT_DISABLE     (0UL << 1)
 #define TIER_MAT_IT_ENABLE      BIT0
 #define TIER_MAT_IT_DISABLE     (0UL << 0)

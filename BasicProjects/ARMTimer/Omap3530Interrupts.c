@@ -13,9 +13,8 @@
 /*
  * Gets all IRQ channels and mark those which are pending.
  */
-uint8_t * get_pending_irqs(void)
+void get_pending_irqs(uint8_t* pendingIrqs)
 {
-    uint8_t * pendingIrqs;
     memset(pendingIrqs, 0, NROF_IR_VECTORS * sizeof(uint8_t));
 
     int i = 0;
@@ -33,14 +32,47 @@ uint8_t * get_pending_irqs(void)
             pendingIrqs[i] = TRUE;
         }
     }
-
-    return pendingIrqs;
 }
 
 /*
  * Enables the given IRQ channel.
  */
-void enable_irq(uint8_t irq_nr)
+void enable_irq_source(uint8_t irq_source)
 {
-    set_32(INTCPS_MIR_SET(irq_nr/REGISTER_SIZE), irq_nr % REGISTER_SIZE);
+    uint8_t bank = irq_source / REGISTER_SIZE;
+    uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
+    set_32(INTCPS_MIR_CLEAR(bank), bit);
+}
+
+void disable_irq_source(uint8_t irq_source)
+{
+    uint8_t bank = irq_source / REGISTER_SIZE;
+    uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
+    set_32(INTCPS_MIR_SET(bank), bit);
+}
+
+/*
+ * Checks if the IRQ channel is activated.
+ */
+uint8_t get_irq_source_state(uint8_t irq_source)
+{
+    uint8_t bank = irq_source / REGISTER_SIZE;
+    uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
+    if ((get_32(INTCPS_MIR(bank)) & bit) == bit)
+    {
+        return FALSE;
+    }
+    else
+    {
+        return TRUE;
+    }
+}
+
+void disable_all_interrupt_sources()
+{
+    // Disable all interrupts
+    set_32(INTCPS_MIR(0), 0xFFFFFFFF);
+    set_32(INTCPS_MIR(1), 0xFFFFFFFF);
+    set_32(INTCPS_MIR(2), 0xFFFFFFFF);
+    or_32(INTCPS_CONTROL, INTCPS_CONTROL_NEWIRQAGR);
 }
