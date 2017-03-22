@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include "includes/BeagleBoardC4.h"
-#include <includes/Common.h>
-#include <includes/Omap3530GPIO.h>
-#include <includes/Omap3530Timer.h>
-#include <includes/Interrupts.h>
+#include "includes/Common.h"
+#include "includes/Omap3530GPIO.h"
+#include "includes/Omap3530Timer.h"
+#include "includes/Interrupts.h"
+
 
 uint8_t on = TRUE;
 
-#pragma INTERRUPT(handler_test, IRQ);
 void handler_test(void)
 {
     if (on)
@@ -23,10 +23,14 @@ void handler_test(void)
         digitalWrite(GPIO_USR2_LED, HIGH);
         on = TRUE;
     }
+
+    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1<<1)); // CLear interrupt flag
 }
 
 int main(void)
 {
+    _disable_interrupts();
+
     volatile long i = 0;
     printf("Hello World!\n");
 
@@ -39,6 +43,11 @@ int main(void)
     set_32(GPTIMER2_BASE + GPTIMER_TIER,
            TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
 
+    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1<<1)); // CLear interrupt flag
+
+    _enable_interrupts();
+    _enable_IRQ() ;
+
     // Turn on GPTIMER2, it will reload at overflow
     set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
 
@@ -48,21 +57,7 @@ int main(void)
 
     while (1)
     {
-        /*// Turn LED1 on and LED 2 off
-         digitalWrite(GPIO_USR1_LED, HIGH);
-         digitalWrite(GPIO_USR2_LED, LOW);
-         for (i = 0; i < 2000000L; i++)
-         {
 
-         }
-
-         // Turn LED 1 off and LED 2 on
-         digitalWrite(GPIO_USR1_LED, LOW);
-         digitalWrite(GPIO_USR2_LED, HIGH);
-         for (i = 0; i < 2000000L; i++)
-         {
-
-         }*/
     }
     return 0;
 }

@@ -62,6 +62,7 @@ extern void enable_irq_source(uint8_t irq_source);
 extern void disable_irq_source(uint8_t irq_source);
 void disable_all_interrupt_sources();
 uint8_t get_irq_source_state(uint8_t irq_source);
+void dispatch_interrupts(void);
 
 /* IRQ Sources, check Page 1053 */
 /*      Source      M_IRQ_x     Description*/

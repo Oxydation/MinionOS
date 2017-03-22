@@ -9,15 +9,15 @@
 #define OMAP3530TIMER_H_
 
 /* Timer prescales */
-#define TMR_PRESCALE_EN (1<<5)
-#define TMR_PRESCALE_1 (0<<5)
-#define TMR_PRESCALE_2 (1<2)
-#define TMR_PRESCALE_4 (2<2)
-#define TMR_PRESCALE_16 (3<2)
-#define TMR_PRESCALE_32 (4<2)
-#define TMR_PRESCALE_64 (5<2)
-#define TMR_PRESCALE_128 (6<2)
-#define TMR_PRESCALE_256 (7<2)
+#define TMR_PRESCALE_EN     (1<<5)
+#define TMR_PRESCALE_1      (0<<5)
+#define TMR_PRESCALE_2      (1<2)
+#define TMR_PRESCALE_4      (2<2)
+#define TMR_PRESCALE_16     (3<2)
+#define TMR_PRESCALE_32     (4<2)
+#define TMR_PRESCALE_64     (5<2)
+#define TMR_PRESCALE_128    (6<2)
+#define TMR_PRESCALE_256    (7<2)
 
 /* Timer base address */
 #define GPTIMER1_BASE   (0x48318000)
@@ -31,7 +31,6 @@
 #define GPTIMER9_BASE   (0x49040000)
 #define GPTIMER10_BASE  (0x48086000)
 #define GPTIMER11_BASE  (0x48088000)
-#define GPTIMER12_BASE  (0x48304000)
 
 #define GPTIMER_TIDR      (0x0000)
 #define GPTIMER_TIOCP_CFG (0x0010)

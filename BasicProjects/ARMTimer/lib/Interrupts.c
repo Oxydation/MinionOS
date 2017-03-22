@@ -19,13 +19,25 @@ void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
     gInterruptHandlers[irq_nr] = handler; // set handler at given irq
 }
 
+#pragma INTERRUPT (isr_irq, IRQ)
+void isr_irq(void)
+{
+    // Disable futher interrupts
+    unsigned int interruptsState = _disable_interrupts();
+    unsigned int dst = _get_CPSR();
+
+    // Call the dispatcher of the interrupts
+    dispatch_interrupts();
+
+    _restore_interrupts(interruptsState);
+}
+
 /*
  * Dispatches the interrupts, if an interrupt is pending.
  * If a handler for the given IRQ is set, then the handler will be called.
  */
-#pragma INTERRUPT(dispatch_interrupts, IRQ);
-#pragma RETAIN(dispatch_interrupts);
-interrupt void dispatch_interrupts(void) //
+
+void dispatch_interrupts(void) //
 {
     uint8_t pendingIrqs[NROF_IR_VECTORS];
     // get pending irqs and store in pendingIrq bool array
