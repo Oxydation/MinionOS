@@ -10,6 +10,12 @@
 #include "includes/Common.h"
 #include "includes/Omap3530.h"
 
+void init_irq()
+{
+    clear_32(INTCPS_IDLE, 1);
+    set_32(INTCPS_IDLE, 0);
+}
+
 /*
  * Gets all IRQ channels and mark those which are pending.
  */
@@ -42,10 +48,9 @@ void enable_irq_source(uint8_t irq_source)
     uint8_t bank = irq_source / REGISTER_SIZE;
     uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
     set_32(INTCPS_MIR_CLEAR(bank), bit);
+    clear_32(INTCPS_ILR(bank), 0);
 }
 
-
-//clear_32(INTCPS_ILR(bank), irq_source);
 void disable_irq_source(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;

@@ -32,7 +32,13 @@ int main(void)
 {
     _disable_interrupts();
 
+    init_irq();
     register_interrupt_handler(&handler_test, GPT2_IRQ);
+    register_interrupt_handler(&handler_test, GPT1_IRQ);
+
+    set_32(INTCPS_MIR_CLEAR(0), 0xFFFFFFFF);
+    set_32(INTCPS_MIR_CLEAR(1), 0xFFFFFFFF);
+    set_32(INTCPS_MIR_CLEAR(2), 0xFFFFFFFF);
 
     // Clear timer load value
     set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0x0);
@@ -43,16 +49,29 @@ int main(void)
 
     set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
 
+    // Clear timer load value
+    set_32(GPTIMER1_BASE + GPTIMER_TLDR, 0x0);
+
+    // Enable Overflow interrupt
+    set_32(GPTIMER1_BASE + GPTIMER_TIER,
+    TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
+
+    set_32(GPTIMER1_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
+
     _enable_interrupts();
     _enable_IRQ();
 
     // Turn on GPTIMER2, it will reload at overflow
     set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
 
+    // Turn on GPTIMER2, it will reload at overflow
+     set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
+
     // Set output direction
     pinMode(GPIO_USR1_LED, OUTPUT);
     pinMode(GPIO_USR2_LED, OUTPUT);
 
+    //_call_swi(0);
     while (1)
     {
 

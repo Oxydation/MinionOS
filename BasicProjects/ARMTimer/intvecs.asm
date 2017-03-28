@@ -6,11 +6,12 @@
 ;    .global isr_dabt
 
     .sect ".intvecs"
-    .word 0 ; reset interrupt
-    .word 0 ; undefined instruction interrupt
-    .word 0 ; software interrupt
-    .word 0 ; abort (prefetch) interrupt
-    .word 0 ; abort (data) interrupt
-    .word 0 ; reserved
+    B isr_irq ; reset interrupt
+    .word 0; undefined instruction interrupt
+    B isr_irq ; software interrupt
+    B isr_irq ; abort (prefetch) interrupt
+    B isr_irq ; abort (data) interrupt
+    B isr_irq ; reserved
     B isr_irq ; IRQ interrupt
-    .word 0 ; FIQ interrupt
+    B isr_irq ; FIQ interrupt
+    ; check page 153 of spnu151n

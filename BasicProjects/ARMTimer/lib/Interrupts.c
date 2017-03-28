@@ -21,6 +21,7 @@ void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
     gInterruptHandlers[irq_nr] = handler; // set handler at given irq
 }
 
+#pragma SET_CODE_SECTION(".ISR")
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
@@ -29,6 +30,9 @@ void isr_irq(void)
     unsigned int dst = _get_CPSR();
 
     printf("ISR called, dispatching now");
+
+    digitalWrite(149, HIGH);
+    digitalWrite(150, LOW);
 
     // Call the dispatcher of the interrupts
     dispatch_interrupts();
