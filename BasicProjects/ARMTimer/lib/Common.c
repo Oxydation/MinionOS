@@ -34,3 +34,9 @@ void and_32(uint32_t address, uint32_t value)
     uint32_t * mem = (uint32_t *) address;
     *mem &= value;
 }
+
+void clear_32(uint32_t address, uint32_t value)
+{
+    uint32_t * mem = (uint32_t *) address;
+    *mem &= ~value;
+}

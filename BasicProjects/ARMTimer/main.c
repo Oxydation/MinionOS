@@ -6,11 +6,12 @@
 #include "includes/Omap3530Timer.h"
 #include "includes/Interrupts.h"
 
-
 uint8_t on = TRUE;
 
 void handler_test(void)
 {
+    printf("Handler called");
+
     if (on)
     {
         digitalWrite(GPIO_USR1_LED, HIGH);
@@ -24,15 +25,12 @@ void handler_test(void)
         on = TRUE;
     }
 
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1<<1)); // CLear interrupt flag
+    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
 }
 
 int main(void)
 {
     _disable_interrupts();
-
-    volatile long i = 0;
-    printf("Hello World!\n");
 
     register_interrupt_handler(&handler_test, GPT2_IRQ);
 
@@ -41,12 +39,12 @@ int main(void)
 
     // Enable Overflow interrupt
     set_32(GPTIMER2_BASE + GPTIMER_TIER,
-           TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
+    TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
 
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1<<1)); // CLear interrupt flag
+    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
 
     _enable_interrupts();
-    _enable_IRQ() ;
+    _enable_IRQ();
 
     // Turn on GPTIMER2, it will reload at overflow
     set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);

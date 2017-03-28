@@ -37,5 +37,5 @@ extern void set_32(uint32_t address, uint32_t value);
 extern uint32_t get_32(uint32_t address);
 extern void or_32(uint32_t address, uint32_t value);
 extern void and_32(uint32_t address, uint32_t value);
-
+extern void clear_32(uint32_t address, uint32_t value);
 #endif /* COMMON_H_ */

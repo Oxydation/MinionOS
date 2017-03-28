@@ -4,6 +4,8 @@
  *  Created on: 18 Mar 2017
  *      Author: Mathias
  */
+
+#include <stdio.h>
 #include "includes/Interrupts.h"
 #include "includes/Common.h"
 
@@ -25,6 +27,8 @@ void isr_irq(void)
     // Disable futher interrupts
     unsigned int interruptsState = _disable_interrupts();
     unsigned int dst = _get_CPSR();
+
+    printf("ISR called, dispatching now");
 
     // Call the dispatcher of the interrupts
     dispatch_interrupts();

@@ -44,6 +44,8 @@ void enable_irq_source(uint8_t irq_source)
     set_32(INTCPS_MIR_CLEAR(bank), bit);
 }
 
+
+//clear_32(INTCPS_ILR(bank), irq_source);
 void disable_irq_source(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;
