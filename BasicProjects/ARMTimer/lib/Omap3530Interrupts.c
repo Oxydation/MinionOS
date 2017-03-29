@@ -81,5 +81,5 @@ void disable_all_interrupt_sources()
     set_32(INTCPS_MIR(0), 0xFFFFFFFF);
     set_32(INTCPS_MIR(1), 0xFFFFFFFF);
     set_32(INTCPS_MIR(2), 0xFFFFFFFF);
-    or_32(INTCPS_CONTROL, INTCPS_CONTROL_NEWIRQAGR);
+    //or_32(INTCPS_CONTROL, INTCPS_CONTROL_NEWIRQAGR);
 }

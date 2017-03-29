@@ -27,17 +27,21 @@ void isr_irq(void)
 {
     // Disable futher interrupts
     unsigned int interruptsState = _disable_interrupts();
+    _disable_IRQ();
     unsigned int dst = _get_CPSR();
 
-    printf("ISR called, dispatching now");
-
-    digitalWrite(149, HIGH);
-    digitalWrite(150, LOW);
-
     // Call the dispatcher of the interrupts
-    dispatch_interrupts();
+   // dispatch_interrupts();
+
+    // TODO: Just for test!!
+    InterruptHandler_t handler = gInterruptHandlers[38];
+   if (handler != 0)
+      handler(); // call handler if set
 
     _restore_interrupts(interruptsState);
+
+    __asm(" SUBS PC,R14,#4;");
+
 }
 
 /*
