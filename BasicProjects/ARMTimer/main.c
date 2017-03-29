@@ -10,8 +10,6 @@ uint8_t on = TRUE;
 
 void handler_test(void)
 {
-    printf("Handler called");
-
     if (on)
     {
         digitalWrite(GPIO_USR1_LED, HIGH);
@@ -33,30 +31,17 @@ int main(void)
     _disable_interrupts();
 
     init_irq();
-    disable_all_interrupt_sources();
+    //disable_all_interrupt_sources();
     register_interrupt_handler(&handler_test, GPT2_IRQ);
 
-    //set_32(INTCPS_MIR_CLEAR(0), 0xFFFFFFFF);
-    //set_32(INTCPS_MIR_CLEAR(1), 0xFFFFFFFF);
-    //set_32(INTCPS_MIR_CLEAR(2), 0xFFFFFFFF);
-
     // Clear timer load value
-    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0x0);
+    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFFFF);
 
     // Enable Overflow interrupt
     set_32(GPTIMER2_BASE + GPTIMER_TIER,
     TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
 
     set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
-
-    // Clear timer load value
-    set_32(GPTIMER1_BASE + GPTIMER_TLDR, 0x0);
-
-    // Enable Overflow interrupt
-    set_32(GPTIMER1_BASE + GPTIMER_TIER,
-    TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
-
-    set_32(GPTIMER1_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
 
     _enable_interrupts();
     _enable_IRQ();
@@ -68,7 +53,7 @@ int main(void)
     pinMode(GPIO_USR1_LED, OUTPUT);
     pinMode(GPIO_USR2_LED, OUTPUT);
 
-   // _call_swi(0);
+    //_call_swi(0);
     while (1)
     {
 

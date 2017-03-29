@@ -18,8 +18,8 @@ MEMORY
 
 
 #ifndef DSP_CORE  /* ARM memory map */
-    SRAM:           o = 0x40200000  l = 0x0000ffc8  /* 64kB Internal SRAM */
-    INTVEC:			o = 0x4020ffc8	l = 0x00000070 // ffcc?
+    SRAM:           o = 0x40200000  l = 0x0000FFC4  /* 64kB Internal SRAM */
+    INTVEC:			o = 0x4020FFC4	l = 0x0000003B  // ffcc?
     IVASHL2RAM:     o = 0x5C7F8000  l = 0x00008000  /* 32kB Shared IVA L2 RAM */
     IVASHL2RAM_C:   o = 0x5C800000  l = 0x00010000  /* 64kB Shared IVA L2 Cache RAM */
     IVASHL1PRAM:    o = 0x5CE00000  l = 0x00008000  /* 32kB Shared IVA L1 Program RAM */

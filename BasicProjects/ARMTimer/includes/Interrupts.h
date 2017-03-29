@@ -46,7 +46,7 @@
 #define INTCPS_CONTROL_NEWIRQAGR    (1<<0)
 #define INTCPS_CONTROL_NEWFIQAGR    (1<<1)
 
-#define ACTIVE_IRQ_NUM  ((*(uint_32*)INTCPS_SIR_IRQ) &INTCPS_SIR_IRQ_MASK) // gets the active IRQ number
+#define ACTIVE_IRQ_NUM  ((*(uint32_t*)INTCPS_SIR_IRQ) &INTCPS_SIR_IRQ_MASK) // gets the active IRQ number
 
 extern void enable_interrupts();
 extern void disable_interrupts();

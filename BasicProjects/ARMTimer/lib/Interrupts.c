@@ -25,22 +25,60 @@ void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
-    // Disable futher interrupts
-    unsigned int interruptsState = _disable_interrupts();
-    _disable_IRQ();
-    unsigned int dst = _get_CPSR();
+    // Disable further interrupts
+    //_disable_interrupts();
+    //_disable_IRQ();
+    //unsigned int dst = _get_CPSR();
 
     // Call the dispatcher of the interrupts
-   // dispatch_interrupts();
+    // dispatch_interrupts();
 
-    // TODO: Just for test!!
-    InterruptHandler_t handler = gInterruptHandlers[38];
-   if (handler != 0)
-      handler(); // call handler if set
+    uint32_t activeIRQ = get_32(ACTIVE_IRQ_NUM);
+    if(activeIRQ == 38){
 
-    _restore_interrupts(interruptsState);
+        InterruptHandler_t handler = gInterruptHandlers[38];
+         if (handler != 0)
+            handler(); // call handler if set
+    }
 
-    __asm(" SUBS PC,R14,#4;");
+    //_restore_interrupts(interruptsState);
+   // _enable_interrupts();
+   // _enable_IRQ();
+
+    //__asm(" SUBS PC,R14,#4;");
+
+
+
+}
+
+#pragma INTERRUPT (isr_reset, RESET)
+void isr_reset(void)
+{
+
+}
+
+#pragma INTERRUPT (isr_swii, SWI)
+void isr_swii(void)
+{
+    __asm(" MOVS PC,R14;");
+}
+
+#pragma INTERRUPT (isr_fiq, FIQ)
+void isr_fiq(void){
+
+}
+
+#pragma INTERRUPT (isr_undef, UDEF)
+void isr_undef(void){
+
+}
+#pragma INTERRUPT (isr_undef, DABT)
+void isr_dabt(void){
+
+}
+
+#pragma INTERRUPT (isr_undef, PABT)
+void isr_pabt(void){
 
 }
 
