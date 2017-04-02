@@ -3,6 +3,8 @@
  *
  *  Created on: 18 Mar 2017
  *      Author: Mathias
+ *  Description: Provides common interrupt initialization and handling.
+ *  Important information: The stack must be set up to handle interrupts.
  */
 
 #include <stdio.h>
@@ -57,9 +59,12 @@ void isr_reset(void)
 
 }
 
-#pragma INTERRUPT (isr_swii, SWI)
-void isr_swii(void)
+#pragma INTERRUPT (isr_swi, SWI)
+void isr_swi(void)
 {
+    // Four arguments can be passed through R0 - R3
+    // Structures uses the R0 (with address)
+    // Float uses two registers
     __asm(" MOVS PC,R14;");
 }
 

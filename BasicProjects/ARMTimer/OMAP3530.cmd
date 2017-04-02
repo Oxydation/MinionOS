@@ -39,24 +39,26 @@ MEMORY
 #endif
 }
 
+stackSize = 0x20000; // 128kB
+
 SECTIONS
 {
 	.intvecs	   >  INTVEC
 	.ISR		   > SRAM
 #ifndef DSP_CORE   /* ARM memory map */
 
-    .text          >  SRAM
-    .stack         >  SRAM
-    .bss           >  SRAM
-    .cio           >  SRAM
-    .const         >  SRAM
-    .data          >  SRAM
-    .switch        >  SRAM
-    .sysmem        >  SRAM
-    .far           >  SRAM
-    .args          >  SRAM
-    .ppinfo        >  SRAM
-    .ppdata        >  SRAM
+    .text          >  DDR0
+    .stack         >  DDR0
+    .bss           >  DDR0
+    .cio           >  DDR0
+    .const         >  DDR0
+    .data          >  DDR0
+    .switch        >  DDR0
+    .sysmem        >  DDR0
+    .far           >  DDR0
+    .args          >  DDR0
+    .ppinfo        >  DDR0
+    .ppdata        >  DDR0
   
     /* TI-ABI or COFF sections */
     .pinit         >  SRAM
@@ -70,6 +72,18 @@ SECTIONS
     .rodata        >  SRAM
     .c6xabi.exidx  >  SRAM
     .c6xabi.extab  >  SRAM
+
+    /* Stacks */
+   	.stackArea > DDR0 {
+       . = align(4);
+       . = . + stackSize;
+       __stackIrq = .; /* IRQ Interrupt Stack */
+       . = . + stackSize;
+       __stackSvc = .; /* Supervisor Interrupt Stack */
+       . = . + stackSize;
+       __stackAbt = .; /* Abort Interrupt Stack */
+       . = . + stackSize;
+   }
 
 #else              /* DSP memory map */
 

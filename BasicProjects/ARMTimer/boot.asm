@@ -239,6 +239,18 @@ L1:     B	L1
 ;*  32 BIT STATE BOOT ROUTINE                                               *
 ;****************************************************************************
 
+
+;***************************************************************
+;* Define stacks for supervisor, IRQ and abort mode.
+;***************************************************************
+		.global __stackSvc
+		.global __stackAbt
+		.global __stackIrq
+
+stackSvc	.long	__stackSvc
+stackAbt	.long	__stackAbt
+stackIrq	.long	__stackIrq
+
         .global __stack
 ;***************************************************************
 ;* DEFINE THE USER MODE STACK (DEFAULT SIZE IS 512)
@@ -250,6 +262,27 @@ __stack:.usect  ".stack", 0, 4
 ;* FUNCTION DEF: _c_int00
 ;***************************************************************
 _c_int00: .asmfunc stack_usage(0)
+
+		;* Initialize the stacks, assign them
+		;*-------------------------------------------------------
+		;* Set Interrupt-Stack
+		;*-------------------------------------------------------
+		CPS		0x12
+		LDR		sp,	stackIrq
+
+
+		;*-------------------------------------------------------
+		;* Set AbortStack
+		;*-------------------------------------------------------
+		CPS      0x17 ; Abt mode 0b10111
+		LDR      sp, stackAbt
+
+		;*-------------------------------------------------------
+		;* Set KernelStack
+		;*-------------------------------------------------------
+		CPS      0x13 ; Supervisor mode
+		LDR      sp, stackSvc
+
 
         .if __TI_NEON_SUPPORT__ | __TI_VFP_SUPPORT__
         ;*------------------------------------------------------
