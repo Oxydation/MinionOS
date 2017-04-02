@@ -14,6 +14,7 @@ void init_irq()
 {
     clear_32(INTCPS_IDLE, 1);
     set_32(INTCPS_IDLE, 0);
+    disable_all_interrupt_sources();
 }
 
 /*

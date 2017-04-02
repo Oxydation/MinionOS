@@ -32,24 +32,23 @@ int main(void)
     _disable_interrupts();
 
     init_irq();
-
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
-
-    register_interrupt_handler(&handler_test, GPT2_IRQ);
-
     // Clear timer load value and set to 0xFFFF0000
-    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFF0000);
+    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFF829B);
+
+    set_32(GPTIMER2_BASE + GPTIMER_TCRR, 0xFFFF829B);
 
     // Set clock source to 32kHz
-    clear_32(PER_CM + CM_CLKSEL_PER, (0<<0));
+    clear_32(PER_CM + CM_CLKSEL_PER, (1 << 0));
 
     // Enable Overflow interrupt
     set_32(GPTIMER2_BASE + GPTIMER_TIER,
     TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
 
+    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
 
+    register_interrupt_handler(&handler_test, GPT2_IRQ);
     _enable_interrupts();
-     _enable_IRQ();
+    _enable_IRQ();
 
     // Turn on GPTIMER2, it will reload at overflow
     set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
