@@ -30,7 +30,6 @@ void isr_irq(void)
     // Disable further interrupts
     //_disable_interrupts();
     //_disable_IRQ();
-    //unsigned int dst = _get_CPSR();
 
     // Call the dispatcher of the interrupts
     // dispatch_interrupts();
@@ -49,14 +48,6 @@ void isr_irq(void)
 
     //__asm(" SUBS PC,R14,#4;");
 }
-
-//_restore_interrupts(interruptsState);
-// _enable_interrupts();
-// _enable_IRQ();
-
-//__asm(" SUBS PC,R14,#4;");
-
-//}
 
 #pragma INTERRUPT (isr_reset, RESET)
 void isr_reset(void)

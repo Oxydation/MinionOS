@@ -32,9 +32,10 @@ int main(void)
     _disable_interrupts();
 
     init_irq();
-    // Clear timer load value and set to 0xFFFF0000
-    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFF829B);
 
+    // Clear timer load value and set to 0xFFFF0000
+    // Check p.2614 for example values for the load value
+    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFF829B);
     set_32(GPTIMER2_BASE + GPTIMER_TCRR, 0xFFFF829B);
 
     // Set clock source to 32kHz
@@ -46,6 +47,7 @@ int main(void)
 
     set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
 
+    // Register handler and enable global interrupts
     register_interrupt_handler(&handler_test, GPT2_IRQ);
     _enable_interrupts();
     _enable_IRQ();
