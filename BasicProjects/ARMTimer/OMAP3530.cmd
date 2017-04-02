@@ -39,7 +39,7 @@ MEMORY
 #endif
 }
 
-stackSize = 0x20000; // 128kB
+stackSize = 0x40000; // 1048kB
 
 SECTIONS
 {

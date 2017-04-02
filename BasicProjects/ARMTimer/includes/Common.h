@@ -17,6 +17,11 @@
 #define FALSE 0
 #define TRUE !FALSE
 
+/*
+ * Represents a address.
+ */
+typedef volatile unsigned int * Address_t;
+
 /* Macros for bit manipulation */
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))

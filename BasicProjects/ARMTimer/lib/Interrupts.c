@@ -35,23 +35,28 @@ void isr_irq(void)
     // Call the dispatcher of the interrupts
     // dispatch_interrupts();
 
-    uint32_t activeIRQ = get_32(ACTIVE_IRQ_NUM);
-    if(activeIRQ == 38){
+    uint32_t activeIRQ = (*(Address_t) (INTCPS_SIR_IRQ)) & INTCPS_SIR_IRQ_MASK;
+    InterruptHandler_t handler = gInterruptHandlers[activeIRQ];
+    if (handler != 0)
+        handler(); // call handler if set
 
-        InterruptHandler_t handler = gInterruptHandlers[38];
-         if (handler != 0)
-            handler(); // call handler if set
-    }
+    // Clear IRQ interrupt output
+    (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
 
-    //_restore_interrupts(interruptsState);
-   // _enable_interrupts();
-   // _enable_IRQ();
+    // Reenable interrupts
+    _enable_interrupts();
+    _enable_IRQ();
 
     //__asm(" SUBS PC,R14,#4;");
-
-
-
 }
+
+//_restore_interrupts(interruptsState);
+// _enable_interrupts();
+// _enable_IRQ();
+
+//__asm(" SUBS PC,R14,#4;");
+
+//}
 
 #pragma INTERRUPT (isr_reset, RESET)
 void isr_reset(void)
@@ -62,28 +67,32 @@ void isr_reset(void)
 #pragma INTERRUPT (isr_swi, SWI)
 void isr_swi(void)
 {
-    // Four arguments can be passed through R0 - R3
-    // Structures uses the R0 (with address)
-    // Float uses two registers
+// Four arguments can be passed through R0 - R3
+// Structures uses the R0 (with address)
+// Float uses two registers
     __asm(" MOVS PC,R14;");
 }
 
 #pragma INTERRUPT (isr_fiq, FIQ)
-void isr_fiq(void){
+void isr_fiq(void)
+{
 
 }
 
 #pragma INTERRUPT (isr_undef, UDEF)
-void isr_undef(void){
+void isr_undef(void)
+{
 
 }
 #pragma INTERRUPT (isr_undef, DABT)
-void isr_dabt(void){
+void isr_dabt(void)
+{
 
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
-void isr_pabt(void){
+void isr_pabt(void)
+{
 
 }
 
@@ -92,7 +101,7 @@ void isr_pabt(void){
  * If a handler for the given IRQ is set, then the handler will be called.
  */
 
-void dispatch_interrupts(void) //
+void dispatch_interrupts(void)
 {
     uint8_t pendingIrqs[NROF_IR_VECTORS];
     // get pending irqs and store in pendingIrq bool array
