@@ -141,6 +141,8 @@ static uint32_t calc_load_value(uint32_t clockRate, uint32_t interval_us)
     {
         loadValue = MAX_TIMER_LOAD_VAL;
     }
+
+    //Info: if we want to use exactly 1ms timer, then check page 2608; use timer 1 as 1ms timer
     return loadValue;
 }
 
