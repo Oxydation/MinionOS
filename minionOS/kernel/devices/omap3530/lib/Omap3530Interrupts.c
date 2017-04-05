@@ -5,10 +5,11 @@
  *      Author: Mathias
  *  Description: Device dependent implementation of interrupt stuff.
  */
-#include "includes/Interrupts.h"
+#include "kernel/hal/interrupts/Interrupts.h"
 #include <string.h>
-#include "includes/Common.h"
-#include "includes/Omap3530.h"
+#include "kernel/common/Common.h"
+#include "kernel/devices/omap3530/includes/Omap3530.h"
+#include "kernel/devices/omap3530/includes/Omap3530Interrupts.h"
 
 void init_irq()
 {

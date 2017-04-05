@@ -58,6 +58,4 @@
 #define CM_CLKSTST_PER      0x4C
 
 
-
-
 #endif /* INCLUDES_OMAP3530CLOCK_H_ */

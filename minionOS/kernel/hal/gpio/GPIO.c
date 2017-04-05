@@ -5,8 +5,8 @@
  *      Author: Mathias
  */
 
-#include <includes/Common.h>
-#include <includes/Omap3530GPIO.h>
+#include <global/Common.h>
+#include <kernel/devices/omap3530/includes/Omap3530GPIO.h>
 
 void digitalWrite(uint8_t pin, uint8_t val)
 {

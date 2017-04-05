@@ -4,7 +4,7 @@
  *  Created on: 15 Mar 2017
  *      Author: Mathias
  */
-#include <includes/Common.h>
+#include <kernel/common/Common.h>
 
 /**
  * Sets the value to a given address.

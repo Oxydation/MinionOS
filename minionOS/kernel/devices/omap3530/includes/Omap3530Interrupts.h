@@ -1,15 +1,12 @@
 /*
- * Interrupts.h
+ * Omap3530Interrupts.h
  *
- *  Created on: 18 Mar 2017
+ *  Created on: 5 Apr 2017
  *      Author: Mathias
- *  Description: Definitions used for interrupt functionality, based on TRM Page 1068
  */
 
-#ifndef INCLUDES_INTERRUPTS_H_
-#define INCLUDES_INTERRUPTS_H_
-
-#include <inttypes.h>
+#ifndef KERNEL_DEVICES_OMAP3530_OMAP3530INTERRUPTS_H_
+#define KERNEL_DEVICES_OMAP3530_OMAP3530INTERRUPTS_H_
 
 #define INTERRUPT_BASE      0x48200000
 
@@ -47,22 +44,6 @@
 #define INTCPS_CONTROL_NEWFIQAGR    (1<<1)
 
 #define ACTIVE_IRQ_NUM  ((*(uint32_t*)INTCPS_SIR_IRQ) &INTCPS_SIR_IRQ_MASK) // gets the active IRQ number
-
-extern void enable_interrupts();
-extern void disable_interrupts();
-
-typedef void (*InterruptHandler_t)(void);
-
-void init_irq(void);
-void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr);
-//__irq void dispatch_interrupts(void);
-
-extern void get_pending_irqs(uint8_t * pendingIrqs);
-extern void enable_irq_source(uint8_t irq_source);
-extern void disable_irq_source(uint8_t irq_source);
-void disable_all_interrupt_sources();
-uint8_t get_irq_source_state(uint8_t irq_source);
-void dispatch_interrupts(void);
 
 /* IRQ Sources, check Page 1053 */
 /*      Source      M_IRQ_x     Description*/
@@ -115,4 +96,4 @@ void dispatch_interrupts(void);
 
 #define MMC3_IRQ    94  // MMC/SD Module 3
 
-#endif /* INCLUDES_INTERRUPTS_H_ */
+#endif /* KERNEL_DEVICES_OMAP3530_OMAP3530INTERRUPTS_H_ */
