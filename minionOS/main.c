@@ -1,13 +1,13 @@
 #include <kernel/common/Common.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <kernel/devices/omap3530/includes/Clock.h>
+#include <kernel/devices/omap3530/includes/GPIO.h>
+#include <kernel/devices/omap3530/includes/Interrupts.h>
+#include <kernel/devices/omap3530/includes/Timer.h>
 #include "kernel/hal/gpio/GPIO.h"
 #include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
-#include "kernel/devices/omap3530/includes/Omap3530GPIO.h"
-#include "kernel/devices/omap3530/includes/Omap3530Timer.h"
 #include "kernel/hal/interrupts/Interrupts.h"
-#include "kernel/devices/omap3530/includes/Omap3530Clock.h"
-#include "kernel/devices/omap3530/includes/Omap3530Interrupts.h"
 
 uint8_t on = TRUE;
 

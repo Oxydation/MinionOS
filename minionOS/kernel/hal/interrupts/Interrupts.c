@@ -7,10 +7,10 @@
  *  Important information: The stack must be set up to handle interrupts.
  */
 
+#include <kernel/devices/omap3530/includes/Interrupts.h>
 #include <stdio.h>
 #include "kernel/hal/interrupts/Interrupts.h"
 #include "kernel/common/Common.h"
-#include "kernel/devices/omap3530/includes/Omap3530Interrupts.h"
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t gInterruptHandlers[NROF_IR_VECTORS] = { 0 };
