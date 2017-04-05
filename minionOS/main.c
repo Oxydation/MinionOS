@@ -57,6 +57,7 @@ int main(void)
 
     g_timer1 = create_timer(OVERFLOW, AUTORELOAD, 1000 * 1000, &timer_handler1);
     g_timer2 = create_timer(OVERFLOW, AUTORELOAD, 1000 * 500, &timer_handler2);
+
     _enable_interrupts();
     _enable_IRQ();
 

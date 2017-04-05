@@ -24,37 +24,21 @@ void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
     gInterruptHandlers[irq_nr] = handler; // set handler at given irq
 }
 
+void enable_interrupts(){
+    _enable_interrupts();
+}
+
+void disable_interrupts(){
+    _disable_interrupts();
+}
+
 #pragma SET_CODE_SECTION(".ISR")
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
-    // Call the dispatcher of the interrupts
-    // dispatch_interrupts();
-
     //__asm(" STMFD SP!, {R0-R12, LR}"); // save critical context (Register, link register, spsr)
     //__asm(" MRS R11, SPSR");
 
-    // Second version
-    // Gets the current IRQ status
-//    uint32_t status[3];
-//    status[0] = (*(Address_t) (INTCPS_PENDING_IRQ(0)));
-//    status[1] = (*(Address_t) (INTCPS_PENDING_IRQ(1)));
-//    status[2] = (*(Address_t) (INTCPS_PENDING_IRQ(2)));
-//
-//    int i = 0;
-//    for (i = 0; i < NROF_IR_VECTORS; i++)
-//    {
-//        if (status[i / 32] & (1u << i%32))
-//        {
-//            InterruptHandler_t handler = gInterruptHandlers[i];
-//                if (handler != 0)
-//                    handler(i); // call handler if set
-//                // Clear IRQ interrupt output
-//                    (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
-//        }
-//    }
-
-    // First version ----
     uint32_t activeIRQ = (*(Address_t) (INTCPS_SIR_IRQ)) & INTCPS_SIR_IRQ_MASK;
     InterruptHandler_t handler = gInterruptHandlers[activeIRQ];
     if (handler != 0)
