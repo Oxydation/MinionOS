@@ -8,10 +8,10 @@
  */
 
 #include <kernel/devices/omap3530/includes/Interrupts.h>
+#include <kernel/systemModules/syscalls/SysCallDispatcher.h>
 #include <stdio.h>
 #include "kernel/hal/interrupts/Interrupts.h"
 #include "kernel/common/Common.h"
-#include "kernel/systemModules/syscalls/SysCallHandler.h"
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t gInterruptHandlers[NROF_IR_VECTORS] = { 0 };
@@ -67,7 +67,7 @@ void isr_swi(SysCall_Args args)
 {
     __asm(" MOV R9,R14");
     unsigned int swi_number  = get_swi_number() & 0xFF;
-    handleSysCall(swi_number, args);
+    syscalls_dispatchSysCall(swi_number, args);
 // Four arguments can be passed through R0 - R3
 // Structures uses the R0 (with address)
 // Float uses two registers
