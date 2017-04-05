@@ -46,11 +46,13 @@
 		.global __stackAbt
 		.global __stackIrq
 		.global __stackFiq
+		.global __stackDbt
 
 stackSvc	.long	__stackSvc
 stackAbt	.long	__stackAbt
 stackIrq	.long	__stackIrq
 stackFiq	.long 	__stackFiq
+stackDbt	.long 	__stackDbt
 
         .global __stack
 ;***************************************************************

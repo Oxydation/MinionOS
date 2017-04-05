@@ -4,3 +4,6 @@
 *Debug/
 *.settings/
 /BasicProjects/ARMTimer/.settings
+RemoteSystemsTempFiles
+.jxbrowser-data
+.metadata

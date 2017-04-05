@@ -85,6 +85,8 @@ SECTIONS
        . = . + stackSize;
        __stackAbt = .; /* Abort Interrupt Stack */
        . = . + stackSize;
+        __stackDbt = .; /* Dbt Interrupt Stack */
+       . = . + stackSize;
    }
 
 #else              /* DSP memory map */
