@@ -38,7 +38,7 @@ void isr_irq(void)
     uint32_t activeIRQ = (*(Address_t) (INTCPS_SIR_IRQ)) & INTCPS_SIR_IRQ_MASK;
     InterruptHandler_t handler = gInterruptHandlers[activeIRQ];
     if (handler != 0)
-        handler(); // call handler if set
+        handler(activeIRQ); // call handler if set
 
     // Clear IRQ interrupt output
     (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
@@ -106,7 +106,7 @@ void dispatch_interrupts(void)
         {
             InterruptHandler_t handler = gInterruptHandlers[i];
             if (handler != 0)
-                handler(); // call handler if set
+                handler(i); // call handler if set
         }
     }
 }

@@ -4,14 +4,15 @@
 #include <kernel/devices/omap3530/includes/Clock.h>
 #include <kernel/devices/omap3530/includes/GPIO.h>
 #include <kernel/devices/omap3530/includes/Interrupts.h>
-#include <kernel/devices/omap3530/includes/Timer.h>
+#include <kernel/hal/timer/Timer.h>
 #include "kernel/hal/gpio/GPIO.h"
 #include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
 #include "kernel/hal/interrupts/Interrupts.h"
 
 uint8_t on = TRUE;
+Timer_t * g_timer1;
 
-void handler_test(void)
+void timer_handler1(void)
 {
     if (on)
     {
@@ -26,42 +27,25 @@ void handler_test(void)
         on = TRUE;
     }
 
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
+    clear_interrupt_flag(g_timer1);
 }
 
 int main(void)
 {
     _disable_interrupts();
-
     init_irq();
-
-    // Clear timer load value and set to 0xFFFF0000
-    // Check p.2614 for example values for the load value
-    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFF829B);
-    set_32(GPTIMER2_BASE + GPTIMER_TCRR, 0xFFFF829B);
-
-    // Set clock source to 32kHz
-    clear_32(PER_CM + CM_CLKSEL_PER, (1 << 0));
-
-    // Enable Overflow interrupt
-    set_32(GPTIMER2_BASE + GPTIMER_TIER,
-    TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
-
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
-
-    // Register handler and enable global interrupts
-    register_interrupt_handler(&handler_test, GPT2_IRQ);
-    _enable_interrupts();
-    _enable_IRQ();
-
-    // Turn on GPTIMER2, it will reload at overflow
-    set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
 
     // Set output direction
     pinMode(GPIO_USR1_LED, OUTPUT);
     pinMode(GPIO_USR2_LED, OUTPUT);
 
-    //_call_swi(0);
+    g_timer1 = create_timer(OVERFLOW, AUTORELOAD, 1000 * 500, &timer_handler1);
+
+    _enable_interrupts();
+    _enable_IRQ();
+
+    start_timer(g_timer1);
+
     while (1)
     {
 

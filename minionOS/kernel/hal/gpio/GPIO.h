@@ -8,6 +8,8 @@
 #ifndef KERNEL_HAL_GPIO_GPIO_H_
 #define KERNEL_HAL_GPIO_GPIO_H_
 
+#include <inttypes.h>
+
 /*
  * GPIO read and write operations; Direction mode operation
  */

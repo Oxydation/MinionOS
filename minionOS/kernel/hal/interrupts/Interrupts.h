@@ -14,7 +14,7 @@
 extern void enable_interrupts();
 extern void disable_interrupts();
 
-typedef void (*InterruptHandler_t)(void);
+typedef void (*InterruptHandler_t)(uint32_t);
 
 void init_irq(void);
 void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr);
