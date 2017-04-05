@@ -56,9 +56,16 @@ void isr_reset(void)
 
 }
 
+static unsigned int get_swi_number(void) {
+    __asm(" LDR R0,[R9,#-4]");
+    __asm(" BX LR");
+}
+
 #pragma INTERRUPT (isr_swi, SWI)
-void isr_swi(void)
+void isr_swi(unsigned int a)
 {
+    __asm(" MOV R9,R14");
+    unsigned int swi_number  = get_swi_number() & 0xFF;
 // Four arguments can be passed through R0 - R3
 // Structures uses the R0 (with address)
 // Float uses two registers
