@@ -4,8 +4,9 @@ Development of a simple OS for a BeagleBoard C4 with a ARMv7 Cortex A8-Processor
 
 ## Following parts should be implemented:
 * GPIO (ok)
-* Interrupts (in work)
-* Timers (in work)
+* Interrupts (ok)
+* Timers (ok)
+* System Calls (in work)
 * UART
 * Filesystem
 * Processes with intercommunication
