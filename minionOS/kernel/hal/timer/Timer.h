@@ -16,17 +16,16 @@ typedef void (*TickCallback_t)(void);
 
 typedef enum
 {
-    TIMER1 = 0,
-    TIMER2 = 1,
-    TIMER3 = 2,
-    TIMER4 = 3,
-    TIMER5 = 4,
-    TIMER6 = 5 ,
-    TIMER7 = 6,
-    TIMER8 = 7,
-    TIMER9 = 8,
-    TIMER10 = 9,
-    TIMER11 = 10,
+    TIMER2 = 0,
+    TIMER3 = 1,
+    TIMER4 = 2,
+    TIMER5 = 3,
+    TIMER6 = 4 ,
+    TIMER7 = 5,
+    TIMER8 = 6,
+    TIMER9 = 7,
+    TIMER10 = 8,
+    TIMER11 = 9,
     UNAVAILABLE = -1
 } TimerNumber;
 
@@ -44,6 +43,7 @@ typedef enum{
 } TimerMode;
 
 typedef struct Timer{
+    uint8_t initialized;
     uint32_t interval_us;
     TimerNumber timerNr;
     TimerMode timerMode;
@@ -63,7 +63,7 @@ extern uint32_t get_irq_number(TimerNumber timerNumber);
 extern uint32_t get_timer_address(TimerNumber timerNumber);
 static uint32_t calc_load_value(uint32_t clockRate, uint32_t interval_us);
 static void init_timer(Timer_t * timer);
-static TimerNumber get_free_timer();
+static int8_t get_free_timer_index(void);
 static uint32_t get_clock_rate(uint32_t interval_us);
 static float get_s_from_us(uint32_t us);
 

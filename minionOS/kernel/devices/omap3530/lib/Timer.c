@@ -13,8 +13,8 @@ uint32_t get_timer_address(TimerNumber timerNumber)
 {
     switch (timerNumber)
     {
-    case TIMER1:
-        return GPTIMER1_BASE;
+//    case TIMER1:
+//        return GPTIMER1_BASE;
     case TIMER2:
         return GPTIMER2_BASE;
     case TIMER3:
@@ -36,15 +36,15 @@ uint32_t get_timer_address(TimerNumber timerNumber)
     case TIMER11:
         return GPTIMER11_BASE;
     default:
-        return GPTIMER1_BASE;
+        return GPTIMER2_BASE;
     }
 }
 
 uint32_t get_irq_number(TimerNumber timerNumber){
     switch (timerNumber)
        {
-       case TIMER1:
-           return GPT1_IRQ;
+//       case TIMER1:
+//           return GPT1_IRQ;
        case TIMER2:
            return GPT2_IRQ;
        case TIMER3:
@@ -66,15 +66,15 @@ uint32_t get_irq_number(TimerNumber timerNumber){
        case TIMER11:
            return GPT11_IRQ;
        default:
-           return GPT1_IRQ;
+           return GPT2_IRQ;
        }
 }
 
 TimerNumber get_timer_number_from_irq_source(uint32_t irq_number){
     switch (irq_number)
           {
-          case GPT1_IRQ:
-              return TIMER1;
+//          case GPT1_IRQ:
+//              return TIMER1;
           case GPT2_IRQ:
               return TIMER2;
           case GPT3_IRQ:
@@ -96,6 +96,6 @@ TimerNumber get_timer_number_from_irq_source(uint32_t irq_number){
           case GPT11_IRQ:
               return TIMER11;
           default:
-              return TIMER1;
+              return UNAVAILABLE;
           }
 }

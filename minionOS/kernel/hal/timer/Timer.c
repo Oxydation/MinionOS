@@ -15,32 +15,41 @@ static Timer_t g_timer[AMOUNT_OF_TIMERS];
 Timer_t * create_timer(TimerMode mode, ReloadType reloadType,
                        uint32_t interval_us, TickCallback_t callback)
 {
-    TimerNumber freeTimerNr = get_free_timer();
+    int8_t freeTimerIndex = get_free_timer_index();
+
+    if(freeTimerIndex < 0){
+        return NULL;
+    }
+
+    TimerNumber freeTimerNr = (TimerNumber) freeTimerIndex;
 
     Timer_t newTimer = { .timerNr = freeTimerNr, .timerMode = mode,
                          .reloadType = reloadType, .interval_us = interval_us,
                          .callback = callback };
 
-    g_timer[freeTimerNr] = newTimer;
+    g_timer[freeTimerIndex] = newTimer;
 
-    init_timer(&g_timer[freeTimerNr]);
-    return &g_timer[freeTimerNr];
+    init_timer(&g_timer[freeTimerIndex]);
+
+    g_timer[freeTimerIndex].initialized = TRUE;
+    return &g_timer[freeTimerIndex];
 }
 
-static TimerNumber get_free_timer()
+static int8_t get_free_timer_index(void)
 {
     int i = 0;
-    while (i < AMOUNT_OF_TIMERS && (&g_timer[i]) == NULL)
+    while (i < AMOUNT_OF_TIMERS && g_timer[i].initialized == TRUE)
     {
         i++;
     }
+
     if (i == AMOUNT_OF_TIMERS)
     {
-        return UNAVAILABLE;
+        return -1;
     }
     else
     {
-        return (TimerNumber) (i+1);
+        return i;
     }
 }
 
