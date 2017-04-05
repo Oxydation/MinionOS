@@ -49,7 +49,7 @@ void enable_irq_source(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;
     uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
-    set_32(INTCPS_MIR_CLEAR(bank), bit);
+    or_32(INTCPS_MIR_CLEAR(bank), bit);
     clear_32(INTCPS_ILR(bank), 0);
 }
 
@@ -57,7 +57,7 @@ void disable_irq_source(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;
     uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
-    set_32(INTCPS_MIR_SET(bank), bit);
+    set_32(INTCPS_MIR_SET(bank), bit); //todo: check if set is correct
 }
 
 /*

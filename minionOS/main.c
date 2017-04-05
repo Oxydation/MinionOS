@@ -28,13 +28,11 @@ void timer_handler1(void)
         digitalWrite(GPIO_USR1_LED, LOW);
         on1 = TRUE;
     }
-
     clear_interrupt_flag(g_timer1);
 }
 
 void timer_handler2(void)
 {
-   printf("LED 2\n");
     if (on2)
     {
         digitalWrite(GPIO_USR2_LED, HIGH);
@@ -57,9 +55,8 @@ int main(void)
     pinMode(GPIO_USR1_LED, OUTPUT);
     pinMode(GPIO_USR2_LED, OUTPUT);
 
-    g_timer1 = create_timer(OVERFLOW, AUTORELOAD, 1000 * 100, &timer_handler1);
+    g_timer1 = create_timer(OVERFLOW, AUTORELOAD, 1000 * 1000, &timer_handler1);
     g_timer2 = create_timer(OVERFLOW, AUTORELOAD, 1000 * 500, &timer_handler2);
-
     _enable_interrupts();
     _enable_IRQ();
 

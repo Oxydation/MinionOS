@@ -28,13 +28,33 @@ void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
-    // Disable further interrupts
-    //_disable_interrupts();
-    //_disable_IRQ();
-
     // Call the dispatcher of the interrupts
     // dispatch_interrupts();
 
+    //__asm(" STMFD SP!, {R0-R12, LR}"); // save critical context (Register, link register, spsr)
+    //__asm(" MRS R11, SPSR");
+
+    // Second version
+    // Gets the current IRQ status
+//    uint32_t status[3];
+//    status[0] = (*(Address_t) (INTCPS_PENDING_IRQ(0)));
+//    status[1] = (*(Address_t) (INTCPS_PENDING_IRQ(1)));
+//    status[2] = (*(Address_t) (INTCPS_PENDING_IRQ(2)));
+//
+//    int i = 0;
+//    for (i = 0; i < NROF_IR_VECTORS; i++)
+//    {
+//        if (status[i / 32] & (1u << i%32))
+//        {
+//            InterruptHandler_t handler = gInterruptHandlers[i];
+//                if (handler != 0)
+//                    handler(i); // call handler if set
+//                // Clear IRQ interrupt output
+//                    (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
+//        }
+//    }
+
+    // First version ----
     uint32_t activeIRQ = (*(Address_t) (INTCPS_SIR_IRQ)) & INTCPS_SIR_IRQ_MASK;
     InterruptHandler_t handler = gInterruptHandlers[activeIRQ];
     if (handler != 0)
@@ -43,11 +63,19 @@ void isr_irq(void)
     // Clear IRQ interrupt output
     (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
 
-    // Reenable interrupts
-    _enable_interrupts();
-    _enable_IRQ();
+    // Data syncronization Barrier
+    __asm(" MOV R0, #0");
+    __asm(" MCR P15, #0, R0, C7, C10, #4");
 
-    //__asm(" SUBS PC,R14,#4;");
+    // Restore critical context
+   // __asm(" MSR SPSR, R11");
+   // __asm(" LDMFD SP!, {R0-R12, LR}");
+
+    // Reenable interrupts
+    //_enable_interrupts();
+    //_enable_IRQ();
+
+   // __asm(" SUBS PC,LR,#4;");
 }
 
 #pragma INTERRUPT (isr_reset, RESET)
@@ -87,27 +115,3 @@ void isr_pabt(void)
 {
 
 }
-
-/*
- * Dispatches the interrupts, if an interrupt is pending.
- * If a handler for the given IRQ is set, then the handler will be called.
- */
-
-void dispatch_interrupts(void)
-{
-    uint8_t pendingIrqs[NROF_IR_VECTORS];
-    // get pending irqs and store in pendingIrq bool array
-
-    get_pending_irqs(pendingIrqs);
-    int i = 0;
-    for (i = 0; i < NROF_IR_VECTORS; i++)
-    {
-        if (pendingIrqs[i])
-        {
-            InterruptHandler_t handler = gInterruptHandlers[i];
-            if (handler != 0)
-                handler(i); // call handler if set
-        }
-    }
-}
-
