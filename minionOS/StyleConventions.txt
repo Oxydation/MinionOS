@@ -1,0 +1,25 @@
+#define I_AM_A_DEFINITION 10020020
+
+typedef enum{
+	BUNT,
+	KLEIN,
+} Merkmal_t;
+
+typedef struct Haus {
+	uint8_t size;
+	Merkmal_t merkmal; 
+} Haus_t;
+
+static uint8_t g_myGlobalVariable;
+
+void many_such_function(uint8_t amplificationSteering){
+	uint32_t myLocalVariable = 0;
+	
+	if(myLocalVariable > 0){
+		call_another_function(myLocalVariable);
+	}	
+}
+
+static uint8_t my_private_function(void){
+	return I_AM_A_DEFINITION;
+}
