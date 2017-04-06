@@ -1,7 +1,14 @@
 /* Code Style Convention */
 /*************************/
 
+
+/* moduleA.h */
 #define I_AM_A_DEFINITION 10020020
+void moduleA_manySuchFunction(uint8_t amplificationSteering);
+static uint8_t myPrivateFunction(void)
+
+/* moduleA.c*/
+#include "directoryA/moduleA.h"
 
 typedef enum{
 	BUNT,
@@ -13,23 +20,26 @@ typedef struct Haus {
 	Merkmal_t merkmal; 
 } Haus_t;
 
+typedef void (*MyFunctionPointer_t)(uint32_t);
+
 static uint8_t g_myGlobalVariable;
 
-void many_such_function(uint8_t amplificationSteering){
+void moduleA_manySuchFunction(uint8_t amplificationSteering){
 	uint32_t myLocalVariable = 0;
 	
 	if(myLocalVariable > 0){
-		call_another_function(myLocalVariable);
+		myPrivateFunction(myLocalVariable);
 	}	
 }
 
-static uint8_t my_private_function(void){
+static uint8_t myPrivateFunction(void){
 	return I_AM_A_DEFINITION;
 }
+
 
 /*********************/
 /* Files and Modules */
 /*********************/
 
 Directories (Folders/Modules): ichBinEinOrdner
-Files (.h und .c): ModuleA.c ModuleA.h
+Files (.h und .c): moduleA.c moduleA.h

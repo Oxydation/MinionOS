@@ -60,7 +60,6 @@ int main(void)
     // Set output direction
     pinMode(GPIO_USR1_LED, OUTPUT);
     pinMode(GPIO_USR2_LED, OUTPUT);
-
 #ifdef USE_SYSTEMTMR
     init_system_timer(1000);
 #else

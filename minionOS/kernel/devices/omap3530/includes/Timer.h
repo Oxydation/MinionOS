@@ -8,8 +8,6 @@
 #ifndef OMAP3530TIMER_H_
 #define OMAP3530TIMER_H_
 
-#define CLK_32KHZ 32768 // clock period
-
 /* Timer prescales */
 #define TMR_PRESCALE_EN     (1<<5)
 #define TMR_PRESCALE_1      (0<<5)
