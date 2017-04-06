@@ -1,3 +1,6 @@
+/* Code Style Convention */
+/*************************/
+
 #define I_AM_A_DEFINITION 10020020
 
 typedef enum{
@@ -23,3 +26,10 @@ void many_such_function(uint8_t amplificationSteering){
 static uint8_t my_private_function(void){
 	return I_AM_A_DEFINITION;
 }
+
+/*********************/
+/* Files and Modules */
+/*********************/
+
+Directories (Folders/Modules): ichBinEinOrdner
+Files (.h und .c): ModuleA.c ModuleA.h
