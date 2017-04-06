@@ -14,7 +14,7 @@ Development of a simple OS for a BeagleBoard C4 with a ARMv7 Cortex A8-Processor
 * Basic User Apps
 
 ## Design
-![ArchDesign](Documentation/MinionOS_Schema.png?raw=true "Minion OS Architecture Design")
+![ArchDesign](Documentation/MinionOS%20Schema.png "Minion OS Architecture Design")
 
 ## Tools
 * Code Composer Studio v7
