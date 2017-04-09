@@ -8,6 +8,8 @@
 #include "kernel/hal/clock/Clock.h"
 #include <stdio.h>
 #include "kernel/hal/interrupts/Interrupts.h"
+#include "global/types.h"
+
 
 static Timer_t g_timer[AMOUNT_OF_TIMERS];
 

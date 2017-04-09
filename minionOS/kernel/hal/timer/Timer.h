@@ -8,7 +8,7 @@
 #ifndef KERNEL_HAL_TIMER_TIMER_H_
 #define KERNEL_HAL_TIMER_TIMER_H_
 
-#include "kernel/common/Common.h"
+#include "../../common/mmio.h"
 
 #define AMOUNT_OF_TIMERS 10
 #define MAX_TIMER_LOAD_VAL 0xFFFFFFFE

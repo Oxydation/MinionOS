@@ -7,10 +7,11 @@
  *  Important information: The stack must be set up to handle interrupts.
  */
 
+#include <kernel/common/mmio.h>
 #include <kernel/devices/omap3530/includes/Interrupts.h>
 #include <stdio.h>
 #include "kernel/hal/interrupts/Interrupts.h"
-#include "kernel/common/Common.h"
+#include "global/types.h"
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
@@ -34,7 +35,7 @@ void disable_interrupts(){
 
 #pragma SET_CODE_SECTION(".ISR")
 #pragma INTERRUPT (isr_irq, IRQ)
-static void isr_irq(void)
+void isr_irq(void)
 {
     //__asm(" STMFD SP!, {R0-R12, LR}"); // save critical context (Register, link register, spsr)
     //__asm(" MRS R11, SPSR");
@@ -63,13 +64,13 @@ static void isr_irq(void)
 }
 
 #pragma INTERRUPT (isr_reset, RESET)
-static void isr_reset(void)
+void isr_reset(void)
 {
 
 }
 
 #pragma INTERRUPT (isr_swi, SWI)
-static void isr_swi(void)
+void isr_swi(void)
 {
 // Four arguments can be passed through R0 - R3
 // Structures uses the R0 (with address)
@@ -78,24 +79,24 @@ static void isr_swi(void)
 }
 
 #pragma INTERRUPT (isr_fiq, FIQ)
-static void isr_fiq(void)
+void isr_fiq(void)
 {
 
 }
 
 #pragma INTERRUPT (isr_undef, UDEF)
-static void isr_undef(void)
+void isr_undef(void)
 {
 
 }
 #pragma INTERRUPT (isr_undef, DABT)
-static void isr_dabt(void)
+void isr_dabt(void)
 {
 
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
-static void isr_pabt(void)
+void isr_pabt(void)
 {
 
 }

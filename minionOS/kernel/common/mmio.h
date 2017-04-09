@@ -5,16 +5,11 @@
  *      Author: Mathias
  */
 
-#ifndef KERNEL_COMMON_COMMON_H_
-#define KERNEL_COMMON_COMMON_H_
-
-#include "../../global/Common.h"
+#ifndef KERNEL_COMMON_MMIO_H_
+#define KERNEL_COMMON_MMIO_H_
 
 #include <inttypes.h>
-/*
- * Represents a address.
- */
-typedef volatile unsigned int * Address_t;
+#include "../../global/bitManipulation.h"
 
 /**
  * Provides basic methods to set and get a value at a given address.
@@ -26,4 +21,4 @@ extern void and32(uint32_t address, uint32_t value);
 extern void clear32(uint32_t address, uint32_t value);
 
 
-#endif /* KERNEL_COMMON_COMMON_H_ */
+#endif /* KERNEL_COMMON_MMIO_H_ */
