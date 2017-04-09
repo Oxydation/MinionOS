@@ -1,67 +1,84 @@
-#include <kernel/common/Common.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include <kernel/devices/omap3530/includes/Clock.h>
-#include <kernel/devices/omap3530/includes/GPIO.h>
-#include <kernel/devices/omap3530/includes/Interrupts.h>
-#include <kernel/devices/omap3530/includes/Timer.h>
-#include "kernel/hal/gpio/GPIO.h"
-#include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
-#include "kernel/hal/interrupts/Interrupts.h"
+#include <kernel/common/mmio.h>
+#include <kernel/devices/omap3530/includes/beagleBoardC4.h>
+#include <kernel/hal/gpio/gpio.h>
+#include <kernel/hal/interrupts/interrupts.h>
+#include <kernel/hal/timer/systemTimer.h>
+#include <kernel/hal/timer/timer.h>
+#include "global/types.h"
 
-uint8_t on = TRUE;
+#define USE_SYSTEMTMR 1 // uncomment if you want to test system timer; comment if you want to use bare timers
 
-void handler_test(void)
+uint8_t g_on1 = TRUE;
+uint8_t g_on2 = TRUE;
+
+Timer_t * g_timer1;
+Timer_t * g_timer2;
+
+void timerHandler1(void)
 {
-    if (on)
+    if (g_on1)
     {
-        digitalWrite(GPIO_USR1_LED, HIGH);
-        digitalWrite(GPIO_USR2_LED, LOW);
-        on = FALSE;
+        gpio_digitalWrite(GPIO_USR1_LED, HIGH);
+        g_on1 = FALSE;
     }
     else
     {
-        digitalWrite(GPIO_USR1_LED, LOW);
-        digitalWrite(GPIO_USR2_LED, HIGH);
-        on = TRUE;
+        gpio_digitalWrite(GPIO_USR1_LED, LOW);
+        g_on1 = TRUE;
     }
 
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
+#ifndef USE_SYSTEMTMR
+    timer_clearInterruptFlag(g_timer1);
+#endif
 }
 
+void timerHandler2(void)
+{
+    if (g_on2)
+    {
+        gpio_digitalWrite(GPIO_USR2_LED, HIGH);
+        g_on2 = FALSE;
+    }
+    else
+    {
+        gpio_digitalWrite(GPIO_USR2_LED, LOW);
+        g_on2 = TRUE;
+    }
+
+#ifndef USE_SYSTEMTMR
+    timer_clearInterruptFlag(g_timer2);
+#endif
+}
 int main(void)
 {
     _disable_interrupts();
+    interrupts_initIrq();
 
-    init_irq();
+    // Set output direction
+    gpio_pinMode(GPIO_USR1_LED, OUTPUT);
+    gpio_pinMode(GPIO_USR2_LED, OUTPUT);
 
-    // Clear timer load value and set to 0xFFFF0000
-    // Check p.2614 for example values for the load value
-    set_32(GPTIMER2_BASE + GPTIMER_TLDR, 0xFFFF829B);
-    set_32(GPTIMER2_BASE + GPTIMER_TCRR, 0xFFFF829B);
-
-    // Set clock source to 32kHz
-    clear_32(PER_CM + CM_CLKSEL_PER, (1 << 0));
-
-    // Enable Overflow interrupt
-    set_32(GPTIMER2_BASE + GPTIMER_TIER,
-    TIER_TCAR_IT_DISABLE | TIER_OVF_IT_ENABLE | TIER_MAT_IT_DISABLE);
-
-    set_32(GPTIMER2_BASE + GPTIMER_TISR, (1 << 1)); // CLear interrupt flag
-
-    // Register handler and enable global interrupts
-    register_interrupt_handler(&handler_test, GPT2_IRQ);
+#ifdef USE_SYSTEMTMR
+    systemTimer_init(1000);
+#else
+    g_timer1 = timer_create(OVERFLOW, AUTORELOAD, 1000 * 1000, &timerHandler1);
+    g_timer2 = timer_create(OVERFLOW, AUTORELOAD, 1000 * 500, &timerHandler2);
+#endif
     _enable_interrupts();
     _enable_IRQ();
 
-    // Turn on GPTIMER2, it will reload at overflow
-    set_32(GPTIMER2_BASE + GPTIMER_TCLR, TCLR_AR_AUTORELOAD | TCLR_ST_ON);
+#ifdef USE_SYSTEMTMR
+    //Start system timer and subscribe handlers
+    systemTimer_start();
+    systemTimer_subscribeCallback(1000, &timerHandler1);
+    systemTimer_subscribeCallback(500, &timerHandler2);
+#else
+    timer_start(g_timer1);
+    timer_start(g_timer2);
+#endif
 
-    // Set output direction
-    pinMode(GPIO_USR1_LED, OUTPUT);
-    pinMode(GPIO_USR2_LED, OUTPUT);
-
-    //_call_swi(0);
     while (1)
     {
 

@@ -75,11 +75,11 @@
 #define TCLR_ST_ON              (1UL << 0)
 #define TCLR_ST_OFF             (0UL << 0)
 
-#define TIER_TCAR_IT_ENABLE     (BIT2
+#define TIER_TCAR_IT_ENABLE     (1UL << 2)
 #define TIER_TCAR_IT_DISABLE    (0UL << 2)
 #define TIER_OVF_IT_ENABLE      (1UL << 1)
 #define TIER_OVF_IT_DISABLE     (0UL << 1)
-#define TIER_MAT_IT_ENABLE      BIT0
+#define TIER_MAT_IT_ENABLE      (1UL << 0)
 #define TIER_MAT_IT_DISABLE     (0UL << 0)
 
 #endif /* OMAP3530TIMER_H_ */

@@ -4,12 +4,12 @@
  *  Created on: 15 Mar 2017
  *      Author: Mathias
  */
-#include <kernel/common/Common.h>
+#include <kernel/common/mmio.h>
 
 /**
  * Sets the value to a given address.
  */
-void set_32(uint32_t address, uint32_t value)
+void set32(uint32_t address, uint32_t value)
 {
     uint32_t * mem = (uint32_t *) address;
     *mem = value;
@@ -18,24 +18,24 @@ void set_32(uint32_t address, uint32_t value)
 /**
  * Gets the value at a given address.
  */
-uint32_t get_32(uint32_t address)
+uint32_t get32(uint32_t address)
 {
     return *((uint32_t *) address);
 }
 
-void or_32(uint32_t address, uint32_t value)
+void or32(uint32_t address, uint32_t value)
 {
     uint32_t * mem = (uint32_t *) address;
     *mem |= value;
 }
 
-void and_32(uint32_t address, uint32_t value)
+void and32(uint32_t address, uint32_t value)
 {
     uint32_t * mem = (uint32_t *) address;
     *mem &= value;
 }
 
-void clear_32(uint32_t address, uint32_t value)
+void clear32(uint32_t address, uint32_t value)
 {
     uint32_t * mem = (uint32_t *) address;
     *mem &= ~value;
