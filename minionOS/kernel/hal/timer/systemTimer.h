@@ -8,8 +8,8 @@
 #ifndef KERNEL_HAL_TIMER_SYSTEMTIMER_H_
 #define KERNEL_HAL_TIMER_SYSTEMTIMER_H_
 
-#include "Timer.h"
 #include <inttypes.h>
+#include "timer.h"
 
 void systemTimer_init(uint32_t interval_us);
 void systemTimer_start();

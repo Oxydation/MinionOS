@@ -5,9 +5,9 @@
  *      Author: Mathias
  */
 
-#include "kernel/devices/omap3530/includes/Timer.h"
-#include "kernel/hal/timer/Timer.h"
-#include "kernel/devices/omap3530/includes/Interrupts.h"
+#include <kernel/devices/omap3530/includes/interrupts.h>
+#include <kernel/devices/omap3530/includes/timer.h>
+#include <kernel/hal/timer/timer.h>
 
 uint32_t timer_getTimerAddress(TimerNumber timerNumber)
 {

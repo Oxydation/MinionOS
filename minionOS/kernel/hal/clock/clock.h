@@ -8,9 +8,10 @@
 #ifndef KERNEL_HAL_CLOCK_CLOCK_H_
 #define KERNEL_HAL_CLOCK_CLOCK_H_
 
-#include "kernel/hal/gpio/GPIO.h"
-#include "kernel/hal/timer/Timer.h"
-#include "kernel/devices/omap3530/includes/Clock.h"
+#include "../../devices/omap3530/includes/clock.h"
+
+#include "../gpio/gpio.h"
+#include "../timer/timer.h"
 
 typedef enum{
     KHZ_32_CLOCK,

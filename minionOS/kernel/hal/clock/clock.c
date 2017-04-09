@@ -6,7 +6,7 @@
  */
 
 #include <kernel/common/mmio.h>
-#include "kernel/hal/clock/Clock.h"
+#include <kernel/hal/clock/clock.h>
 
 void clock_setTimerClockSource(TimerNumber timerNr, ClockSource_t clockSource)
 {

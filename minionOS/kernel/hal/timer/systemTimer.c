@@ -5,7 +5,7 @@
  *      Author: Mathias
  */
 
-#include "SystemTimer.h"
+#include <kernel/hal/timer/systemTimer.h>
 #include <stdio.h>
 #include <math.h>
 

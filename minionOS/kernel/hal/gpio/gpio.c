@@ -6,7 +6,7 @@
  */
 
 #include <global/bitManipulation.h>
-#include <kernel/devices/omap3530/includes/GPIO.h>
+#include <kernel/devices/omap3530/includes/gpio.h>
 #include "global/types.h"
 
 void gpio_digitalWrite(uint8_t pin, uint8_t val)

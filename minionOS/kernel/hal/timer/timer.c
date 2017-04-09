@@ -4,10 +4,10 @@
  *  Created on: 5 Apr 2017
  *      Author: Mathias
  */
-#include "kernel/hal/timer/Timer.h"
-#include "kernel/hal/clock/Clock.h"
+#include <kernel/hal/clock/clock.h>
+#include <kernel/hal/interrupts/interrupts.h>
+#include <kernel/hal/timer/timer.h>
 #include <stdio.h>
-#include "kernel/hal/interrupts/Interrupts.h"
 #include "global/types.h"
 
 

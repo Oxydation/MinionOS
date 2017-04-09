@@ -6,10 +6,10 @@
  *  Description: Device dependent implementation of interrupt stuff.
  */
 #include <kernel/common/mmio.h>
-#include <kernel/devices/omap3530/includes/Interrupts.h>
-#include "kernel/hal/interrupts/Interrupts.h"
+#include <kernel/devices/omap3530/includes/interrupts.h>
+#include <kernel/devices/omap3530/includes/omap3530.h>
+#include <kernel/hal/interrupts/interrupts.h>
 #include <string.h>
-#include "kernel/devices/omap3530/includes/Omap3530.h"
 #include "global/types.h"
 
 void interrupts_initIrq()

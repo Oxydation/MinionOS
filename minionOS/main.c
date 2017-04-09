@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <kernel/common/mmio.h>
-#include <kernel/hal/timer/Timer.h>
-#include "kernel/hal/gpio/GPIO.h"
-#include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
-#include "kernel/hal/interrupts/Interrupts.h"
-#include "kernel/hal/timer/SystemTimer.h"
+#include <kernel/devices/omap3530/includes/beagleBoardC4.h>
+#include <kernel/hal/gpio/gpio.h>
+#include <kernel/hal/interrupts/interrupts.h>
+#include <kernel/hal/timer/systemTimer.h>
+#include <kernel/hal/timer/timer.h>
 #include "global/types.h"
 
 #define USE_SYSTEMTMR 1 // uncomment if you want to test system timer; comment if you want to use bare timers

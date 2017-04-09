@@ -8,9 +8,9 @@
  */
 
 #include <kernel/common/mmio.h>
-#include <kernel/devices/omap3530/includes/Interrupts.h>
+#include <kernel/devices/omap3530/includes/interrupts.h>
+#include <kernel/hal/interrupts/interrupts.h>
 #include <stdio.h>
-#include "kernel/hal/interrupts/Interrupts.h"
 #include "global/types.h"
 
 // Keep book of all interrupt handlers
