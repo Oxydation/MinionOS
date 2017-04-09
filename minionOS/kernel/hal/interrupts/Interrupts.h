@@ -16,14 +16,14 @@ extern void disable_interrupts();
 
 typedef void (*InterruptHandler_t)(uint32_t);
 
-void init_irq(void);
-void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr);
-extern void enable_irq_source(uint8_t irq_source);
-extern void disable_irq_source(uint8_t irq_source);
-void disable_all_interrupt_sources();
+void interrupts_initIrq(void);
+void interrupts_registerHandler(InterruptHandler_t handler, uint8_t irq_nr);
 
-extern void get_pending_irqs(uint8_t * pendingIrqs);
-uint8_t get_irq_source_state(uint8_t irq_source);
+extern void interrupts_enableIrqSource(uint8_t irq_source);
+extern void interrupts_disableIrqSource(uint8_t irq_source);
+extern void interrupts_disableAllInterruptSources();
+extern void interrupts_getPendingIrqs(uint8_t * pendingIrqs);
+extern uint8_t interrupts_getIrqSourceState(uint8_t irq_source);
 
 
 #endif /* INCLUDES_INTERRUPTS_H_ */

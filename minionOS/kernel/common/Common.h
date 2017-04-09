@@ -19,11 +19,11 @@ typedef volatile unsigned int * Address_t;
 /**
  * Provides basic methods to set and get a value at a given address.
  */
-extern void set_32(uint32_t address, uint32_t value);
-extern uint32_t get_32(uint32_t address);
-extern void or_32(uint32_t address, uint32_t value);
-extern void and_32(uint32_t address, uint32_t value);
-extern void clear_32(uint32_t address, uint32_t value);
+extern void set32(uint32_t address, uint32_t value);
+extern uint32_t get32(uint32_t address);
+extern void or32(uint32_t address, uint32_t value);
+extern void and32(uint32_t address, uint32_t value);
+extern void clear32(uint32_t address, uint32_t value);
 
 
 #endif /* KERNEL_COMMON_COMMON_H_ */

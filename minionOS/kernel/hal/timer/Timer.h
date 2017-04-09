@@ -55,28 +55,30 @@ typedef struct Timer
 } Timer_t;
 
 /* Public functions of timer construct*/
-Timer_t * create_timer(TimerMode mode, ReloadType reloadType,
+Timer_t * timer_create(TimerMode mode, ReloadType reloadType,
                        uint32_t interval_us, TickCallback_t callback);
-void clear_interrupt_flag(Timer_t * timer);
-void start_timer(Timer_t * timer);
-void stop_timer(Timer_t * timer);
+void timer_clearInterruptFlag(Timer_t * timer);
+void timer_start(Timer_t * timer);
+void timer_stop(Timer_t * timer);
 
 /* Important exernal device dependend implementations  */
-extern TimerNumber get_timer_number_from_irq_source(uint32_t irq_number);
-extern uint32_t get_irq_number(TimerNumber timerNumber);
-extern uint32_t get_timer_address(TimerNumber timerNumber);
-extern void set_timer_load_value(TimerNumber timerNumber, uint32_t loadValue);
-extern void set_timer_interrupt_enabled(TimerNumber timerNumber,
+extern TimerNumber timer_getTimerNumberFromIrqSource(uint32_t irq_number);
+extern uint32_t timer_getIrqNumber(TimerNumber timerNumber);
+extern uint32_t timer_getTimerAddress(TimerNumber timerNumber);
+extern void timer_setTimerLoadValue(TimerNumber timerNumber, uint32_t loadValue);
+extern void timer_setTimerInterruptEnabled(TimerNumber timerNumber,
                                         TimerMode mode);
-extern void timer_clear_interrupt_flag(TimerNumber timerNumber);
-extern void timer_start(TimerNumber timerNumber, ReloadType reloadType);
-extern void timer_stop(TimerNumber timerNumber);
+extern void omapTimer_clearInterruptFlag(TimerNumber timerNumber);
+extern void omapTimer_start(TimerNumber timerNumber, ReloadType reloadType);
+extern void omapTimer_stop(TimerNumber timerNumber);
 
 /* Private functions */
-static uint32_t calc_load_value(uint32_t clockRate, uint32_t interval_us);
 static void init_timer(Timer_t * timer);
-static int8_t get_free_timer_index(void);
-static uint32_t get_clock_rate(uint32_t interval_us);
-static float get_s_from_us(uint32_t us);
+static int8_t getFreeTimerIndex(void);
+static void isr_handler(uint32_t source);
+static uint32_t getClockRateFromInterval(uint32_t interval_us);
+static float getSecondsFromMicroseconds(uint32_t microseconds);
+static uint32_t calcLoadValue(uint32_t clockRate, uint32_t interval_us);
+
 
 #endif /* KERNEL_HAL_TIMER_TIMER_H_ */

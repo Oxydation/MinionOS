@@ -11,10 +11,10 @@
 
 static Timer_t g_timer[AMOUNT_OF_TIMERS];
 
-Timer_t * create_timer(TimerMode mode, ReloadType reloadType,
+Timer_t * timer_create(TimerMode mode, ReloadType reloadType,
                        uint32_t interval_us, TickCallback_t callback)
 {
-    int8_t freeTimerIndex = get_free_timer_index();
+    int8_t freeTimerIndex = getFreeTimerIndex();
 
     if (freeTimerIndex < 0)
     {
@@ -35,7 +35,7 @@ Timer_t * create_timer(TimerMode mode, ReloadType reloadType,
     return &g_timer[freeTimerIndex];
 }
 
-static int8_t get_free_timer_index(void)
+static int8_t getFreeTimerIndex(void)
 {
     int i = 0;
     while (i < AMOUNT_OF_TIMERS && g_timer[i].initialized == TRUE)
@@ -53,49 +53,50 @@ static int8_t get_free_timer_index(void)
     }
 }
 
-void timer_handler(uint32_t source)
+static void init_timer(Timer_t * timer)
+{
+    uint32_t timerBaseAddress = timer_getTimerAddress(timer->timerNr);
+    uint32_t clockRate = getClockRateFromInterval(timer->interval_us);
+    uint32_t loadValue = calcLoadValue(clockRate, timer->interval_us);
+
+    timer_setTimerLoadValue(timer->timerNr, loadValue);
+    clock_setTimerClockSource(timer->timerNr, KHZ_32_CLOCK);
+    timer_setTimerInterruptEnabled(timer->timerNr, timer->timerMode);
+    timer_clearInterruptFlag(timer);
+
+    // Register handler and enable interrupt source
+    uint32_t irq_nr = timer_getIrqNumber(timer->timerNr);
+    interrupts_registerHandler(&isr_handler, irq_nr);
+}
+
+static void isr_handler(uint32_t source)
 {
 
-    TimerNumber timerNumber = get_timer_number_from_irq_source(source);
+    TimerNumber timerNumber = timer_getTimerNumberFromIrqSource(source);
     g_timer[timerNumber].callback();
 }
 
-static void init_timer(Timer_t * timer)
+void timer_start(Timer_t * timer)
 {
-    uint32_t timerBaseAddress = get_timer_address(timer->timerNr);
-    uint32_t clockRate = get_clock_rate(timer->interval_us);
-    uint32_t loadValue = calc_load_value(clockRate, timer->interval_us);
-
-    set_timer_load_value(timer->timerNr, loadValue);
-    set_timer_clock(timer->timerNr, KHZ_32_CLOCK);
-    set_timer_interrupt_enabled(timer->timerNr, timer->timerMode);
-    clear_interrupt_flag(timer);
-
-    // Register handler and enable interrupt source
-    uint32_t irq_nr = get_irq_number(timer->timerNr);
-    register_interrupt_handler(&timer_handler, irq_nr);
+    omapTimer_start(timer->timerNr, timer->reloadType);
 }
 
-void clear_interrupt_flag(Timer_t * timer)
+void timer_stop(Timer_t * timer)
 {
-    timer_clear_interrupt_flag(timer->timerNr);
+    omapTimer_stop(timer->timerNr);
 }
 
-void start_timer(Timer_t * timer)
+void timer_clearInterruptFlag(Timer_t * timer)
 {
-    timer_start(timer->timerNr, timer->reloadType);
+    omapTimer_clearInterruptFlag(timer->timerNr);
 }
 
-void stop_timer(Timer_t * timer)
-{
-    timer_stop(timer->timerNr);
-}
 
-static uint32_t calc_load_value(uint32_t clockRate, uint32_t interval_us)
+static uint32_t calcLoadValue(uint32_t clockRate, uint32_t interval_us)
 {
     // page 2614, modified
     uint32_t loadValue = (UINT32_MAX + 1
-            - get_s_from_us(interval_us) * clockRate);
+            - getSecondsFromMicroseconds(interval_us) * clockRate);
 
     if (loadValue > MAX_TIMER_LOAD_VAL)
     {
@@ -106,7 +107,7 @@ static uint32_t calc_load_value(uint32_t clockRate, uint32_t interval_us)
     return loadValue;
 }
 
-static uint32_t get_clock_rate(uint32_t interval_us)
+static uint32_t getClockRateFromInterval(uint32_t interval_us)
 {
     if (interval_us < 65)
     { // < 65us
@@ -120,7 +121,7 @@ static uint32_t get_clock_rate(uint32_t interval_us)
     return 0;
 }
 
-static float get_s_from_us(uint32_t us)
+static float getSecondsFromMicroseconds(uint32_t microseconds)
 {
-    return us / 1000000.0;
+    return microseconds / 1000000.0;
 }

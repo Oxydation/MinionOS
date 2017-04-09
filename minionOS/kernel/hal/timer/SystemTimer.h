@@ -11,13 +11,13 @@
 #include "Timer.h"
 #include <inttypes.h>
 
+void systemTimer_init(uint32_t interval_us);
+void systemTimer_start();
+void systemTimer_stop();
 
-void init_system_timer(uint32_t interval_us);
-void start_system_timer();
-void stop_system_timer();
-
-void subscribe_systimer_callback(uint32_t interval_ms,
+void systemTimer_subscribeCallback(uint32_t interval_ms,
                                   TickCallback_t callback);
-//void desubscribe_systimer_callback(TimerCallbackSubscription_t * subscription);
+//void systemTimer_removeCallback(TimerCallbackSubscription_t * subscription);
 
+static void systemtimer_handler(void);
 #endif /* KERNEL_HAL_TIMER_SYSTEMTIMER_H_ */

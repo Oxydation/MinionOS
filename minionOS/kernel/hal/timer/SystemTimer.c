@@ -23,38 +23,25 @@ static Timer_t * g_systemTimer;
 
 uint32_t g_current_ms = 0;
 
-void systemtimer_handler(void)
-{
-    g_current_ms++;
-    int i = 0;
-    for(i = 0; i < MAX_CALLBACKS; i++){
-        if(g_registeredCallbacks[i].callback != NULL && abs(g_current_ms - g_registeredCallbacks[i].lastCallbackTime) >= g_registeredCallbacks[i].interval_ms){
-            g_registeredCallbacks[i].lastCallbackTime = g_current_ms;
-            g_registeredCallbacks[i].callback();
-        }
-    }
 
-    clear_interrupt_flag(g_systemTimer);
-}
-
-void init_system_timer(uint32_t interval_us)
+void systemTimer_init(uint32_t interval_us)
 {
-    g_systemTimer = create_timer(OVERFLOW, AUTORELOAD, interval_us,
+    g_systemTimer = timer_create(OVERFLOW, AUTORELOAD, interval_us,
                                  &systemtimer_handler);
 }
 
-void start_system_timer()
+void systemTimer_start()
 {
-    start_timer(g_systemTimer);
+    timer_start(g_systemTimer);
 }
 
-void stop_system_timer()
+void systemTimer_stop()
 {
-    stop_timer(g_systemTimer);
+    timer_stop(g_systemTimer);
 }
 
-void subscribe_systimer_callback(
-        uint32_t interval_ms, TickCallback_t callback)
+void systemTimer_subscribeCallback(uint32_t interval_ms,
+                                   TickCallback_t callback)
 {
     int i = 0;
     while (i < MAX_CALLBACKS && g_registeredCallbacks[i].callback != NULL)
@@ -75,8 +62,20 @@ void subscribe_systimer_callback(
     }
 }
 
-//void desubscribe_systimer_callback(TimerCallbackSubscription_t * subscription)
-//{
-//    //TODO: not sure if needed
-//}
+static void systemtimer_handler(void)
+{
+    g_current_ms++;
+    int i = 0;
+    for (i = 0; i < MAX_CALLBACKS; i++)
+    {
+        if (g_registeredCallbacks[i].callback != NULL
+                && abs(g_current_ms - g_registeredCallbacks[i].lastCallbackTime)
+                        >= g_registeredCallbacks[i].interval_ms)
+        {
+            g_registeredCallbacks[i].lastCallbackTime = g_current_ms;
+            g_registeredCallbacks[i].callback();
+        }
+    }
 
+    timer_clearInterruptFlag(g_systemTimer);
+}

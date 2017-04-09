@@ -9,7 +9,7 @@
 #include "kernel/hal/timer/Timer.h"
 #include "kernel/devices/omap3530/includes/Interrupts.h"
 
-uint32_t get_timer_address(TimerNumber timerNumber)
+uint32_t timer_getTimerAddress(TimerNumber timerNumber)
 {
     switch (timerNumber)
     {
@@ -40,7 +40,7 @@ uint32_t get_timer_address(TimerNumber timerNumber)
     }
 }
 
-uint32_t get_irq_number(TimerNumber timerNumber)
+uint32_t timer_getIrqNumber(TimerNumber timerNumber)
 {
     switch (timerNumber)
     {
@@ -71,7 +71,7 @@ uint32_t get_irq_number(TimerNumber timerNumber)
     }
 }
 
-TimerNumber get_timer_number_from_irq_source(uint32_t irq_number)
+TimerNumber timer_getTimerNumberFromIrqSource(uint32_t irq_number)
 {
     switch (irq_number)
     {
@@ -102,19 +102,19 @@ TimerNumber get_timer_number_from_irq_source(uint32_t irq_number)
     }
 }
 
-void set_timer_load_value(TimerNumber timerNumber, uint32_t loadValue)
+void timer_setTimerLoadValue(TimerNumber timerNumber, uint32_t loadValue)
 {
-    uint32_t timerBaseAddress = get_timer_address(timerNumber);
+    uint32_t timerBaseAddress = timer_getTimerAddress(timerNumber);
 
     // Clear timer load value and set to a given load value
     // Check p.2614 for example values for the load value
-    set_32(timerBaseAddress + GPTIMER_TLDR, loadValue);
-    set_32(timerBaseAddress + GPTIMER_TCRR, loadValue);
+    set32(timerBaseAddress + GPTIMER_TLDR, loadValue);
+    set32(timerBaseAddress + GPTIMER_TCRR, loadValue);
 }
 
-void set_timer_interrupt_enabled(TimerNumber timerNumber, TimerMode mode)
+void timer_setTimerInterruptEnabled(TimerNumber timerNumber, TimerMode mode)
 {
-    uint32_t timerBaseAddress = get_timer_address(timerNumber);
+    uint32_t timerBaseAddress = timer_getTimerAddress(timerNumber);
     uint32_t tier = 0;
     switch (mode)
     {
@@ -133,19 +133,19 @@ void set_timer_interrupt_enabled(TimerNumber timerNumber, TimerMode mode)
     }
 
     // Set interrupt enabled for either overflow, compare or capture
-    set_32(timerBaseAddress + GPTIMER_TIER, tier);
+    set32(timerBaseAddress + GPTIMER_TIER, tier);
 
 }
 
-void timer_clear_interrupt_flag(TimerNumber timerNumber)
+void omapTimer_clearInterruptFlag(TimerNumber timerNumber)
 {
-    uint32_t timerBaseAddress = get_timer_address(timerNumber);
-    set_32(timerBaseAddress + GPTIMER_TISR, (1 << 1)); // Clear interrupt flag
+    uint32_t timerBaseAddress = timer_getTimerAddress(timerNumber);
+    set32(timerBaseAddress + GPTIMER_TISR, (1 << 1)); // Clear interrupt flag
 }
 
-void timer_start(TimerNumber timerNumber, ReloadType reloadType)
+void omapTimer_start(TimerNumber timerNumber, ReloadType reloadType)
 {
-    uint32_t timerBaseAddress = get_timer_address(timerNumber);
+    uint32_t timerBaseAddress = timer_getTimerAddress(timerNumber);
 
     uint32_t reloadMode;
 
@@ -158,11 +158,11 @@ void timer_start(TimerNumber timerNumber, ReloadType reloadType)
         reloadMode = TCLR_AR_ONESHOT;
     }
 
-    set_32(timerBaseAddress + GPTIMER_TCLR, reloadMode | TCLR_ST_ON);
+    set32(timerBaseAddress + GPTIMER_TCLR, reloadMode | TCLR_ST_ON);
 }
 
-void timer_stop(TimerNumber timerNumber)
+void omapTimer_stop(TimerNumber timerNumber)
 {
-    uint32_t timerBaseAddress = get_timer_address(timerNumber);
-    clear_32(timerBaseAddress + GPTIMER_TCLR, TCLR_ST_ON);
+    uint32_t timerBaseAddress = timer_getTimerAddress(timerNumber);
+    clear32(timerBaseAddress + GPTIMER_TCLR, TCLR_ST_ON);
 }

@@ -13,8 +13,8 @@
 /*
  * GPIO read and write operations; Direction mode operation
  */
-extern void digitalWrite(uint8_t pin, uint8_t val);
-extern uint8_t digitalRead(uint8_t pin);
-extern void pinMode(uint8_t pin, uint8_t mode);
+extern void gpio_digitalWrite(uint8_t pin, uint8_t val);
+extern uint8_t gpio_digitalRead(uint8_t pin);
+extern void gpio_pinMode(uint8_t pin, uint8_t mode);
 
 #endif /* KERNEL_HAL_GPIO_GPIO_H_ */
