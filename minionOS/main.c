@@ -8,6 +8,7 @@
 #include "kernel/hal/gpio/GPIO.h"
 #include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
 #include "kernel/hal/interrupts/Interrupts.h"
+#include "kernel/devices/omap3530/includes/ContextSwitch.h"
 
 uint8_t on = TRUE;
 
@@ -60,6 +61,8 @@ int main(void)
     // Set output direction
     pinMode(GPIO_USR1_LED, OUTPUT);
     pinMode(GPIO_USR2_LED, OUTPUT);
+
+    contextSwitch_switchToUserMode();
 
     //_call_swi(0);
     while (1)

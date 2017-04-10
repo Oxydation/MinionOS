@@ -40,19 +40,21 @@
 ;****************************************************************************
 
 ;***************************************************************
-;* Define stacks for supervisor, IRQ and abort mode.
+;* Define stacks for all modes
 ;***************************************************************
 		.global __stackSvc
 		.global __stackAbt
 		.global __stackIrq
 		.global __stackFiq
 		.global __stackDbt
+		.global __stackUsr
 
 stackSvc	.long	__stackSvc
 stackAbt	.long	__stackAbt
 stackIrq	.long	__stackIrq
 stackFiq	.long 	__stackFiq
 stackDbt	.long 	__stackDbt
+stackUsr	.long	__stackUsr
 
         .global __stack
 ;***************************************************************
@@ -128,6 +130,12 @@ _c_int00: .asmfunc stack_usage(0)
 
 		;*-------------------------------------------------------
 		;* Initialize the stacks, assign them
+
+		;*-------------------------------------------------------
+		;* Set User-Stack
+		;*-------------------------------------------------------
+		CPS		0x1F ; is System-Mode, but System-Mode has same stack and registers as user-mode
+		LDR		sp,	stackUsr
 
 		;*-------------------------------------------------------
 		;* Set Interrupt-Stack
