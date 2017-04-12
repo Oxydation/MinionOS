@@ -1,6 +1,7 @@
 #include <kernel/common/Common.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <kernel/devices/omap3530/includes/contextSwitch.h>
 #include <kernel/devices/omap3530/includes/Clock.h>
 #include <kernel/devices/omap3530/includes/GPIO.h>
 #include <kernel/devices/omap3530/includes/Interrupts.h>
@@ -8,7 +9,6 @@
 #include "kernel/hal/gpio/GPIO.h"
 #include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
 #include "kernel/hal/interrupts/Interrupts.h"
-#include "kernel/devices/omap3530/includes/ContextSwitch.h"
 
 uint8_t on = TRUE;
 
