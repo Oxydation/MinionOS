@@ -11,6 +11,8 @@
 
 #define MAX_CALLBACKS 30
 
+static void systemtimer_handler(void);
+
 typedef struct
 {
     uint32_t lastCallbackTime;
@@ -49,11 +51,7 @@ void systemTimer_subscribeCallback(uint32_t interval_ms,
         i++;
     }
 
-    if (i >= MAX_CALLBACKS)
-    {
-        // we are full
-    }
-    else
+    if(i < MAX_CALLBACKS)
     {
         TimerCallbackSubscription_t newRegisteredCallback = {
                 .interval_ms = interval_ms, .callback = callback };

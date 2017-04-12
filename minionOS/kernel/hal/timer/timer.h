@@ -32,53 +32,44 @@ typedef enum
     TIMER10 = 8,
     TIMER11 = 9,
     UNAVAILABLE = -1
-} TimerNumber;
+} TimerNumber_t;
 
 typedef enum
 {
     AUTORELOAD, ONE_SHOT
-} ReloadType;
+} ReloadType_t;
 
 typedef enum
 {
     NONE, COMPARE, CAPTURE, OVERFLOW
-} TimerMode;
+} TimerMode_t;
 
 typedef struct Timer
 {
     uint8_t initialized;
     uint32_t interval_us;
-    TimerNumber timerNr;
-    TimerMode timerMode;
-    ReloadType reloadType;
+    TimerNumber_t timerNr;
+    TimerMode_t timerMode;
+    ReloadType_t reloadType;
     TickCallback_t callback;
 } Timer_t;
 
 /* Public functions of timer construct*/
-Timer_t * timer_create(TimerMode mode, ReloadType reloadType,
+Timer_t * timer_create(TimerMode_t mode, ReloadType_t reloadType,
                        uint32_t interval_us, TickCallback_t callback);
 void timer_clearInterruptFlag(Timer_t * timer);
 void timer_start(Timer_t * timer);
 void timer_stop(Timer_t * timer);
 
 /* Important exernal device dependend implementations  */
-extern TimerNumber timer_getTimerNumberFromIrqSource(uint32_t irq_number);
-extern uint32_t timer_getIrqNumber(TimerNumber timerNumber);
-extern uint32_t timer_getTimerAddress(TimerNumber timerNumber);
-extern void timer_setTimerLoadValue(TimerNumber timerNumber, uint32_t loadValue);
-extern void timer_setTimerInterruptEnabled(TimerNumber timerNumber,
-                                        TimerMode mode);
-extern void omapTimer_clearInterruptFlag(TimerNumber timerNumber);
-extern void omapTimer_start(TimerNumber timerNumber, ReloadType reloadType);
-extern void omapTimer_stop(TimerNumber timerNumber);
-
-/* Private functions */
-static void init_timer(Timer_t * timer);
-static int8_t getFreeTimerIndex(void);
-static void isr_handler(uint32_t source);
-static uint32_t getClockRateFromInterval(uint32_t interval_us);
-static float getSecondsFromMicroseconds(uint32_t microseconds);
-static uint32_t calcLoadValue(uint32_t clockRate, uint32_t interval_us);
-
+TimerNumber_t timer_getTimerNumberFromIrqSource(uint32_t irq_number);
+uint32_t timer_getIrqNumber(TimerNumber_t timerNumber);
+uint32_t timer_getTimerAddress(TimerNumber_t timerNumber);
+void timer_setTimerLoadValue(TimerNumber_t timerNumber, uint32_t loadValue);
+void timer_setTimerInterruptEnabled(TimerNumber_t timerNumber,
+                                        TimerMode_t mode);
+void omapTimer_clearInterruptFlag(TimerNumber_t timerNumber);
+void omapTimer_start(TimerNumber_t timerNumber, ReloadType_t reloadType);
+void omapTimer_stop(TimerNumber_t timerNumber);
 
 #endif /* KERNEL_HAL_TIMER_TIMER_H_ */

@@ -10,10 +10,16 @@
 #include <stdio.h>
 #include "global/types.h"
 
+static void init_timer(Timer_t * timer);
+static int8_t getFreeTimerIndex(void);
+static void isr_handler(uint32_t source);
+static uint32_t getClockRateFromInterval(uint32_t interval_us);
+static float getSecondsFromMicroseconds(uint32_t microseconds);
+static uint32_t calcLoadValue(uint32_t clockRate, uint32_t interval_us);
 
 static Timer_t g_timer[AMOUNT_OF_TIMERS];
 
-Timer_t * timer_create(TimerMode mode, ReloadType reloadType,
+Timer_t * timer_create(TimerMode_t mode, ReloadType_t reloadType,
                        uint32_t interval_us, TickCallback_t callback)
 {
     int8_t freeTimerIndex = getFreeTimerIndex();
@@ -23,7 +29,7 @@ Timer_t * timer_create(TimerMode mode, ReloadType reloadType,
         return NULL;
     }
 
-    TimerNumber freeTimerNr = (TimerNumber) freeTimerIndex;
+    TimerNumber_t freeTimerNr = (TimerNumber_t) freeTimerIndex;
 
     Timer_t newTimer = { .timerNr = freeTimerNr, .timerMode = mode,
                          .reloadType = reloadType, .interval_us = interval_us,
@@ -73,8 +79,7 @@ static void init_timer(Timer_t * timer)
 
 static void isr_handler(uint32_t source)
 {
-
-    TimerNumber timerNumber = timer_getTimerNumberFromIrqSource(source);
+    TimerNumber_t timerNumber = timer_getTimerNumberFromIrqSource(source);
     g_timer[timerNumber].callback();
 }
 

@@ -19,11 +19,11 @@ typedef void (*InterruptHandler_t)(uint32_t);
 void interrupts_initIrq(void);
 void interrupts_registerHandler(InterruptHandler_t handler, uint8_t irq_nr);
 
-extern void interrupts_enableIrqSource(uint8_t irq_source);
-extern void interrupts_disableIrqSource(uint8_t irq_source);
-extern void interrupts_disableAllInterruptSources();
-extern void interrupts_getPendingIrqs(uint8_t * pendingIrqs);
-extern uint8_t interrupts_getIrqSourceState(uint8_t irq_source);
+void interrupts_enableIrqSource(uint8_t irq_source);
+void interrupts_disableIrqSource(uint8_t irq_source);
+void interrupts_disableAllInterruptSources();
+void interrupts_getPendingIrqs(uint8_t * pendingIrqs);
+uint8_t interrupts_getIrqSourceState(uint8_t irq_source);
 
 
 #endif /* INCLUDES_INTERRUPTS_H_ */

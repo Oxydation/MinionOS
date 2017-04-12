@@ -18,7 +18,7 @@ typedef enum{
     SYS_CLOCK
 } ClockSource_t;
 
-void clock_setTimerClockSource(TimerNumber timerNr, ClockSource_t clockSource);
+void clock_setTimerClockSource(TimerNumber_t timerNr, ClockSource_t clockSource);
 
 //void enable_gpio_clock(GpioModule module);
 //void enable_mmc_clock(MmcModule module);

@@ -18,6 +18,4 @@ void systemTimer_stop();
 void systemTimer_subscribeCallback(uint32_t interval_ms,
                                   TickCallback_t callback);
 //void systemTimer_removeCallback(TimerCallbackSubscription_t * subscription);
-
-static void systemtimer_handler(void);
 #endif /* KERNEL_HAL_TIMER_SYSTEMTIMER_H_ */
