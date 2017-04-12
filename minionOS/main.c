@@ -1,7 +1,7 @@
 #include <kernel/common/Common.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include <kernel/devices/omap3530/includes/contextSwitch.h>
+#include "kernel/devices/omap3530/includes/contextSwitch.h"
 #include <kernel/devices/omap3530/includes/Clock.h>
 #include <kernel/devices/omap3530/includes/GPIO.h>
 #include <kernel/devices/omap3530/includes/Interrupts.h>

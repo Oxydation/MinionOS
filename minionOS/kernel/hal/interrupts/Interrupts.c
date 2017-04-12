@@ -7,7 +7,6 @@
  *  Important information: The stack must be set up to handle interrupts.
  */
 
-#include <kernel/devices/omap3530/includes/contextSwitch.h>
 #include <kernel/devices/omap3530/includes/Interrupts.h>
 #include <stdio.h>
 #include "kernel/hal/interrupts/Interrupts.h"

@@ -6,7 +6,7 @@
  */
 
 #include <inttypes.h>
-#include <kernel/devices/omap3530/includes/contextSwitch.h>
+#include "kernel/devices/omap3530/includes/contextSwitch.h"
 
 void contextSwitch_switchToUserMode(void)
 {
