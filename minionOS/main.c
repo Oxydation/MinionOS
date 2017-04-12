@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <inttypes.h>
+
+#include "kernel/devices/omap3530/includes/contextSwitch.h"
 #include <kernel/common/mmio.h>
 #include <kernel/devices/omap3530/includes/beagleBoardC4.h>
 #include <kernel/hal/gpio/gpio.h>
@@ -79,6 +81,7 @@ int main(void)
     timer_start(g_timer2);
 #endif
 
+    contextSwitch_switchToUserMode();
     while (1)
     {
 
