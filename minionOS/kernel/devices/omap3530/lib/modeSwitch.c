@@ -1,14 +1,14 @@
 /*
- * ContextSwitch.c
+ * modeSwitch.c
  *
  *  Created on: 09.04.2017
  *      Author: sabrinarosmann
  */
 
 #include <inttypes.h>
-#include "kernel/devices/omap3530/includes/contextSwitch.h"
+#include <kernel/devices/omap3530/includes/modeSwitch.h>
 
-void contextSwitch_switchToUserMode(void)
+void modeSwitch_switchToUserMode(void)
 {
      asm volatile (
              " MOV R1, LR \n"           // save contents of link register (return address)
@@ -16,8 +16,3 @@ void contextSwitch_switchToUserMode(void)
              " MOV LR, R1 \n"           // write saved return address to link register
      );
 }
-
-
-
-
-
