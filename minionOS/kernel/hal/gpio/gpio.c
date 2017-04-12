@@ -5,10 +5,11 @@
  *      Author: Mathias
  */
 
-#include <global/Common.h>
-#include <kernel/devices/omap3530/includes/GPIO.h>
+#include <global/bitManipulation.h>
+#include <kernel/devices/omap3530/includes/gpio.h>
+#include "global/types.h"
 
-void digitalWrite(uint8_t pin, uint8_t val)
+void gpio_digitalWrite(uint8_t pin, uint8_t val)
 {
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(pin) + GPIO_DATAOUT);
 
@@ -22,7 +23,7 @@ void digitalWrite(uint8_t pin, uint8_t val)
     }
 }
 
-uint8_t digitalRead(uint8_t pin)
+uint8_t gpio_digitalRead(uint8_t pin)
 {
     uint32_t* in = (uint32_t*) (GPIO_BASE_ADDR(pin) + GPIO_DATAIN);
 
@@ -36,7 +37,7 @@ uint8_t digitalRead(uint8_t pin)
     }
 }
 
-void pinMode(uint8_t pin, uint8_t mode)
+void gpio_pinMode(uint8_t pin, uint8_t mode)
 {
     uint32_t* gpio_dir_ctr = (uint32_t*)  (GPIO_BASE_ADDR(pin) + GPIO_OE);
 
