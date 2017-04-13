@@ -25,5 +25,5 @@ void interrupts_disableAllInterruptSources();
 void interrupts_getPendingIrqs(uint8_t * pendingIrqs);
 uint8_t interrupts_getIrqSourceState(uint8_t irq_source);
 
-
+extern void asm_dataSynchronizationBarrier(void);
 #endif /* INCLUDES_INTERRUPTS_H_ */

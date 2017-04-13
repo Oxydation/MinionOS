@@ -25,12 +25,13 @@ MEMORY
     IVASHL1PRAM:    o = 0x5CE00000  l = 0x00008000  /* 32kB Shared IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x5CF04000  l = 0x0000C000  /* 48kB Shared IVA L1 Data RAM */
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
-    DDR0:           o = 0x80000000  l = 0x40000000  /* 1GB external DDR Bank 0 */
+    DDR0:           o = 0x80000000  l = 0x01FF0000  /* 1GB external DDR Bank 0 */
+    DDR0_PROC:		o = 0x81FF0000	l = 0x00800000
     DDR1:           o = 0xC0000000  l = 0x40000000  /* 1GB external DDR Bank 1 */
 
 #else             /* DSP memory map */
 
-    IVASHL2RAM:     o = 0x007F8000  l = 0x00008000  /* 32kB IVA L2 RAM */
+    IVASHL2RAM:     o = 0x007F8000  l = 0x10008000  /* 32kB IVA L2 RAM */
     IVASHL2RAM_C:   o = 0x00800000  l = 0x00010000  /* 64kB IVA L2 Cache RAM */
     IVASHL1PRAM:    o = 0x00E00000  l = 0x00008000  /* 32kB IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x00F04000  l = 0x0000C000  /* 48kB IVA L1 Data RAM */
@@ -45,6 +46,8 @@ SECTIONS
 {
 	.intvecs	   >  INTVEC
 	.ISR		   > SRAM
+	.process1	   > DDR0_PROC
+	.process2	   > DDR0_PROC
 #ifndef DSP_CORE   /* ARM memory map */
 
     .text          >  DDR0

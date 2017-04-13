@@ -10,6 +10,8 @@
 
 #include <inttypes.h>
 
+typedef uint8_t ProcessId_t;
+
 typedef struct PCB
 {
     uint32_t cpsr;
@@ -29,6 +31,8 @@ typedef struct PCB
     uint32_t R12;
     uint32_t R13;   // SP
     uint32_t R14;   // LR
+
+    ProcessId_t processId;
 } PCB_t;
 
 extern void asm_saveContext(PCB_t * pcb);

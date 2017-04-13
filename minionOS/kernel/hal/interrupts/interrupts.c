@@ -12,9 +12,11 @@
 #include <kernel/hal/interrupts/interrupts.h>
 #include <stdio.h>
 #include "global/types.h"
+#include "kernel/systemModules/processManagement/contextSwitch.h"
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
+static PCB_t pcb;
 
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
@@ -25,11 +27,13 @@ void interrupts_registerHandler(InterruptHandler_t handler, uint8_t irq_nr)
     g_interruptHandlers[irq_nr] = handler; // set handler at given irq
 }
 
-void enable_interrupts(){
+void enable_interrupts()
+{
     _enable_interrupts();
 }
 
-void disable_interrupts(){
+void disable_interrupts()
+{
     _disable_interrupts();
 }
 
@@ -37,30 +41,27 @@ void disable_interrupts(){
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
-    //__asm(" STMFD SP!, {R0-R12, LR}"); // save critical context (Register, link register, spsr)
-    //__asm(" MRS R11, SPSR");
+    // 1. Step: Remember LR (automatically done by compiler, including R0-R4 & R12)
+    // 2. Step: Save previous context into PCB
+    asm_saveContext(&pcb);
 
+    // 3. Step: Handle Interrupts and reactivate
     uint32_t activeIrq = (*(Address_t) (INTCPS_SIR_IRQ)) & INTCPS_SIR_IRQ_MASK;
     InterruptHandler_t handler = g_interruptHandlers[activeIrq];
     if (handler != 0)
-        handler(activeIrq); // call handler if set
+        handler(activeIrq);
 
     // Clear IRQ interrupt output
     (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
 
-    // Data syncronization Barrier
-    __asm(" MOV R0, #0");
-    __asm(" MCR P15, #0, R0, C7, C10, #4");
+    asm_dataSynchronizationBarrier();
 
-    // Restore critical context
-   // __asm(" MSR SPSR, R11");
-   // __asm(" LDMFD SP!, {R0-R12, LR}");
+    // 4. Step: Restore registers (R0-R4 & R1 are automatically restored by compiler)
+    // 5. Step: Restore LR (automatically by compiler)
+    //Set SP back 5 bytes to pop {R0-R4, R12, LR} from stack
+    __asm(" SUB SP, SP, #20 ");
 
-    // Reenable interrupts
-    //_enable_interrupts();
-    //_enable_IRQ();
-
-   // __asm(" SUBS PC,LR,#4;");
+    // 6. Step Continuing with last user process (auto done)
 }
 
 #pragma INTERRUPT (isr_reset, RESET)

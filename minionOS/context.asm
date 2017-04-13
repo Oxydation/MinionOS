@@ -25,14 +25,7 @@ asm_loadContext
 	NOP									; Note: Cannot use banked register immediately after User mode LDM
 	MOVS	PC, R14
 
-
 asm_continuePreviousProcess
-
-	; Load LR from stack
-	LDR R14, [SP]
-
-	; Incr SP
+	LDR R14, [SP] ; Load LR from stack
 	ADD SP, SP, #4
-
-	; Return to user process
-	MOVS PC, R14
+	MOVS PC, R14 ; Return to user process
