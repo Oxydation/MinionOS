@@ -31,11 +31,8 @@ int main(void)
 
     systemTimer_start();
 
-    int * var = &process1;
-    int * var2 = & process2;
-
-    processManager_loadProcess(0x80600000, 0x80601000);
-    //processManager_loadProcess(0x80602000, 0x80603000);
+    processManager_loadProcess(&process1, 0x80601000); // 0x80600000
+    processManager_loadProcess(&process2, 0x80603000); // 0x80602000
 
     scheduler_start();
 
@@ -70,18 +67,19 @@ void process1(void)
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x82FF1000
 void process2(void)
 {
-    volatile long i = 0;
-    while (1)
-    {
-        gpio_digitalWrite(GPIO_USR2_LED, LOW);
-        for (i = 0; i < 200000L; i++)
-        {
+    volatile unsigned long i = 0;
+       uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR2_LED) + GPIO_DATAOUT);
 
-        }
-        gpio_digitalWrite(GPIO_USR2_LED, HIGH);
-        for (i = 0; i < 200000L; i++)
-        {
+       while(1){
+           bitSet(*out, GPIO_PIN_POS(GPIO_USR2_LED));
+           for (i = 0; i < 400000L; i++)
+           {
 
-        }
-    }
+           }
+           bitClear(*out, GPIO_PIN_POS(GPIO_USR2_LED));
+           for (i = 0; i < 400000L; i++)
+           {
+
+           }
+       }
 }

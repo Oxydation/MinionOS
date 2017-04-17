@@ -11,20 +11,15 @@
 #include "global/queue/queue.h"
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
 
-#define SCHEDULER_INTERVAL_MS 5000 // use 50 or so
+#define SCHEDULER_INTERVAL_MS 3000 // use 50 or so
 
 PCB_t g_processes[MAX_ALLOWED_PROCESSES];
-
+ProcessId_t nextProcessId = 0;
 PCB_t * g_currentProcess;
-//PCB_t * g_queueBlocked;
-//PCB_t * g_readyProcess;
-
 Queue_t g_queueBlocked;
 Queue_t g_queueReady;
 
 SubscriptionId_t g_systemTimerId;
-
-ProcessId_t nextProcessId = 0;
 
 static void handleSchedulerTick(void);
 static void initSchedulerTimer(uint32_t interval_ms);
@@ -62,7 +57,7 @@ void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
     g_processes[nextProcessId] = newProcessPcb;
 
     // 3. Load process into ready queue
-    addReadyProcess(&newProcessPcb);
+    addReadyProcess(&g_processes[nextProcessId++]);
 }
 
 static void handleSchedulerTick(void)
@@ -72,7 +67,7 @@ static void handleSchedulerTick(void)
         asm_loadContext(g_currentProcess);
     }else if(g_queueReady.size > 0 && g_currentProcess != NULL){
         // Save old process and add to ready queue
-        asm_saveContext(g_currentProcess);
+        //asm_saveContext(g_currentProcess);
         addReadyProcess(g_currentProcess);
 
         // Load new process
@@ -103,9 +98,9 @@ static void addReadyProcess(PCB_t * process)
 
 static PCB_t * removeReadyProcess()
 {
-    PCB_t * result = ((PcbNode_t*) queue_front(&g_queueReady))->data;
+    PCB_t * removedProcess = ((PcbNode_t*) queue_front(&g_queueReady))->data;
     queue_remove(&g_queueReady);
-    return result;
+    return removedProcess;
 }
 
 static void addBlockedProcess(PCB_t * process)

@@ -44,12 +44,15 @@ void queue_remove(Queue_t * queue)
     }
 
     queue->size--;
-    //TODO: should we do this?
     free(temp);
 }
 
 void * queue_front(Queue_t * queue){
     return queue->pFront;
+}
+
+void * queue_rear(Queue_t * queue){
+    return queue->pRear;
 }
 
 uint8_t queue_isEmpty(Queue_t * queue)
