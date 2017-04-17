@@ -17,7 +17,7 @@ asm_saveContext
 
 asm_loadContext
 	; Incr SP -> TOS contains LR we don't need anymore
-	ADD R13, R13, #4
+	;ADD R13, R13, #4
 	; Then load the new process's User mode state and return to it.
 	LDMIA	R0!, {R12, R14} 			; Put interrupted process's CPSR
 	MSR		SPSR_fsxc, R12 				; and restart address in SPSR_irq and R14_irq

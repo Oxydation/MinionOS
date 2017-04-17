@@ -9,6 +9,7 @@
 #include <kernel/hal/timer/systemTimer.h>
 #include "global/types.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
+#include "kernel/systemModules/processManagement/processManager.h"
 
 void process1(void);
 void process2(void);
@@ -30,8 +31,12 @@ int main(void)
 
     systemTimer_start();
 
-    //scheduler_startProcess(&process1);
-    //scheduler_startProcess(&process2);
+    int * var = &process1;
+    int * var2 = & process2;
+
+    processManager_loadProcess(0x80600000, 0x80601000);
+    //processManager_loadProcess(0x80602000, 0x80603000);
+
     scheduler_start();
 
     modeSwitch_switchToUserMode();
@@ -42,38 +47,39 @@ int main(void)
     return 0;
 }
 
-#pragma CODE_SECTION(process1,".process1")
+#pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x81FF0000
 void process1(void)
 {
-    volatile long i = 0;
-    while (1)
-    {
-        gpio_digitalWrite(GPIO_USR1_LED, LOW);
-        for (i = 0; i < 2000000L; i++)
+    volatile unsigned long i = 0;
+    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
+
+    while(1){
+        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+        for (i = 0; i < 400000L; i++)
         {
 
         }
-        gpio_digitalWrite(GPIO_USR1_LED, HIGH);
-        for (i = 0; i < 2000000L; i++)
+        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+        for (i = 0; i < 400000L; i++)
         {
 
         }
     }
 }
 
-#pragma CODE_SECTION(process2,".process2")
+#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x82FF1000
 void process2(void)
 {
     volatile long i = 0;
     while (1)
     {
         gpio_digitalWrite(GPIO_USR2_LED, LOW);
-        for (i = 0; i < 2000000L; i++)
+        for (i = 0; i < 200000L; i++)
         {
 
         }
         gpio_digitalWrite(GPIO_USR2_LED, HIGH);
-        for (i = 0; i < 2000000L; i++)
+        for (i = 0; i < 200000L; i++)
         {
 
         }
