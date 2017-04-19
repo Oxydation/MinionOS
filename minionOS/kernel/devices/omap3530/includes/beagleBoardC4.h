@@ -9,7 +9,9 @@
 #ifndef BEAGLEBOARDC4_H_
 #define BEAGLEBOARDC4_H_
 
-#define GPIO_USR1_LED GPIO_150 // GPIO 150
-#define GPIO_USR2_LED GPIO_149 // GPIO 149
+#include "gpio.h"
+
+#define GPIO_USR1_LED GPIO_149 // GPIO 149
+#define GPIO_USR2_LED GPIO_150 // GPIO 150
 
 #endif /* BEAGLEBOARDC4_H_ */

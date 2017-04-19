@@ -1,0 +1,45 @@
+/* Code Style Convention */
+/*************************/
+
+
+/* moduleA.h */
+#define I_AM_A_DEFINITION 10020020
+void moduleA_manySuchFunction(uint8_t amplificationSteering);
+static uint8_t myPrivateFunction(void)
+
+/* moduleA.c*/
+#include "directoryA/moduleA.h"
+
+typedef enum{
+	BUNT,
+	KLEIN,
+} Merkmal_t;
+
+typedef struct Haus {
+	uint8_t size;
+	Merkmal_t merkmal; 
+} Haus_t;
+
+typedef void (*MyFunctionPointer_t)(uint32_t);
+
+static uint8_t g_myGlobalVariable;
+
+void moduleA_manySuchFunction(uint8_t amplificationSteering){
+	uint32_t myLocalVariable = 0;
+	
+	if(myLocalVariable > 0){
+		myPrivateFunction(myLocalVariable);
+	}	
+}
+
+static uint8_t myPrivateFunction(void){
+	return I_AM_A_DEFINITION;
+}
+
+
+/*********************/
+/* Files and Modules */
+/*********************/
+
+Directories (Folders/Modules): ichBinEinOrdner
+Files (.h und .c): moduleA.c moduleA.h

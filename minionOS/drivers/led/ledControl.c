@@ -5,11 +5,11 @@
  *      Author: Arno Riedmann
  */
 
-#include "drivers/led/ledControl.h"
-#include "global/Common.h"
-#include "kernel/hal/gpio/GPIO.h"
-#include "kernel/devices/omap3530/includes/GPIO.h"
-#include "kernel/devices/omap3530/includes/BeagleBoardC4.h"
+#include "ledControl.h"
+#include "global/types.h"
+#include "kernel/hal/gpio/gpio.h"
+#include "kernel/devices/omap3530/includes/gpio.h"
+#include "kernel/devices/omap3530/includes/beagleBoardC4.h"
 
 #define LED_1   1
 #define LED_2   2
@@ -28,11 +28,11 @@ void ledControl_activateLed(bool turnOn, int led) {
     default:
         return;
     }
-    pinMode(pin, OUTPUT);
+    gpio_pinMode(pin, OUTPUT);
     if (turnOn) {
-        digitalWrite(pin, HIGH);
+        gpio_digitalWrite(pin, HIGH);
     } else {
-        digitalWrite(pin, LOW);
+        gpio_digitalWrite(pin, LOW);
     }
 }
 

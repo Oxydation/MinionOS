@@ -77,6 +77,8 @@ SECTIONS
    	.stacks > DDR0 {
        . = align(4);
        . = . + stackSize;
+       __stackUsr = .; /* User stack */
+       . = . + stackSize;
        __stackIrq = .; /* IRQ Interrupt Stack */
        . = . + stackSize;
         __stackFiq = .; /* FIQ Interrupt Stack */
