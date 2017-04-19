@@ -11,7 +11,7 @@
 #pragma SWI_ALIAS(syscall, LED_SYSCALL);
 static int syscall(SysCall_Args args);
 
-int syscalls_controlLed(bool turnOn, int led) {
+int syscalls_enableLed(bool turnOn, int led) {
     SysCall_Args args = { LED_SYSCALL, turnOn, led };
     syscall(args);
 }

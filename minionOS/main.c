@@ -40,12 +40,12 @@ void timerHandler2(void)
 {
     if (g_on2)
     {
-        gpio_digitalWrite(GPIO_USR2_LED, HIGH);
+        gpio_digitalWrite(GPIO_USR1_LED, HIGH);
         g_on2 = FALSE;
     }
     else
     {
-        gpio_digitalWrite(GPIO_USR2_LED, LOW);
+        gpio_digitalWrite(GPIO_USR1_LED, LOW);
         g_on2 = TRUE;
     }
 
@@ -59,8 +59,8 @@ int main(void)
     interrupts_initIrq();
 
     // Set output direction
+    gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
-    gpio_pinMode(GPIO_USR2_LED, OUTPUT);
 
 #ifdef USE_SYSTEMTMR
     systemTimer_init(1000);
