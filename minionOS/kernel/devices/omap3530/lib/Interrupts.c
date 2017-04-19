@@ -6,7 +6,7 @@
  *  Description: Device dependent implementation of interrupt stuff.
  */
 #include <kernel/devices/omap3530/includes/Interrupts.h>
-#include "kernel/hal/interrupts/Interrupts.h"
+#include <kernel/hal/interrupts/interrupts.h>
 #include <string.h>
 #include "kernel/common/Common.h"
 #include "kernel/devices/omap3530/includes/Omap3530.h"
