@@ -4,17 +4,17 @@
  *  Created on: 19.04.2017
  *      Author: Jasmin
  */
-#include "applications/syscallApi.h"
-#include "kernel/systemModules/syscalls/arguments.h"
-#include "kernel/systemModules/syscalls/syscallNumbers.h"
+#include <applications/sysCallApi.h>
+#include <kernel/systemModules/sysCalls/arguments.h>
+#include <kernel/systemModules/sysCalls/sysCallNumbers.h>
 
 #define UNUSED_SWI_NUMBER 0
 
-#pragma SWI_ALIAS(syscall, UNUSED_SWI_NUMBER);
-static int syscall(SysCall_Args args);
+#pragma SWI_ALIAS(sysCall, UNUSED_SWI_NUMBER);
+static int sysCall(SysCallArgs_t args);
 
-int syscalls_enableLed(bool turnOn, int led) {
-    SysCall_Args args = { LED_SYSCALL, turnOn, led };
-    syscall(args);
+int sysCalls_enableLed(bool turnOn, int led) {
+    SysCallArgs_t args = { LED_SYSCALL, turnOn, led };
+    sysCall(args);
 }
 

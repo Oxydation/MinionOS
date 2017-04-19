@@ -10,6 +10,6 @@
 
 #include "arguments.h"
 
-void dispatcher_dispatch(SysCall_Args args);
+void dispatcher_dispatch(SysCallArgs_t args);
 
 #endif /* KERNEL_SYSTEMMODULES_SYSCALLS_DISPATCHER_H_ */

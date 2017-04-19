@@ -13,6 +13,6 @@ typedef struct {
     int a;
     int b;
     int c;
-} SysCall_Args;
+} SysCallArgs_t;
 
 #endif /* KERNEL_SYSTEMMODULES_SYSCALLS_ARGUMENTS_H_ */

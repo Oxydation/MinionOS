@@ -11,6 +11,6 @@
 #define LED_0   0
 #define LED_1   1
 
-int syscalls_enableLed(bool turnOn, int led);
+int sysCalls_enableLed(bool turnOn, int led);
 
 #endif /* APPLICATIONS_SYSCALLAPI_H_ */
