@@ -8,6 +8,8 @@
 #ifndef APPLICATIONS_SYSCALLAPI_H_
 #define APPLICATIONS_SYSCALLAPI_H_
 #include <stdbool.h>
+#define LED_0   0
+#define LED_1   1
 
 int syscalls_controlLed(bool turnOn, int led);
 
