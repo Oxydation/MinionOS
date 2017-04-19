@@ -1,5 +1,5 @@
 /*
- * Interrupts.h
+ * interrupts.h
  *
  *  Created on: 18 Mar 2017
  *      Author: Mathias
@@ -24,6 +24,5 @@ extern void disable_irq_source(uint8_t irq_source);
 void disable_all_interrupt_sources();
 uint8_t get_irq_source_state(uint8_t irq_source);
 void dispatch_interrupts(void);
-
 
 #endif /* INCLUDES_INTERRUPTS_H_ */

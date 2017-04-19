@@ -1,17 +1,16 @@
 /*
- * Interrupts.c
+ * interrupts.c
  *
  *  Created on: 18 Mar 2017
  *      Author: Mathias
  *  Description: Provides common interrupt initialization and handling.
  *  Important information: The stack must be set up to handle interrupts.
  */
-
-#include <kernel/devices/omap3530/includes/Interrupts.h>
-#include <kernel/systemModules/syscalls/SysCallDispatcher.h>
-#include <stdio.h>
-#include "kernel/hal/interrupts/Interrupts.h"
+#include "kernel/hal/interrupts/interrupts.h"
+#include "kernel/systemModules/syscalls/dispatcher.h"
+#include "kernel/devices/omap3530/includes/Interrupts.h"
 #include "kernel/common/Common.h"
+#include <stdio.h>
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t gInterruptHandlers[NROF_IR_VECTORS] = { 0 };
@@ -19,16 +18,14 @@ static InterruptHandler_t gInterruptHandlers[NROF_IR_VECTORS] = { 0 };
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
  */
-void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr)
-{
+void register_interrupt_handler(InterruptHandler_t handler, uint8_t irq_nr) {
     enable_irq_source(irq_nr);
     gInterruptHandlers[irq_nr] = handler; // set handler at given irq
 }
 
 #pragma SET_CODE_SECTION(".ISR")
 #pragma INTERRUPT (isr_irq, IRQ)
-void isr_irq(void)
-{
+void isr_irq(void) {
     // Disable further interrupts
     //_disable_interrupts();
     //_disable_IRQ();
@@ -52,48 +49,31 @@ void isr_irq(void)
 }
 
 #pragma INTERRUPT (isr_reset, RESET)
-void isr_reset(void)
-{
+void isr_reset(void) {
 
-}
-
-static unsigned int get_swi_number(void) {
-    __asm(" LDR R0,[R9,#-4]");
-    __asm(" BX LR");
 }
 
 #pragma INTERRUPT (isr_swi, SWI)
-void isr_swi(SysCall_Args args)
-{
-    __asm(" MOV R9,R14");
-    unsigned int swi_number  = get_swi_number() & 0xFF;
-    syscalls_dispatchSysCall(swi_number, args);
-// Four arguments can be passed through R0 - R3
-// Structures uses the R0 (with address)
-// Float uses two registers
-    __asm(" MOVS PC,R14;");
+void isr_swi(SysCall_Args args) {
+    dispatcher_dispatch(args);
 }
 
 #pragma INTERRUPT (isr_fiq, FIQ)
-void isr_fiq(void)
-{
+void isr_fiq(void) {
 
 }
 
 #pragma INTERRUPT (isr_undef, UDEF)
-void isr_undef(void)
-{
+void isr_undef(void) {
 
 }
 #pragma INTERRUPT (isr_undef, DABT)
-void isr_dabt(void)
-{
+void isr_dabt(void) {
 
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
-void isr_pabt(void)
-{
+void isr_pabt(void) {
 
 }
 
@@ -102,17 +82,14 @@ void isr_pabt(void)
  * If a handler for the given IRQ is set, then the handler will be called.
  */
 
-void dispatch_interrupts(void)
-{
+void dispatch_interrupts(void) {
     uint8_t pendingIrqs[NROF_IR_VECTORS];
     // get pending irqs and store in pendingIrq bool array
 
     get_pending_irqs(pendingIrqs);
     int i = 0;
-    for (i = 0; i < NROF_IR_VECTORS; i++)
-    {
-        if (pendingIrqs[i])
-        {
+    for (i = 0; i < NROF_IR_VECTORS; i++) {
+        if (pendingIrqs[i]) {
             InterruptHandler_t handler = gInterruptHandlers[i];
             if (handler != 0)
                 handler(); // call handler if set

@@ -1,11 +1,11 @@
 /*
- * LedControl.c
+ * ledControl.c
  *
  *  Created on: 05.04.2017
  *      Author: Arno Riedmann
  */
 
-#include "LedControl.h"
+#include "drivers/led/ledControl.h"
 #include "global/Common.h"
 #include "kernel/hal/gpio/GPIO.h"
 #include "kernel/devices/omap3530/includes/GPIO.h"
@@ -16,7 +16,7 @@
 #define LED_1_PIN GPIO_USR1_LED
 #define LED_2_PIN GPIO_USR2_LED
 
-void led_control(bool turnOn, int led) {
+void ledControl_activateLed(bool turnOn, int led) {
     uint8_t pin;
     switch (led) {
     case LED_1:
@@ -28,9 +28,8 @@ void led_control(bool turnOn, int led) {
     default:
         return;
     }
-
+    pinMode(pin, OUTPUT);
     if (turnOn) {
-        pinMode(pin, OUTPUT);
         digitalWrite(pin, HIGH);
     } else {
         digitalWrite(pin, LOW);

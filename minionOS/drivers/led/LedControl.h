@@ -1,5 +1,5 @@
 /*
- * LedControl.h
+ * ledControl.h
  *
  *  Created on: 05.04.2017
  *      Author: Arno Riedmann
@@ -10,6 +10,6 @@
 
 #include <stdbool.h>
 
-void led_control(bool turnOn, int led);
+void ledControl_activateLed(bool turnOn, int led);
 
 #endif /* DRIVERS_LED_LEDCONTROL_H_ */
