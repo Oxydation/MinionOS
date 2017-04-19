@@ -10,10 +10,10 @@
 #include <kernel/common/mmio.h>
 #include <kernel/devices/omap3530/includes/interrupts.h>
 #include <kernel/hal/interrupts/interrupts.h>
+#include <kernel/systemModules/sysCalls/arguments.h>
+#include <kernel/systemModules/sysCalls/dispatcher.h>
 #include <stdio.h>
 #include "global/types.h"
-#include "kernel/systemModules/syscalls/dispatcher.h"
-#include "kernel/systemModules/syscalls/arguments.h"
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
@@ -69,7 +69,7 @@ void isr_reset(void) {
 }
 
 #pragma INTERRUPT (isr_swi, SWI)
-void isr_swi(SysCall_Args args) {
+void isr_swi(SysCallArgs_t args) {
     dispatcher_dispatch(args);
 }
 
