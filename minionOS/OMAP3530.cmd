@@ -25,7 +25,12 @@ MEMORY
     IVASHL1PRAM:    o = 0x5CE00000  l = 0x00008000  /* 32kB Shared IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x5CF04000  l = 0x0000C000  /* 48kB Shared IVA L1 Data RAM */
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
-    DDR0:           o = 0x80000000  l = 0x40000000  /* 1GB external DDR Bank 0 */
+    DDR0_0S:        o = 0x80000000  l = 0x00500000  /* 5 MB for operating system */
+    DDR0_PT:		o = 0x80500000  l = 0x00200000  /* 2 MB for page tables (master & L2) */
+ 	DDR0_T1:		o = 0x80700000	l = 0x00100000	/* 1 MB for task 1 */
+ 	DDR0_T2:		o = 0x80800000	l = 0x00100000	/* 1 MB for task 2 */
+ 	DDR0_T3:		o = 0x80900000	l = 0x00100000	/* 1 MB for task 3 */
+ 	DDR0_REM:		o = 0x80A00000	l = 0x3F600000	/* 1014 MB DDR0 remaining */
     DDR1:           o = 0xC0000000  l = 0x40000000  /* 1GB external DDR Bank 1 */
 
 #else             /* DSP memory map */
@@ -44,7 +49,11 @@ stackSize = 0x40000; // 1048kB
 SECTIONS
 {
 	.intvecs	   >  INTVEC
-	.ISR		   > SRAM
+	.ISR		   >  SRAM
+	.DDR0_PT	   >  DDR0_PT
+	.DDR0_T1	   >  DDR0_T1
+	.DDR0_T2       >  DDR0_T2
+	.DDR0_T3	   >  DDR0_T3
 #ifndef DSP_CORE   /* ARM memory map */
 
     .text          >  DDR0
