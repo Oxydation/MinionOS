@@ -20,8 +20,8 @@ int main(void)
     interrupts_initIrq();
 
     // Set output direction
+    gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
-    gpio_pinMode(GPIO_USR2_LED, OUTPUT);
 
     systemTimer_init(1000);
     scheduler_init();

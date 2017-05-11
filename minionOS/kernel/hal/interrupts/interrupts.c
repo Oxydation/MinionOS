@@ -10,6 +10,8 @@
 #include <kernel/common/mmio.h>
 #include <kernel/devices/omap3530/includes/interrupts.h>
 #include <kernel/hal/interrupts/interrupts.h>
+#include <kernel/systemModules/sysCalls/arguments.h>
+#include <kernel/systemModules/sysCalls/dispatcher.h>
 #include <stdio.h>
 #include "global/types.h"
 #include "kernel/systemModules/processManagement/contextSwitch.h"
@@ -21,26 +23,22 @@ static PCB_t pcb;
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
  */
-void interrupts_registerHandler(InterruptHandler_t handler, uint8_t irq_nr)
-{
+void interrupts_registerHandler(InterruptHandler_t handler, uint8_t irq_nr) {
     interrupts_enableIrqSource(irq_nr);
     g_interruptHandlers[irq_nr] = handler; // set handler at given irq
 }
 
-void enable_interrupts()
-{
+void enable_interrupts() {
     _enable_interrupts();
 }
 
-void disable_interrupts()
-{
+void disable_interrupts() {
     _disable_interrupts();
 }
 
 #pragma SET_CODE_SECTION(".ISR")
 #pragma INTERRUPT (isr_irq, IRQ)
-void isr_irq(void)
-{
+void isr_irq(void) {
     __asm(" ADD SP, SP, #8 ");
 
     // 1. Step: Remember LR (automatically done by compiler, including R0-R3 & R12)
@@ -68,39 +66,30 @@ void isr_irq(void)
 }
 
 #pragma INTERRUPT (isr_reset, RESET)
-void isr_reset(void)
-{
+void isr_reset(void) {
 
 }
 
 #pragma INTERRUPT (isr_swi, SWI)
-void isr_swi(void)
-{
-// Four arguments can be passed through R0 - R3
-// Structures uses the R0 (with address)
-// Float uses two registers
-    __asm(" MOVS PC,R14;");
+void isr_swi(SysCallArgs_t args) {
+    dispatcher_dispatch(args);
 }
 
 #pragma INTERRUPT (isr_fiq, FIQ)
-void isr_fiq(void)
-{
+void isr_fiq(void) {
 
 }
 
 #pragma INTERRUPT (isr_undef, UDEF)
-void isr_undef(void)
-{
+void isr_undef(void) {
 
 }
 #pragma INTERRUPT (isr_undef, DABT)
-void isr_dabt(void)
-{
+void isr_dabt(void) {
 
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
-void isr_pabt(void)
-{
+void isr_pabt(void) {
 
 }
