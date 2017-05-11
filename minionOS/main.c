@@ -8,6 +8,7 @@
 #include <kernel/hal/interrupts/interrupts.h>
 #include <kernel/hal/timer/systemTimer.h>
 #include <kernel/hal/timer/timer.h>
+#include <kernel/devices/omap3530/includes/mmu.h>
 #include "global/types.h"
 
 #define USE_SYSTEMTMR 1 // uncomment if you want to test system timer; comment if you want to use bare timers
@@ -55,6 +56,7 @@ void timerHandler2(void)
 }
 int main(void)
 {
+    mmu_initAllPT();
     _disable_interrupts();
     interrupts_initIrq();
 

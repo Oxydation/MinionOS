@@ -25,7 +25,7 @@ MEMORY
     IVASHL1PRAM:    o = 0x5CE00000  l = 0x00008000  /* 32kB Shared IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x5CF04000  l = 0x0000C000  /* 48kB Shared IVA L1 Data RAM */
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
-    DDR0_0S:        o = 0x80000000  l = 0x00500000  /* 5 MB for operating system */
+    DDR0_OS:        o = 0x80000000  l = 0x00500000  /* 5 MB for operating system */
     DDR0_PT:		o = 0x80500000  l = 0x00200000  /* 2 MB for page tables (master & L2) */
  	DDR0_T1:		o = 0x80700000	l = 0x00100000	/* 1 MB for task 1 */
  	DDR0_T2:		o = 0x80800000	l = 0x00100000	/* 1 MB for task 2 */
@@ -56,18 +56,18 @@ SECTIONS
 	.DDR0_T3	   >  DDR0_T3
 #ifndef DSP_CORE   /* ARM memory map */
 
-    .text          >  DDR0
-    .stack         >  DDR0
-    .bss           >  DDR0
-    .cio           >  DDR0
-    .const         >  DDR0
-    .data          >  DDR0
-    .switch        >  DDR0
-    .sysmem        >  DDR0
-    .far           >  DDR0
-    .args          >  DDR0
-    .ppinfo        >  DDR0
-    .ppdata        >  DDR0
+    .text          >  DDR0_OS
+    .stack         >  DDR0_OS
+    .bss           >  DDR0_OS
+    .cio           >  DDR0_OS
+    .const         >  DDR0_OS
+    .data          >  DDR0_OS
+    .switch        >  DDR0_OS
+    .sysmem        >  DDR0_OS
+    .far           >  DDR0_OS
+    .args          >  DDR0_OS
+    .ppinfo        >  DDR0_OS
+    .ppdata        >  DDR0_OS
   
     /* TI-ABI or COFF sections */
     .pinit         >  SRAM
@@ -83,7 +83,7 @@ SECTIONS
     .c6xabi.extab  >  SRAM
 
     /* Stacks */
-   	.stacks > DDR0 {
+   	.stacks > DDR0_OS {
        . = align(4);
        . = . + stackSize;
        __stackUsr = .; /* User stack */

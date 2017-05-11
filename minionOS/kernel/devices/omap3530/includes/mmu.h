@@ -44,24 +44,9 @@ typedef struct {
     PageTable_t* PT;            // is a pointer to the Pagetable in which the region resides
 } Region_t;
 
-/* Page tables */
-/* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
-PageTable_t masterPT = {0x00000000, 0x00500000, 0x00500000, MASTER, 3};
-PageTable_t systemPT = {0x00000000, 0x00504000, 0x00500000, COARSE, 3};
-PageTable_t task1PT =  {0x00700000, 0x00504400, 0x00500000, COARSE, 3};
-PageTable_t task2PT =  {0x00700000, 0x00504800, 0x00500000, COARSE, 3};
-PageTable_t task3PT =  {0x00700000, 0x00504c00, 0x00500000, COARSE, 3};
-
-/* Region tables */
-/* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
-Region_t kernelRegion = {0x00000000, 4, 1280, RWNA, WT, 0x80000000, &systemPT};
-Region_t pageTableRegion = {0x00500000, 4, 512, RWRW, WT, 0x80500000, &systemPT};
-Region_t t1Region = {0x00700000, 4, 256, RWRW, WT, 0x80700000, &task1PT};
-Region_t t2Region = {0x00700000, 4, 256, RWRW, WT, 0x80800000, &task2PT};
-Region_t t3Region = {0x00700000, 4, 256, RWRW, WT, 0x80900000, &task3PT};
-
 /* functions */
-void mmu_initPT(PageTable_t* pt);
+void mmu_initAllPT(void);
+int8_t mmu_initPT(PageTable_t* pt);
 uint8_t mmu_mapRegion(Region_t* region);
 void mmu_mapSectionTableRegion(Region_t* region);
 void mmu_mapCoarseTableRegion(Region_t* region);
