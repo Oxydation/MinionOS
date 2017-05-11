@@ -12,10 +12,8 @@
 
 typedef uint8_t ProcessId_t;
 
-typedef struct PCB
+struct Register
 {
-    uint32_t cpsr;
-    uint32_t restartAddress;
     uint32_t R0;
     uint32_t R1;
     uint32_t R2;
@@ -31,6 +29,13 @@ typedef struct PCB
     uint32_t R12;
     uint32_t R13;   // SP
     uint32_t R14;   // LR
+};
+
+typedef struct PCB
+{
+    uint32_t cpsr;
+    uint32_t lr;
+    struct Register registers;
 
     ProcessId_t processId;
 } PCB_t;

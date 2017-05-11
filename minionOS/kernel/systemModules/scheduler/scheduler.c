@@ -11,7 +11,7 @@
 #include "global/queue/queue.h"
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
 
-#define SCHEDULER_INTERVAL_MS 3000 // use 50 or so
+#define SCHEDULER_INTERVAL_MS 300 // use 50 or so
 
 PCB_t g_processes[MAX_ALLOWED_PROCESSES];
 ProcessId_t nextProcessId = 0;
@@ -21,7 +21,7 @@ Queue_t g_queueReady;
 
 SubscriptionId_t g_systemTimerId;
 
-static void handleSchedulerTick(void);
+static void handleSchedulerTick(PCB_t * currentPcb);
 static void initSchedulerTimer(uint32_t interval_ms);
 static void addReadyProcess(PCB_t * process);
 static PCB_t * removeReadyProcess();
@@ -47,12 +47,11 @@ void scheduler_stop(void)
 }
 
 void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
-                           uint32_t cpsr)
+                            uint32_t cpsr)
 {
     // 1. Step: Create PCB
-    PCB_t newProcessPcb = { .restartAddress = startAddress, .processId =
-                                    nextProcessId,
-                            .R13 = stackPointer, .cpsr = cpsr };
+    PCB_t newProcessPcb = { .lr = startAddress, .processId = nextProcessId,
+                            .registers.R13 = stackPointer, .cpsr = cpsr };
     // 2. Step store into pcb array
     g_processes[nextProcessId] = newProcessPcb;
 
@@ -60,20 +59,28 @@ void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
     addReadyProcess(&g_processes[nextProcessId++]);
 }
 
-static void handleSchedulerTick(void)
+static void handleSchedulerTick(PCB_t * currentPcb)
 {
-    if(g_queueReady.size > 0 && g_currentProcess == NULL){
+    if (g_queueReady.size > 0 && g_currentProcess == NULL)
+    {
         g_currentProcess = getNextProcess();
         asm_loadContext(g_currentProcess);
-    }else if(g_queueReady.size > 0 && g_currentProcess != NULL){
+    }
+    else if (g_queueReady.size > 0 && g_currentProcess != NULL)
+    {
         // Save old process and add to ready queue
-        //asm_saveContext(g_currentProcess);
+        g_currentProcess->lr = currentPcb->lr;
+        g_currentProcess->cpsr = currentPcb->cpsr;
+        g_currentProcess->registers = currentPcb->registers;
+
         addReadyProcess(g_currentProcess);
 
         // Load new process
         g_currentProcess = getNextProcess();
         asm_loadContext(g_currentProcess);
-    }else if(g_queueReady.size == 0){
+    }
+    else if (g_queueReady.size == 0)
+    {
         // do nothing
     }
 }

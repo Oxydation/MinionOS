@@ -12,7 +12,7 @@
 
 #define MAX_CALLBACKS 30
 
-static void systemtimer_handler(void);
+static void systemtimer_handler(PCB_t * currentPcb);
 
 typedef struct
 {
@@ -73,7 +73,7 @@ void systemTimer_disableSubscription(SubscriptionId_t subscriptionId){
     g_registeredCallbacks[subscriptionId].enabled = FALSE;
 }
 
-static void systemtimer_handler(void)
+static void systemtimer_handler(PCB_t * currentPcb)
 {
     g_current_ms++;
     int i = 0;
@@ -84,7 +84,7 @@ static void systemtimer_handler(void)
                         >= g_registeredCallbacks[i].interval_ms)
         {
             g_registeredCallbacks[i].lastCallbackTime = g_current_ms;
-            g_registeredCallbacks[i].callback();
+            g_registeredCallbacks[i].callback(currentPcb);
         }
     }
 

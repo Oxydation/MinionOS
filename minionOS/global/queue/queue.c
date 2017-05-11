@@ -31,7 +31,6 @@ void queue_remove(Queue_t * queue)
     struct Node* temp = queue->pFront;
     if (queue->pFront == NULL)
     {
-        printf("Queue is Empty\n");
         return;
     }
     if (queue->pFront == queue->pRear)

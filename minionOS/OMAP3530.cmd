@@ -26,8 +26,8 @@ MEMORY
     IVASHL1DRAM:    o = 0x5CF04000  l = 0x0000C000  /* 48kB Shared IVA L1 Data RAM */
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
     DDR0:           o = 0x80000000  l = 0x00600000  /* 6MB OS */
-    DDR0_PROC1:		o = 0x80600000	l = 0x00002000  /* 8kB Process 1 */
-    DDR0_PROC2:		o = 0x80602000	l = 0x00002000  /* 8kB Process 2 */
+    DDR0_PROC1:		o = 0x80600000	l = 0x00002000  /* 16kB Process 1 */
+    DDR0_PROC2:		o = 0x80602000	l = 0x00002000  /* 16kB Process 2 */
     DDR1:           o = 0xC0000000  l = 0x40000000  /* 1GB external DDR Bank 1 */
 
 #else             /* DSP memory map */

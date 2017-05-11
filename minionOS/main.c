@@ -26,17 +26,19 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
+    processManager_loadProcess(&process1, 0x80601500); // 0x80600000
+    processManager_loadProcess(&process2, 0x80603500); // 0x80604000
+
+    //processManager_startFirstProcess();
+
     _enable_interrupts();
     _enable_IRQ();
 
     systemTimer_start();
-
-    processManager_loadProcess(&process1, 0x80601000); // 0x80600000
-    processManager_loadProcess(&process2, 0x80603000); // 0x80602000
-
     scheduler_start();
 
     modeSwitch_switchToUserMode();
+
     while (1)
     {
 
@@ -44,42 +46,26 @@ int main(void)
     return 0;
 }
 
-#pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x81FF0000
+#pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    while(1){
+    while (1)
+    {
         bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-        for (i = 0; i < 400000L; i++)
-        {
-
-        }
-        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-        for (i = 0; i < 400000L; i++)
-        {
-
-        }
     }
 }
 
-#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x82FF1000
+#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80604000
 void process2(void)
 {
     volatile unsigned long i = 0;
-       uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR2_LED) + GPIO_DATAOUT);
+    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-       while(1){
-           bitSet(*out, GPIO_PIN_POS(GPIO_USR2_LED));
-           for (i = 0; i < 400000L; i++)
-           {
-
-           }
-           bitClear(*out, GPIO_PIN_POS(GPIO_USR2_LED));
-           for (i = 0; i < 400000L; i++)
-           {
-
-           }
-       }
+    while (1)
+    {
+        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    }
 }
