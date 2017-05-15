@@ -57,6 +57,7 @@ void timerHandler2(void)
 int main(void)
 {
     mmu_initAllPT();
+    mmu_mapAllRegions();
     _disable_interrupts();
     interrupts_initIrq();
 

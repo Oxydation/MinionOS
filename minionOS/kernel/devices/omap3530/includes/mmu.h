@@ -10,9 +10,14 @@
 
 #include <inttypes.h>
 
+/* page table types */
 #define FAULT   0
 #define COARSE  1
 #define MASTER  2
+
+/* page sizes */
+#define SMALL_PAGE  0   /* 4 KB */
+#define LARGE_PAGE  1   /* 64 KB */
 
 /* access permissions */
 #define NANA    0x0
@@ -36,8 +41,8 @@ typedef struct {
 
 typedef struct {
     uint32_t vAddress;          // is the starting address of the region in virtual memory
-    uint8_t pageSize;           // is the size of a virtual page
-    uint8_t numPages;           // is the number of pages in the region
+    uint16_t pageSize;          // is the size of a virtual page
+    uint16_t numPages;          // is the number of pages in the region
     uint8_t AP;                 // is the region access permissions
     uint8_t CB;                 // is the cache and write buffer attributes for the region
     uint32_t pAddress;          // is the starting address of the region in physical memory
@@ -47,9 +52,11 @@ typedef struct {
 /* functions */
 void mmu_initAllPT(void);
 int8_t mmu_initPT(PageTable_t* pt);
-uint8_t mmu_mapRegion(Region_t* region);
+
+void mmu_mapAllRegions(void);
+void mmu_mapRegion(Region_t* region);
 void mmu_mapSectionTableRegion(Region_t* region);
-void mmu_mapCoarseTableRegion(Region_t* region);
+int8_t mmu_mapCoarseTableRegion(Region_t* region);
 uint8_t mmu_attachPT(PageTable_t* pt);
 void mmu_domainAccessSet(uint8_t value, uint16_t mask);
 void controlSet(uint8_t value, uint16_t mask);
