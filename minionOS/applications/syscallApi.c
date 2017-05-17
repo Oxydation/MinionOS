@@ -4,9 +4,9 @@
  *  Created on: 19.04.2017
  *      Author: Jasmin
  */
-#include <applications/sysCallApi.h>
-#include <kernel/systemModules/sysCalls/arguments.h>
-#include <kernel/systemModules/sysCalls/sysCallNumbers.h>
+#include <applications/syscallApi.h>
+#include <kernel/systemModules/syscalls/arguments.h>
+#include <kernel/systemModules/syscalls/syscallNumbers.h>
 
 #define UNUSED_SWI_NUMBER 0
 
