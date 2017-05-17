@@ -40,9 +40,10 @@ void disable_interrupts() {
 #pragma SET_CODE_SECTION(".ISR")
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void) {
-    __asm(" ADD SP, SP, #8 ");
 
     // 1. Step: Remember LR (automatically done by compiler, including R0-R3 & R12)
+    __asm(" ADD SP, SP, #8 ");
+
     // 2. Step: Save previous context into PCB
     asm_saveContext(&g_pcb);
 
@@ -59,9 +60,10 @@ void isr_irq(void) {
 
     // 4. Step: Restore registers (R0-R4 & R1 are automatically restored by compiler)
     // 5. Step: Restore LR (automatically by compiler)
-    //Set SP back 5 bytes to pop {R0-R4, R12, LR} from stack
-    //__asm(" SUB SP, SP, #28 ");
+
+    // Correct SP to be the same after the interrupt
     __asm(" ADD SP, SP, #4 ");
+
     // 6. Step Continuing with last user process (auto done)
     asm_loadContext(&g_pcb);
 }

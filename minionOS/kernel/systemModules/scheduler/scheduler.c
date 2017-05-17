@@ -7,11 +7,10 @@
 #include <stdio.h>
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/hal/timer/systemTimer.h"
-#include "kernel/systemModules/processManagement/contextSwitch.h"
 #include "global/queue/queue.h"
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
 
-#define SCHEDULER_INTERVAL_MS 50 // use 50 or so
+#define SCHEDULER_INTERVAL_MS 50
 
 PCB_t g_processes[MAX_ALLOWED_PROCESSES];
 ProcessId_t nextProcessId = 1;
@@ -66,7 +65,6 @@ static void handleSchedulerTick(PCB_t * currentPcb)
         g_currentProcess = getNextProcess();
         copyPcb(g_currentProcess, currentPcb);
         currentPcb->processId = g_currentProcess->processId;
-        //asm_loadContext(g_currentProcess);
     }
     else if (g_queueReady.size > 0 && g_currentProcess != NULL)
     {
@@ -78,8 +76,6 @@ static void handleSchedulerTick(PCB_t * currentPcb)
         g_currentProcess = getNextProcess();
         copyPcb(g_currentProcess, currentPcb);
         currentPcb->processId = g_currentProcess->processId;
-
-        //asm_loadContext(g_currentProcess);
     }
     else if (g_queueReady.size == 0)
     {

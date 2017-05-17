@@ -26,8 +26,8 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    processManager_loadProcess(&process1+0x4, 0x80607500); // 0x80600000
-    processManager_loadProcess(&process2+0x4, 0x8060FF00); // 0x80604000
+    processManager_loadProcess(&process1+0x4, 0x80607500);
+    processManager_loadProcess(&process2+0x4, 0x8060FF00);
 
     //processManager_startFirstProcess();
 
@@ -58,7 +58,7 @@ void process1(void)
     }
 }
 
-#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80604000
+#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80608000
 void process2(void)
 {
     volatile unsigned long i = 0;
