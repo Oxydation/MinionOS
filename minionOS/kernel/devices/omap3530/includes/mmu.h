@@ -57,7 +57,9 @@ void mmu_mapAllRegions(void);
 void mmu_mapRegion(Region_t* region);
 void mmu_mapSectionTableRegion(Region_t* region);
 int8_t mmu_mapCoarseTableRegion(Region_t* region);
-uint8_t mmu_attachPT(PageTable_t* pt);
+
+void mmu_attachAllPT(void);
+int8_t mmu_attachPT(PageTable_t* pt);
 void mmu_domainAccessSet(uint8_t value, uint16_t mask);
 void controlSet(uint8_t value, uint16_t mask);
 

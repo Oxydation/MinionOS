@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 void mmu_writeValueToPTE(uint32_t* PTEptr, uint32_t value, uint16_t nrOfEntries);
+void mmu_setTTB(uint32_t* ttb);
 
 /* Page tables */
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
@@ -169,8 +170,46 @@ int8_t mmu_mapCoarseTableRegion(Region_t* region) {
     return 0;
 }
 
-uint8_t mmu_attachPT(PageTable_t* pt) {
+void mmu_attachAllPT(void) {
+    mmu_attachPT(&masterPT);
+    mmu_attachPT(&systemPT);
+    mmu_attachPT(&task1PT);
+}
 
+int8_t mmu_attachPT(PageTable_t* pt) {
+
+    uint32_t* ttb;                          /* translation table base address */
+    uint32_t PTE;
+    uint32_t offset;
+    uint32_t * pEntry;
+
+    ttb = (uint32_t*)pt->masterPtAddress;   /* read translation table base address from PT */
+    offset = (pt->vAddress)>>20;            /* determine PTE from vAddress -> virtual address is divided by 1 MB
+                                               by shifting the virtual address right by 20 bits. Adding this offset
+                                               to the master L1 base address generates a pointer to the address
+                                               within the L1 master table that represents the translation for the
+                                               1 MB section */
+
+    switch (pt->type) {
+        case MASTER: {
+            mmu_setTTB(ttb);
+            break;
+        }
+        case COARSE: {
+            /* PTE = addr L2 PT | domain | COARSE PT type */
+            PTE = (pt->ptAddress & 0xfffffc00);
+            PTE |= pt->dom<<5;
+            PTE |= 0x11;
+            pEntry = ttb + offset;      /* offset acts as an index */
+            *pEntry = PTE;
+            break;
+        }
+        default: {
+            printf("UNKNOWN page table type\n");
+            return -1;
+        }
+    }
+    return 0;
 }
 
 void mmu_domainAccessSet(uint8_t value, uint16_t mask) {
