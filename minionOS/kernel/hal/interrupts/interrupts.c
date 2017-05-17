@@ -18,7 +18,8 @@
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
-static PCB_t pcb;
+static PCB_t g_pcb;
+static volatile uint32_t g_lrError = 0;
 
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
@@ -43,13 +44,13 @@ void isr_irq(void) {
 
     // 1. Step: Remember LR (automatically done by compiler, including R0-R3 & R12)
     // 2. Step: Save previous context into PCB
-    asm_saveContext(&pcb);
+    asm_saveContext(&g_pcb);
 
     // 3. Step: Handle Interrupts and reactivate
     uint32_t activeIrq = (*(Address_t) (INTCPS_SIR_IRQ)) & INTCPS_SIR_IRQ_MASK;
     InterruptHandler_t handler = g_interruptHandlers[activeIrq];
     if (handler != 0)
-        handler(activeIrq, &pcb);
+        handler(activeIrq, &g_pcb);
 
     // Clear IRQ interrupt output
     (*(Address_t) (INTCPS_CONTROL)) |= INTCPS_CONTROL_NEWIRQAGR;
@@ -59,10 +60,10 @@ void isr_irq(void) {
     // 4. Step: Restore registers (R0-R4 & R1 are automatically restored by compiler)
     // 5. Step: Restore LR (automatically by compiler)
     //Set SP back 5 bytes to pop {R0-R4, R12, LR} from stack
-    __asm(" SUB SP, SP, #28 ");
-
+    //__asm(" SUB SP, SP, #28 ");
+    __asm(" ADD SP, SP, #4 ");
     // 6. Step Continuing with last user process (auto done)
-    asm_loadContext(&pcb);
+    asm_loadContext(&g_pcb);
 }
 
 #pragma INTERRUPT (isr_reset, RESET)

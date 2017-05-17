@@ -11,10 +11,10 @@
 #include "global/queue/queue.h"
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
 
-#define SCHEDULER_INTERVAL_MS 300 // use 50 or so
+#define SCHEDULER_INTERVAL_MS 50 // use 50 or so
 
 PCB_t g_processes[MAX_ALLOWED_PROCESSES];
-ProcessId_t nextProcessId = 0;
+ProcessId_t nextProcessId = 1;
 PCB_t * g_currentProcess;
 Queue_t g_queueBlocked;
 Queue_t g_queueReady;
@@ -64,20 +64,22 @@ static void handleSchedulerTick(PCB_t * currentPcb)
     if (g_queueReady.size > 0 && g_currentProcess == NULL)
     {
         g_currentProcess = getNextProcess();
-        asm_loadContext(g_currentProcess);
+        copyPcb(g_currentProcess, currentPcb);
+        currentPcb->processId = g_currentProcess->processId;
+        //asm_loadContext(g_currentProcess);
     }
     else if (g_queueReady.size > 0 && g_currentProcess != NULL)
     {
         // Save old process and add to ready queue
-        g_currentProcess->lr = currentPcb->lr;
-        g_currentProcess->cpsr = currentPcb->cpsr;
-        g_currentProcess->registers = currentPcb->registers;
-
+        copyPcb(currentPcb, g_currentProcess);
         addReadyProcess(g_currentProcess);
 
         // Load new process
         g_currentProcess = getNextProcess();
-        asm_loadContext(g_currentProcess);
+        copyPcb(g_currentProcess, currentPcb);
+        currentPcb->processId = g_currentProcess->processId;
+
+        //asm_loadContext(g_currentProcess);
     }
     else if (g_queueReady.size == 0)
     {

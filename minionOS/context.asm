@@ -23,7 +23,8 @@ asm_loadContext
 	MSR		SPSR_fsxc, R12 				; and restart address in SPSR_irq and R14_irq
 	LDMIA	R0, {R0-R14}^ 				; Load user R0-R14 - see Note 2
 	NOP									; Note: Cannot use banked register immediately after User mode LDM
-	MOVS	PC, R14
+	SUBS 	PC, R14, #4
+	;MOVS	PC, R14
 
 asm_continuePreviousProcess
 	LDR R14, [SP] ; Load LR from stack

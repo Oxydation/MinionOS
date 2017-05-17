@@ -31,6 +31,7 @@ void queue_remove(Queue_t * queue)
     struct Node* temp = queue->pFront;
     if (queue->pFront == NULL)
     {
+        queue->size = 0;
         return;
     }
     if (queue->pFront == queue->pRear)

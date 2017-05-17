@@ -26,8 +26,8 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    processManager_loadProcess(&process1, 0x80601500); // 0x80600000
-    processManager_loadProcess(&process2, 0x80603500); // 0x80604000
+    processManager_loadProcess(&process1+0x4, 0x80607500); // 0x80600000
+    processManager_loadProcess(&process2+0x4, 0x8060FF00); // 0x80604000
 
     //processManager_startFirstProcess();
 

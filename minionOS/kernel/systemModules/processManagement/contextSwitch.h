@@ -40,6 +40,8 @@ typedef struct PCB
     ProcessId_t processId;
 } PCB_t;
 
+void copyPcb(PCB_t * source, PCB_t * target);
+
 extern void asm_saveContext(PCB_t * pcb);
 extern void asm_loadContext(PCB_t * pcb);
 extern void asm_continuePreviousProcess();
