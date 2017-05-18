@@ -1,9 +1,12 @@
 #include "uart.h"
 #include <inttypes.h>
 
-#define BASE1       0x4806A000
-#define BASE2       0x4806C000
-#define BASE3       0x49020000
+// Base addresses
+#define UART1_BASE       0x4806A000
+#define UART2_BASE       0x4806C000
+#define UART3_BASE       0x49020000
+
+// Register offsets
 #define DLL_OFF     0x0
 #define DLH_OFF     0x4
 #define MDR1_OFF    0x20
@@ -24,6 +27,7 @@
 #define TCR_OFF     0x18
 #define RHR_OFF     0x0
 
+// Indices for register fields
 #define EFR_ENHANCED_EN     4
 #define EFR_AUTO_CTS_EN     7
 #define EFR_AUTO_RTS_EN     6
@@ -93,143 +97,161 @@ void restoreBit(uint8_t* address, uint8_t bit, uint8_t savedBit) {
     *address |= (savedBit << bit);
 }
 
-int uart_main(void) {
-    UART_t uart3 = {
-             .MDR1 = (uint8_t*) (BASE3 + MDR1_OFF),
-             .LCR = (uint8_t*) (BASE3 + LCR_OFF),
-             .EFR = (uint8_t*) (BASE3 + EBLR_OFF),
-             .DLL = (uint8_t*) (BASE3 + DLL_OFF),
-             .DLH = (uint8_t*) (BASE3 + DLH_OFF),
-             .MCR = (uint8_t*) (BASE3 + MCR_OFF),
-             .IER = (uint8_t*) (BASE3 + IER_OFF),
-             .TXFLL = (uint8_t*) (BASE3 + TXFLL_OFF),
-             .EBLR = (uint8_t*) (BASE3 + EBLR_OFF),
-             .ACREG = (uint8_t*) (BASE3 + ACREG_OFF),
-             .THR = (uint8_t*) (BASE3 + THR_OFF),
-             .LSR = (uint8_t*) (BASE3 + LSR_OFF),
-             .SYSC = (uint8_t*) (BASE3 + SYSC_OFF),
-             .SYSS = (uint8_t*) (BASE3 + SYSS_OFF),
-             .FCR = (uint8_t*) (BASE3 + FCR_OFF),
-             .TLR = (uint8_t*) (BASE3 + TLR_OFF),
-             .SCR = (uint8_t*) (BASE3 + SCR_OFF),
-             .TCR = (uint8_t*) (BASE3 + TCR_OFF),
-             .RHR = (uint8_t*) (BASE3 + RHR_OFF)
-    };
-
+void swReset(UART_t uart) {
     // Software Reset
     // 1
-    setBit(uart3.SYSC, 1);
+    setBit(uart.SYSC, 1);
     // 2
-    while (!getBit(uart3.SYSS, 0));
+    while (!getBit(uart.SYSS, 0));
+}
 
+void fifoAndDmaSettings(UART_t uart) {
     // FIFOs and DMA Settings
     // 1
-    uint8_t savedLcr = *uart3.LCR;
-    *uart3.LCR = 0x00BF;
+    uint8_t savedLcr = *uart.LCR;
+    *uart.LCR = 0x00BF;
     // 2
-    uint8_t savedEnhancedEn = getBit(uart3.EFR, EFR_ENHANCED_EN);
-    setBit(uart3.EFR, EFR_ENHANCED_EN);
+    uint8_t savedEnhancedEn = getBit(uart.EFR, EFR_ENHANCED_EN);
+    setBit(uart.EFR, EFR_ENHANCED_EN);
     // 3
-    *uart3.LCR = 0x0080;
+    *uart.LCR = 0x0080;
     // 4
-    uint8_t savedTcrTlr = getBit(uart3.MCR, MCR_TCR_TLR);
-    setBit(uart3.MCR, MCR_TCR_TLR);
+    uint8_t savedTcrTlr = getBit(uart.MCR, MCR_TCR_TLR);
+    setBit(uart.MCR, MCR_TCR_TLR);
     // 5
-    clearBit(uart3.FCR, FCR_RX_FIFO_TRIG_1);
-    clearBit(uart3.FCR, FCR_RX_FIFO_TRIG_2);
+    clearBit(uart.FCR, FCR_RX_FIFO_TRIG_1);
+    clearBit(uart.FCR, FCR_RX_FIFO_TRIG_2);
 
-    clearBit(uart3.FCR, FCR_TX_FIFO_TRIG_1);
-    clearBit(uart3.FCR, FCR_TX_FIFO_TRIG_2);
+    clearBit(uart.FCR, FCR_TX_FIFO_TRIG_1);
+    clearBit(uart.FCR, FCR_TX_FIFO_TRIG_2);
 
-    clearBit(uart3.FCR, FCR_DMA_MODE);
+    clearBit(uart.FCR, FCR_DMA_MODE);
 
-    setBit(uart3.FCR, FCR_FIFO_ENABLE);
+    setBit(uart.FCR, FCR_FIFO_ENABLE);
     // 6
-    *uart3.LCR = 0x00BF;
+    *uart.LCR = 0x00BF;
     // 7
-    *uart3.TLR = 0x0000;
+    *uart.TLR = 0x0000;
     // 8
-    setBit(uart3.SCR, SCR_TX_TRIG_GRANU1);
-    setBit(uart3.SCR, SCR_DMA_MODE_2_1);
+    setBit(uart.SCR, SCR_TX_TRIG_GRANU1);
+    setBit(uart.SCR, SCR_DMA_MODE_2_1);
     // 9
-    restoreBit(uart3.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
+    restoreBit(uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
     // 10
-    *uart3.LCR = 0x0080;
+    *uart.LCR = 0x0080;
     // 11
-    restoreBit(uart3.MCR, MCR_TCR_TLR, savedTcrTlr);
+    restoreBit(uart.MCR, MCR_TCR_TLR, savedTcrTlr);
     // 12
-    *uart3.LCR = savedLcr;
+    *uart.LCR = savedLcr;
+}
 
+void protocol(UART_t uart) {
     // Protocol, Baud Rate, and Interrupt Settings
     // 1
-    *uart3.MDR1 = 0x7;
+    *uart.MDR1 = 0x7;
     // 2
-    *uart3.LCR = 0x00BF;
+    *uart.LCR = 0x00BF;
     // 3
-    savedEnhancedEn = getBit(uart3.EFR, EFR_ENHANCED_EN);
-    setBit(uart3.EFR, EFR_ENHANCED_EN);
+    uint8_t savedEnhancedEn = getBit(uart.EFR, EFR_ENHANCED_EN);
+    setBit(uart.EFR, EFR_ENHANCED_EN);
     // 4
-    *uart3.LCR = 0x0;
+    *uart.LCR = 0x0;
     // 5
-    *uart3.IER = 0x0;
+    *uart.IER = 0x0;
     // 6
-    *uart3.LCR = 0x00BF;
+    *uart.LCR = 0x00BF;
     // 7
-    *uart3.DLL = 0x1A;
-    *uart3.DLH = 0x0;
+    *uart.DLL = 0x1A;
+    *uart.DLH = 0x0;
     // 8
-    *uart3.LCR = 0x0;
+    *uart.LCR = 0x0;
     // 9 no interrupts
     // 10
-    *uart3.LCR = 0x00BF;
+    *uart.LCR = 0x00BF;
     // 11
-    restoreBit(uart3.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
+    restoreBit(uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
     // 12
-    clearBit(uart3.LCR, LCR_DIV_EN);
-    clearBit(uart3.LCR, LCR_BREAK_EN);
+    clearBit(uart.LCR, LCR_DIV_EN);
+    clearBit(uart.LCR, LCR_BREAK_EN);
 
-    clearBit(uart3.LCR, LCR_PARITY_EN);
+    clearBit(uart.LCR, LCR_PARITY_EN);
 
-    setBit(uart3.LCR, LCR_CHAR_LENGTH_1);
-    setBit(uart3.LCR, LCR_CHAR_LENGTH_2);
+    setBit(uart.LCR, LCR_CHAR_LENGTH_1);
+    setBit(uart.LCR, LCR_CHAR_LENGTH_2);
 
-    clearBit(uart3.LCR, LCR_NB_STOP);
+    clearBit(uart.LCR, LCR_NB_STOP);
     // 13
-    clearBit(uart3.MDR1, MDR1_MODE_SELECT_1);
-    clearBit(uart3.MDR1, MDR1_MODE_SELECT_2);
-    clearBit(uart3.MDR1, MDR1_MODE_SELECT_3);
+    clearBit(uart.MDR1, MDR1_MODE_SELECT_1);
+    clearBit(uart.MDR1, MDR1_MODE_SELECT_2);
+    clearBit(uart.MDR1, MDR1_MODE_SELECT_3);
+}
 
+void hwFlowControl(UART_t uart) {
     // Hardware and Software Flow Control Configuration
     // 1
-    savedLcr = *uart3.LCR;
-    *uart3.LCR = 0x0080;
+    uint8_t savedLcr = *uart.LCR;
+    *uart.LCR = 0x0080;
     // 2
-    savedTcrTlr = getBit(uart3.MCR, MCR_TCR_TLR);
-    setBit(uart3.MCR, MCR_TCR_TLR);
+    uint8_t savedTcrTlr = getBit(uart.MCR, MCR_TCR_TLR);
+    setBit(uart.MCR, MCR_TCR_TLR);
     // 3
-    *uart3.LCR = 0x00BF;
+    *uart.LCR = 0x00BF;
     // 4
-    savedEnhancedEn = getBit(uart3.EFR, EFR_ENHANCED_EN);
-    setBit(uart3.EFR, EFR_ENHANCED_EN);
+    uint8_t savedEnhancedEn = getBit(uart.EFR, EFR_ENHANCED_EN);
+    setBit(uart.EFR, EFR_ENHANCED_EN);
     // 5
-    clearBit(uart3.TCR, 0);
-    clearBit(uart3.TCR, 1);
-    clearBit(uart3.TCR, 2);
-    clearBit(uart3.TCR, 3);
-    setBit(uart3.TCR, 4);
-    setBit(uart3.TCR, 5);
-    setBit(uart3.TCR, 6);
-    setBit(uart3.TCR, 7);
+    clearBit(uart.TCR, 0);
+    clearBit(uart.TCR, 1);
+    clearBit(uart.TCR, 2);
+    clearBit(uart.TCR, 3);
+    setBit(uart.TCR, 4);
+    setBit(uart.TCR, 5);
+    setBit(uart.TCR, 6);
+    setBit(uart.TCR, 7);
     // 6
-    setBit(uart3.EFR, EFR_AUTO_CTS_EN);
-    setBit(uart3.EFR, EFR_AUTO_RTS_EN);
-    restoreBit(uart3.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
+    setBit(uart.EFR, EFR_AUTO_CTS_EN);
+    setBit(uart.EFR, EFR_AUTO_RTS_EN);
+    restoreBit(uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
     // 7
-    *uart3.LCR = 0x0080;
+    *uart.LCR = 0x0080;
     // 8
-    restoreBit(uart3.MCR, MCR_TCR_TLR, savedTcrTlr);
+    restoreBit(uart.MCR, MCR_TCR_TLR, savedTcrTlr);
     // 9
-    *uart3.LCR = savedLcr;
+    *uart.LCR = savedLcr;
+}
+
+UART_t createUart(uint32_t baseAddress) {
+    UART_t uart = {
+        .MDR1   = (uint8_t*) (baseAddress + MDR1_OFF),
+        .LCR    = (uint8_t*) (baseAddress + LCR_OFF),
+        .EFR    = (uint8_t*) (baseAddress + EBLR_OFF),
+        .DLL    = (uint8_t*) (baseAddress + DLL_OFF),
+        .DLH    = (uint8_t*) (baseAddress + DLH_OFF),
+        .MCR    = (uint8_t*) (baseAddress + MCR_OFF),
+        .IER    = (uint8_t*) (baseAddress + IER_OFF),
+        .TXFLL  = (uint8_t*) (baseAddress + TXFLL_OFF),
+        .EBLR   = (uint8_t*) (baseAddress + EBLR_OFF),
+        .ACREG  = (uint8_t*) (baseAddress + ACREG_OFF),
+        .THR    = (uint8_t*) (baseAddress + THR_OFF),
+        .LSR    = (uint8_t*) (baseAddress + LSR_OFF),
+        .SYSC   = (uint8_t*) (baseAddress + SYSC_OFF),
+        .SYSS   = (uint8_t*) (baseAddress + SYSS_OFF),
+        .FCR    = (uint8_t*) (baseAddress + FCR_OFF),
+        .TLR    = (uint8_t*) (baseAddress + TLR_OFF),
+        .SCR    = (uint8_t*) (baseAddress + SCR_OFF),
+        .TCR    = (uint8_t*) (baseAddress + TCR_OFF),
+        .RHR    = (uint8_t*) (baseAddress + RHR_OFF)
+    };
+    return uart;
+}
+
+int uart_main(void) {
+    UART_t uart3 = createUart(UART3_BASE);
+
+    swReset(uart3);
+    fifoAndDmaSettings(uart3);
+    protocol(uart3);
+    hwFlowControl(uart3);
 
     char hi[] = "Hi";
     int i = 0;
@@ -240,7 +262,7 @@ int uart_main(void) {
     }
 
     while (1) {
-        while (getBit(uart3.LSR, LSR_RX_FIFO_E));
+        while (!getBit(uart3.LSR, LSR_RX_FIFO_E));
         char in = *uart3.RHR;
         while (!(getBit(uart3.LSR, LSR_TX_FIFO_E)));
         *uart3.THR = in;
