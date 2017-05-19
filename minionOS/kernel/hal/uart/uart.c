@@ -1,5 +1,6 @@
 #include "uart.h"
 #include <inttypes.h>
+#include <stdbool.h>
 
 // Base addresses
 #define UART1_BASE       0x4806A000
@@ -80,6 +81,32 @@ typedef struct {
     uint8_t* RHR;
 } UART_t;
 
+#define uartField(name, baseAddress) .name = (uint8_t*) (baseAddress + name##_OFF)
+#define createUart(baseAddress) {           \
+        uartField(MDR1, baseAddress),   \
+        uartField(LCR, baseAddress),    \
+        uartField(EFR, baseAddress),    \
+        uartField(DLL, baseAddress),    \
+        uartField(DLH, baseAddress),    \
+        uartField(MCR, baseAddress),    \
+        uartField(IER, baseAddress),    \
+        uartField(TXFLL, baseAddress),  \
+        uartField(EBLR, baseAddress),   \
+        uartField(ACREG, baseAddress),  \
+        uartField(THR, baseAddress),    \
+        uartField(LSR, baseAddress),    \
+        uartField(SYSC, baseAddress),   \
+        uartField(SYSS, baseAddress),   \
+        uartField(FCR, baseAddress),    \
+        uartField(TLR, baseAddress),    \
+        uartField(SCR, baseAddress),    \
+        uartField(TCR, baseAddress),    \
+        uartField(RHR, baseAddress)     \
+}
+
+UART_t modules[3] = { createUart(UART1_BASE), createUart(UART2_BASE),
+        createUart(UART3_BASE) };
+
 void setBit(uint8_t* address, uint8_t bit) {
     *address |= 1 << bit;
 }
@@ -97,28 +124,28 @@ void restoreBit(uint8_t* address, uint8_t bit, uint8_t savedBit) {
     *address |= (savedBit << bit);
 }
 
-void swReset(UART_t uart) {
-    // Software Reset
-    // 1
+void doSwReset(UART_t uart) {
+    // 17.5.1.1.1 Software Reset
+    // 1. Initiate a software reset
     setBit(uart.SYSC, 1);
-    // 2
+    // 2. Wait for the end of the reset operation
     while (!getBit(uart.SYSS, 0));
 }
 
-void fifoAndDmaSettings(UART_t uart) {
-    // FIFOs and DMA Settings
-    // 1
+static void setupFifoAndDma(UART_t uart) {
+    // 17.5.1.1.2 FIFOs and DMA Settings
+    // 1. Switch to register configuration mode B to access the UARTi.EFR_REG register
     uint8_t savedLcr = *uart.LCR;
     *uart.LCR = 0x00BF;
-    // 2
+    // 2. Enable register submode TCR_TLR to access UARTi.TLR_REG (part 1 of 2)
     uint8_t savedEnhancedEn = getBit(uart.EFR, EFR_ENHANCED_EN);
     setBit(uart.EFR, EFR_ENHANCED_EN);
-    // 3
+    // 3. Switch to register configuration mode A to access the UARTi.MCR_REG register
     *uart.LCR = 0x0080;
-    // 4
+    // 4. Enable register submode TCR_TLR to access UARTi.TLR_REG (part 2 of 2)
     uint8_t savedTcrTlr = getBit(uart.MCR, MCR_TCR_TLR);
     setBit(uart.MCR, MCR_TCR_TLR);
-    // 5
+    // 5. Enable FIFO, load the new FIFO triggers (part 1 of 3) and the new DMA mode (part 1 of 2)
     clearBit(uart.FCR, FCR_RX_FIFO_TRIG_1);
     clearBit(uart.FCR, FCR_RX_FIFO_TRIG_2);
 
@@ -128,49 +155,50 @@ void fifoAndDmaSettings(UART_t uart) {
     clearBit(uart.FCR, FCR_DMA_MODE);
 
     setBit(uart.FCR, FCR_FIFO_ENABLE);
-    // 6
+    // 6. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
-    // 7
+    // 7. Load the new FIFO triggers (part 2 of 3)
     *uart.TLR = 0x0000;
-    // 8
+    // 8. Load the new FIFO triggers (part 3 of 3) and the new DMA mode (part 2 of 2)
     setBit(uart.SCR, SCR_TX_TRIG_GRANU1);
     setBit(uart.SCR, SCR_DMA_MODE_2_1);
-    // 9
+    // 9. Restore the UARTi.EFR_REG[4] ENHANCED_EN value saved in Step 2a
     restoreBit(uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
-    // 10
+    // 10. Switch to register configuration mode A to access the UARTi.MCR_REG register
     *uart.LCR = 0x0080;
-    // 11
+    // 11. Restore the UARTi.MCR_REG[6] TCR_TLR value saved in Step 4a
     restoreBit(uart.MCR, MCR_TCR_TLR, savedTcrTlr);
-    // 12
+    // 12. Restore the UARTi.LCR_REG value saved in Step 1a
     *uart.LCR = savedLcr;
 }
 
-void protocol(UART_t uart) {
-    // Protocol, Baud Rate, and Interrupt Settings
-    // 1
+static void setupProtocolBaudAndInterrupt(UART_t uart) {
+    // 17.5.1.1.3 Protocol, Baud Rate, and Interrupt Settings
+    // 1. Disable UART to access UARTi.DLL_REG and UARTi.DLH_REG
     *uart.MDR1 = 0x7;
-    // 2
+    // 2. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
-    // 3
+    // 3. Enable access to UARTi.IER_REG[7:4]
     uint8_t savedEnhancedEn = getBit(uart.EFR, EFR_ENHANCED_EN);
     setBit(uart.EFR, EFR_ENHANCED_EN);
-    // 4
+    // 4. Switch to register operational mode to access the UARTi.IER_REG register
     *uart.LCR = 0x0;
-    // 5
+    // 5. Clear the UARTi.IER_REG (UARTi.IER_REG[4] SLEEP_MODE bit to 0 to change UARTi.DLL_REG and UARTi.DLH_REG)
     *uart.IER = 0x0;
-    // 6
+    // 6. Switch to register configuration mode B to access the UARTi.DLL_REG and UARTi.DLH_REG registers
     *uart.LCR = 0x00BF;
-    // 7
+    // 7. Load the new divisor value
     *uart.DLL = 0x1A;
     *uart.DLH = 0x0;
-    // 8
+    // 8. Switch to register operational mode to access the UARTi.IER_REG register
     *uart.LCR = 0x0;
-    // 9 no interrupts
-    // 10
+    // 9. Load the new interrupt configuration
+    // no interrupts
+    // 10. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
-    // 11
+    // 11. Restore the UARTi.EFR_REG[4] ENHANCED_EN value saved in Step 3a
     restoreBit(uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
-    // 12
+    // 12. Load the new protocol formatting (parity, stop bit, char length) and switch to register operational mode
     clearBit(uart.LCR, LCR_DIV_EN);
     clearBit(uart.LCR, LCR_BREAK_EN);
 
@@ -180,26 +208,26 @@ void protocol(UART_t uart) {
     setBit(uart.LCR, LCR_CHAR_LENGTH_2);
 
     clearBit(uart.LCR, LCR_NB_STOP);
-    // 13
+    // 13. Load the new UART mode
     clearBit(uart.MDR1, MDR1_MODE_SELECT_1);
     clearBit(uart.MDR1, MDR1_MODE_SELECT_2);
     clearBit(uart.MDR1, MDR1_MODE_SELECT_3);
 }
 
-void hwFlowControl(UART_t uart) {
-    // Hardware and Software Flow Control Configuration
-    // 1
+static void setupHwFlowControl(UART_t uart) {
+    // 17.5.1.2.1 Hardware Flow Control Configuration
+    // 1. Switch to register configuration mode A to access the UARTi.MCR_REG register
     uint8_t savedLcr = *uart.LCR;
     *uart.LCR = 0x0080;
-    // 2
+    // 2. Enable register submode TCR_TLR to access UARTi.TCR_REG (part 1 of 2)
     uint8_t savedTcrTlr = getBit(uart.MCR, MCR_TCR_TLR);
     setBit(uart.MCR, MCR_TCR_TLR);
-    // 3
+    // 3. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
-    // 4
+    // 4. Enable register submode TCR_TLR to access the UARTi.TCR_REG register (part 2 of 2)
     uint8_t savedEnhancedEn = getBit(uart.EFR, EFR_ENHANCED_EN);
     setBit(uart.EFR, EFR_ENHANCED_EN);
-    // 5
+    // 5. Load the new start and halt trigger values for hardware flow control
     clearBit(uart.TCR, 0);
     clearBit(uart.TCR, 1);
     clearBit(uart.TCR, 2);
@@ -208,50 +236,60 @@ void hwFlowControl(UART_t uart) {
     setBit(uart.TCR, 5);
     setBit(uart.TCR, 6);
     setBit(uart.TCR, 7);
-    // 6
+    // 6. Enable or disable receive and transmit hardware flow control mode and restore the UARTi.EFR_REG[4] ENHANCED_EN value saved in Step 4a
     setBit(uart.EFR, EFR_AUTO_CTS_EN);
     setBit(uart.EFR, EFR_AUTO_RTS_EN);
     restoreBit(uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
-    // 7
+    // 7. Switch to register configuration mode A to access UARTi.MCR_REG
     *uart.LCR = 0x0080;
-    // 8
+    // 8. Restore the UARTi.MCR_REG[6] TCR_TLR value saved in Step 2a
     restoreBit(uart.MCR, MCR_TCR_TLR, savedTcrTlr);
-    // 9
+    // 9. Restore the UARTi.LCR_REG value saved in Step 1a
     *uart.LCR = savedLcr;
 }
 
-UART_t createUart(uint32_t baseAddress) {
-    UART_t uart = {
-        .MDR1   = (uint8_t*) (baseAddress + MDR1_OFF),
-        .LCR    = (uint8_t*) (baseAddress + LCR_OFF),
-        .EFR    = (uint8_t*) (baseAddress + EBLR_OFF),
-        .DLL    = (uint8_t*) (baseAddress + DLL_OFF),
-        .DLH    = (uint8_t*) (baseAddress + DLH_OFF),
-        .MCR    = (uint8_t*) (baseAddress + MCR_OFF),
-        .IER    = (uint8_t*) (baseAddress + IER_OFF),
-        .TXFLL  = (uint8_t*) (baseAddress + TXFLL_OFF),
-        .EBLR   = (uint8_t*) (baseAddress + EBLR_OFF),
-        .ACREG  = (uint8_t*) (baseAddress + ACREG_OFF),
-        .THR    = (uint8_t*) (baseAddress + THR_OFF),
-        .LSR    = (uint8_t*) (baseAddress + LSR_OFF),
-        .SYSC   = (uint8_t*) (baseAddress + SYSC_OFF),
-        .SYSS   = (uint8_t*) (baseAddress + SYSS_OFF),
-        .FCR    = (uint8_t*) (baseAddress + FCR_OFF),
-        .TLR    = (uint8_t*) (baseAddress + TLR_OFF),
-        .SCR    = (uint8_t*) (baseAddress + SCR_OFF),
-        .TCR    = (uint8_t*) (baseAddress + TCR_OFF),
-        .RHR    = (uint8_t*) (baseAddress + RHR_OFF)
-    };
-    return uart;
+void initModule(UartModule_t module, UartConfig_t config) {
+    UART_t uartModule = modules[module];
+    doSwReset(uartModule);
+    setupFifoAndDma(uartModule);
+    setupProtocolBaudAndInterrupt(uartModule);
+    setupHwFlowControl(uartModule);
 }
+
+static bool isReadyToTransmit(UART_t uartModule) {
+    return getBit(uartModule.LSR, LSR_TX_FIFO_E);
+}
+
+void transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
+    // TODO buffer overflow?
+    UART_t uartModule = modules[module];
+    for (int i = 0; i < bufferSize; i++) {
+        while (!isReadyToTransmit(uartModule));
+        *uartModule.THR = buffer[i];
+    }
+}
+
+static bool hasReceived(UART_t uartModule) {
+    return getBit(uartModule.LSR, LSR_RX_FIFO_E);
+}
+
+void receive(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
+    // TODO buffer overflow?
+    UART_t uartModule = modules[module];
+    for (int i = 0; i < bufferSize; i++) {
+        while (!hasReceived(uartModule));
+        buffer[i] = *uartModule.RHR;
+    }
+}
+
 
 int uart_main(void) {
     UART_t uart3 = createUart(UART3_BASE);
 
-    swReset(uart3);
-    fifoAndDmaSettings(uart3);
-    protocol(uart3);
-    hwFlowControl(uart3);
+    doSwReset(uart3);
+    setupFifoAndDma(uart3);
+    setupProtocolBaudAndInterrupt(uart3);
+    setupHwFlowControl(uart3);
 
     char hi[] = "Hi";
     int i = 0;
