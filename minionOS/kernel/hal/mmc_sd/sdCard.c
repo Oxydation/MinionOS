@@ -346,7 +346,7 @@ int32_t sdCard_initialize_Ch1(void){
 /*
  * A block is fixed to 512 bytes. Buffer must be of size 512. Returns how many bytes have been read (0 for error).
  */
-uint32_t sdCard_read512ByteBlock(uint8_t * buffer){
+uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
 
     // Check if dat lines are in use
     while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_DATA_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_DATA_LINE)){
@@ -371,7 +371,7 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer){
     // Send a CMD 17 (one block, with data)
     // Set block size and length (512 byte block, 1 block), 512 bytes
     set32(MMCHS1_BLK, 0x00010200);
-    set32(MMCHS1_ARG, 0x00000000); // Set block to read (byte address!)
+    set32(MMCHS1_ARG, address); // Set block to read (byte address!)
 
     // Enable interrupts
     set32(MMCHS1_IE,

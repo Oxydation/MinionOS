@@ -226,6 +226,6 @@ void sdCard_setTransactionBlockCount(uint32_t blockNumber);
 
 void sdCard_sendCommand(SDCardCommands_t command);
 
-uint32_t sdCard_read512ByteBlock(uint8_t * buffer);
+uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address);
 
 #endif /* OMAP3530SDCARD_H_ */
