@@ -18,8 +18,8 @@ static uint32_t gCardAddress = 0;
 /*
  * Enable functional and internal clocks for MMC module 1.
  */
-static void enableMMC1Clocks(void)
-{
+static void enableMMC1Clocks(void){
+
     // FCLKEN
     or32(CM_FCLKEN1_CORE, (1<<CM_FCLKEN1_CORE_EN_MMC1));
 
@@ -31,23 +31,21 @@ static void enableMMC1Clocks(void)
  * Performs a reset on channel 1. This needs to be done on initialization.
  * Function returns when software reset is completed.
  */
-static void softwareReset_Ch1(void)
-{
+static void softwareReset_Ch1(void){
+
     or32(MMCHS1_SYSCONFIG, (1<<MMCHS_SYSCONFIG_SOFTRESET));
-    while( ( get32(MMCHS1_SYSSTATUS) & (1<<MMCHS_SYSSTATUS_RESETDONE)) != (1<<MMCHS_SYSSTATUS_RESETDONE) )
-    {
+    while( ( get32(MMCHS1_SYSSTATUS) & (1<<MMCHS_SYSSTATUS_RESETDONE)) != (1<<MMCHS_SYSSTATUS_RESETDONE) ){
         // TODO: maybe a timeout here?
     }
 }
 
-void softwareResetCMDLine(void)
-{
+void softwareResetCMDLine(void){
+
     // Perform a software reset for the CMD Line
     or32(MMCHS1_SYSCTL, (1<<MMCHS_SYSCTL_SOFTWARE_RESET_CMD_LINE));
 
     // Wait until previously set bit returns to 0
-    while((get32(MMCHS1_SYSCTL) & (1<<MMCHS_SYSCTL_SOFTWARE_RESET_CMD_LINE)) == (1<<MMCHS_SYSCTL_SOFTWARE_RESET_CMD_LINE))
-    {
+    while((get32(MMCHS1_SYSCTL) & (1<<MMCHS_SYSCTL_SOFTWARE_RESET_CMD_LINE)) == (1<<MMCHS_SYSCTL_SOFTWARE_RESET_CMD_LINE)){
 
     }
 }
@@ -55,8 +53,8 @@ void softwareResetCMDLine(void)
 /*
  * Perform default capabilities initialization for MMC module 1.
  */
-static void initializeDefaultCapabilities_Ch1(void)
-{
+static void initializeDefaultCapabilities_Ch1(void){
+
     // Enable 1.8 V and 3.0 V on Ch1
     or32(MMCHS1_CAPA, 1<<MMCHS_CAPA_VOLTAGE_SUPPORT_3_0);
 }
@@ -65,8 +63,8 @@ static void initializeDefaultCapabilities_Ch1(void)
  * Default wake up configuration for MMC module 1.
  * Enables wake-up on card interrupt.
  */
-static void initializeDefaultWakeUpConfiguration_Ch1(void)
-{
+static void initializeDefaultWakeUpConfiguration_Ch1(void){
+
     // ENAWAKEUP
     or32(MMCHS1_SYSCONFIG, (1<<MMCHS_SYSCONFIG_ENAWAKEUP));
 
@@ -77,8 +75,8 @@ static void initializeDefaultWakeUpConfiguration_Ch1(void)
 /*
  * Set the bus configuration to 1.8V, 1 bit data width and then power on
  */
-static void controllerBusConfiguration_Ch1(void)
-{
+static void controllerBusConfiguration_Ch1(void){
+
     // Set open drain for broadcast (only for MMC)
     or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
 
@@ -93,8 +91,7 @@ static void controllerBusConfiguration_Ch1(void)
     // SD Bus power ON (0 for Off) (SDBP)
     or32(MMCHS1_HCTL, (1<<MMCHS_HCTL_SD_BUS_POWER));
 
-    if((get32(MMCHS1_HCTL) & (1<<MMCHS_HCTL_SD_BUS_POWER)) != (1<<MMCHS_HCTL_SD_BUS_POWER))
-    {
+    if((get32(MMCHS1_HCTL) & (1<<MMCHS_HCTL_SD_BUS_POWER)) != (1<<MMCHS_HCTL_SD_BUS_POWER)){
         // ERROR: Card does not support voltage. Maybe change it to other value
         return;
     }
@@ -114,8 +111,7 @@ static void controllerBusConfiguration_Ch1(void)
     or32(MMCHS1_SYSCTL, (1<<MMCHS_SYSCTL_CARD_CLOCK_ENABLE));
 
     // Make sure internal clock is stable
-    while((get32(MMCHS1_SYSCTL) & ((1<<MMCHS_SYSCTL_INTERNAL_CLOCK_STABLE)))!=(1<<MMCHS_SYSCTL_INTERNAL_CLOCK_STABLE))
-    {
+    while((get32(MMCHS1_SYSCTL) & ((1<<MMCHS_SYSCTL_INTERNAL_CLOCK_STABLE)))!=(1<<MMCHS_SYSCTL_INTERNAL_CLOCK_STABLE)){
         // Wait for internal clock to be stable
     }
 
@@ -129,8 +125,8 @@ void delayAfterCommand(void){
 }
 
 volatile int sdCardType = -1;
-int32_t detectAndInitializeSdCard(void)
-{
+int32_t detectAndInitializeSdCard(void){
+
     // TODO: make sure module is initialized!
 
     // Send initialization stream
@@ -171,8 +167,7 @@ int32_t detectAndInitializeSdCard(void)
      */
 
     // CMD 5
-    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE))
-    {
+    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
         // Line in use, wait until released
     }
     // Enable CTO, CC, CEB
@@ -185,8 +180,7 @@ int32_t detectAndInitializeSdCard(void)
 
     // Check if it is an SDIO card
     do {
-        if((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_COMPLETE)) == (1<<MMCHS_STAT_COMMAND_COMPLETE))
-        {
+        if((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_COMPLETE)) == (1<<MMCHS_STAT_COMMAND_COMPLETE)){
             // It's an SDIO card!
             // TODO: let the kernel know?
             return SDIO;
@@ -200,8 +194,7 @@ int32_t detectAndInitializeSdCard(void)
      */
 
     // CMD 8
-    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE))
-    {
+    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
         // Line in use, wait until released
     }
 
@@ -330,8 +323,7 @@ int32_t detectAndInitializeSdCard(void)
 /*
  * As described in spruf98y.pdf beginning with page 3143.
  */
-int32_t sdCard_initialize_Ch1(void)
-{
+int32_t sdCard_initialize_Ch1(void){
     // Step 1: set clocks
     // Set internal and functional clocks for Ch1
     enableMMC1Clocks();
@@ -407,8 +399,7 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer){
         // Command completed successfully. Now read data
         // Check if the Buffer Write Ready bit is set
         if((REG(MMCHS1_STAT) & (1<<5)) == (1<<5)){
-            for(i=0; i < 512; i+=4) // 512 bytes, 4 bytes are read
-            {
+            for(i=0; i < 512; i+=4){ // 512 bytes, 4 bytes are read
                 // Read data.
                 volatile uint32_t read_data = get32(MMCHS1_DATA);
                 buffer[i+3] = read_data >> 24;
@@ -433,8 +424,7 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer){
  * Set mmci_cmd to 1 for 80 clock cycles. This is impossible, because clock cannot be set that slow. Works anyway.
  * spruf98y.pdf Page 3182
  */
-void sdCard_sendInitializationSequence_Ch1(void)
-{
+void sdCard_sendInitializationSequence_Ch1(void){
     or32(MMCHS1_CON, MMCHS_HOST_TO_CARD_INIT_SEQUENCE);
 }
 
@@ -443,8 +433,7 @@ void sdCard_sendInitializationSequence_Ch1(void)
  * so for example passing 0xFF to this function will result in a block number
  * of 255 being set.
  */
-void sdCard_setTransactionBlockCount(uint32_t blockNumber)
-{
+void sdCard_setTransactionBlockCount(uint32_t blockNumber){
     // Only last 16 bits are allowed.
     uint32_t last16MSBitsBlockNumber = blockNumber << 16;
 
@@ -455,14 +444,12 @@ void sdCard_setTransactionBlockCount(uint32_t blockNumber)
 /*
  * Sets the block size in bytes. Maximum size is 0x400 (1024 bytes).
  */
-void sdCard_setTransactionBlockSize(uint32_t blockSize)
-{
+void sdCard_setTransactionBlockSize(uint32_t blockSize){
     // Make sure only the last 11 bits are written
     // TODO: veryfiy if any 11 bit value can be written, or if the max. value stops at 0x400
     uint32_t last11BitsMasked = blockSize && 0x7FF;
 
-    if(last11BitsMasked > MMCHS_1024_BYTE_BLOCK_SIZE)
-    {
+    if(last11BitsMasked > MMCHS_1024_BYTE_BLOCK_SIZE){
         last11BitsMasked = MMCHS_1024_BYTE_BLOCK_SIZE;
     }
 
@@ -473,16 +460,13 @@ void sdCard_setTransactionBlockSize(uint32_t blockSize)
  * Send a command to an SD card. If an argument needs to be provided (no stuff bits), the
  * sdCard_sendCommandWithArgument should be used.
  */
-void sdCard_sendCommand(SDCardCommands_t command)
-{
+void sdCard_sendCommand(SDCardCommands_t command){
     // Check if cmd line is in use
-    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE))
-    {
+    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
         // Line in use, wait until released
     }
 
-    switch (command)
-    {
+    switch (command){
     case CMD0:
         // Set open drain for broadcast (only for MMC)
         //or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
@@ -547,8 +531,7 @@ void sdCard_sendCommand(SDCardCommands_t command)
     }
 
     // CTO (timeout) ocurred
-    if( (get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)) == (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT))
-    {
+    if( (get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)) == (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)){
         softwareResetCMDLine();
     }
 }
