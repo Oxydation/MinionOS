@@ -19,7 +19,6 @@ static uint32_t gCardAddress = 0;
  * Enable functional and internal clocks for MMC module 1.
  */
 static void enableMMC1Clocks(void){
-
     // FCLKEN
     or32(CM_FCLKEN1_CORE, (1<<CM_FCLKEN1_CORE_EN_MMC1));
 
@@ -32,7 +31,6 @@ static void enableMMC1Clocks(void){
  * Function returns when software reset is completed.
  */
 static void softwareReset_Ch1(void){
-
     or32(MMCHS1_SYSCONFIG, (1<<MMCHS_SYSCONFIG_SOFTRESET));
     while( ( get32(MMCHS1_SYSSTATUS) & (1<<MMCHS_SYSSTATUS_RESETDONE)) != (1<<MMCHS_SYSSTATUS_RESETDONE) ){
         // TODO: maybe a timeout here?
@@ -40,7 +38,6 @@ static void softwareReset_Ch1(void){
 }
 
 void softwareResetCMDLine(void){
-
     // Perform a software reset for the CMD Line
     or32(MMCHS1_SYSCTL, (1<<MMCHS_SYSCTL_SOFTWARE_RESET_CMD_LINE));
 
@@ -54,7 +51,6 @@ void softwareResetCMDLine(void){
  * Perform default capabilities initialization for MMC module 1.
  */
 static void initializeDefaultCapabilities_Ch1(void){
-
     // Enable 1.8 V and 3.0 V on Ch1
     or32(MMCHS1_CAPA, 1<<MMCHS_CAPA_VOLTAGE_SUPPORT_3_0);
 }
@@ -64,7 +60,6 @@ static void initializeDefaultCapabilities_Ch1(void){
  * Enables wake-up on card interrupt.
  */
 static void initializeDefaultWakeUpConfiguration_Ch1(void){
-
     // ENAWAKEUP
     or32(MMCHS1_SYSCONFIG, (1<<MMCHS_SYSCONFIG_ENAWAKEUP));
 
@@ -76,7 +71,6 @@ static void initializeDefaultWakeUpConfiguration_Ch1(void){
  * Set the bus configuration to 1.8V, 1 bit data width and then power on
  */
 static void controllerBusConfiguration_Ch1(void){
-
     // Set open drain for broadcast (only for MMC)
     or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
 
@@ -126,9 +120,6 @@ void delayAfterCommand(void){
 
 volatile int sdCardType = -1;
 int32_t detectAndInitializeSdCard(void){
-
-    // TODO: make sure module is initialized!
-
     // Send initialization stream
     or32(MMCHS1_CON, (1<<MMCHS_CON_INIT));
 
@@ -149,9 +140,6 @@ int32_t detectAndInitializeSdCard(void){
 
     // NOT PART OF FLOW
     softwareResetCMDLine();
-
-    // TODO: "Change clock frequency to fit protocol" ???
-    // ...
 
     // Send CMD 0 command (reset all cards to idle state)
     sdCard_sendCommand(CMD0);
@@ -347,7 +335,6 @@ int32_t sdCard_initialize_Ch1(void){
  * A block is fixed to 512 bytes. Buffer must be of size 512. Returns how many bytes have been read (0 for error).
  */
 uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
-
     // Check if dat lines are in use
     while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_DATA_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_DATA_LINE)){
         // DATA lines are in use
