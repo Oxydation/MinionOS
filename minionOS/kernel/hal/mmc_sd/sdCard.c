@@ -120,42 +120,8 @@ void delayAfterCommand(void){
     for(i = 0; i < 20000UL; i++);
 }
 
-
-int32_t detectAndInitializeSdCard(void){
-    // Send initialization stream
-    or32(MMCHS1_CON, (1<<MMCHS_CON_INIT));
-
-    // Write 0 in cmd register
-    set32(MMCHS1_CMD, 0x00000000);
-
-    // wait 1 ms. This is impossible, because the clock divider cannot possibly be high enough. So just wait for a bit...
-    delayAfterCommand();
-
-    // Clear flag
-    or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_COMPLETE));
-
-    // End initialization stream
-    and32(MMCHS1_CON, ~(1<<MMCHS_CON_INIT));
-
-    // Clear MMCHS1_STAT register
-    set32(MMCHS1_STAT, 0xFFFFFFFF);
-
-    // NOT PART OF FLOW
-    softwareResetCMDLine();
-
-    // Send CMD 0 command (reset all cards to idle state)
-    sdCard_sendCommand(CMD0);
-    delayAfterCommand();
-    if((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_COMPLETE)) == (1<<MMCHS_STAT_COMMAND_COMPLETE)){
-        // TODO: not part of flow. Clear flag
-        or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_COMPLETE));
-    }
-
-
-    /*
-     * SDIO Card CHECK
-     */
-
+// Check if card is SDIO
+static uint32_t checkSDIO(void){
     // CMD 5
     while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
         // Line in use, wait until released
@@ -179,10 +145,11 @@ int32_t detectAndInitializeSdCard(void){
 
     softwareResetCMDLine();
 
-    /*
-     * SD Card v2 CHECK
-     */
+    return 0;
+}
 
+// Check if card is SD card v2
+static uint32_t checkSDCardV2(void){
     // CMD 8
     while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
         // Line in use, wait until released
@@ -213,10 +180,10 @@ int32_t detectAndInitializeSdCard(void){
 
     softwareResetCMDLine();
 
-    /*
-     * SD Card v1 CHECK
-     */
+    return 0;
+}
 
+static uint32_t checkSDCardV1(void){
     do{
         // CMD 55
         //sdCard_sendCommand(CMD55);
@@ -289,10 +256,10 @@ int32_t detectAndInitializeSdCard(void){
         softwareResetCMDLine();
     } while ((get32(MMCHS1_RSP10) & (1u<<31)) != (1u<<31));
 
+    return 0;
+}
 
-    /*
-     * MMC CHECK
-     */
+static uint32_t checkMMC(void){
     sdCard_sendCommand(CMD1);
     // Check if card is MMC
     do {
@@ -303,6 +270,60 @@ int32_t detectAndInitializeSdCard(void){
             return MMC;
         }
     } while ((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)) != (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT));
+
+    return 0;
+}
+
+int32_t detectAndInitializeSdCard(void){
+    // Send initialization stream
+    or32(MMCHS1_CON, (1<<MMCHS_CON_INIT));
+
+    // Write 0 in cmd register
+    set32(MMCHS1_CMD, 0x00000000);
+
+    // wait 1 ms. This is impossible, because the clock divider cannot possibly be high enough. So just wait for a bit...
+    delayAfterCommand();
+
+    // Clear flag
+    or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_COMPLETE));
+
+    // End initialization stream
+    and32(MMCHS1_CON, ~(1<<MMCHS_CON_INIT));
+
+    // Clear MMCHS1_STAT register
+    set32(MMCHS1_STAT, 0xFFFFFFFF);
+
+    // NOT PART OF FLOW
+    softwareResetCMDLine();
+
+    // Send CMD 0 command (reset all cards to idle state)
+    sdCard_sendCommand(CMD0);
+    delayAfterCommand();
+    if((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_COMPLETE)) == (1<<MMCHS_STAT_COMMAND_COMPLETE)){
+        // TODO: not part of flow. Clear flag
+        or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_COMPLETE));
+    }
+
+
+    // SDIO Card CHECK
+    if(checkSDIO()){
+        return SDIO;
+    }
+
+    // SD Card v2 CHECK
+    if(checkSDCardV2()){
+        return SDv2;
+    }
+
+    // SD Card v1 CHECK
+    if(checkSDCardV1()){
+        return SDv1;
+    }
+
+    // MMC Check
+    if(checkMMC()){
+        return MMC;
+    }
 
     // If program flow arrives here, it is an "unknown card"
     return UNDEFINED;
