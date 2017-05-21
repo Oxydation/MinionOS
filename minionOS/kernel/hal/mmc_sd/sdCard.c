@@ -12,6 +12,8 @@
 #include "kernel/hal/gpio/gpio.h"
 #include <stdio.h>
 
+#define SD_SECTOR_SIZE 512
+
 // Card address, after initialization. Initial value = 0
 static uint32_t gCardAddress = 0;
 
@@ -118,7 +120,7 @@ void delayAfterCommand(void){
     for(i = 0; i < 20000UL; i++);
 }
 
-volatile int sdCardType = -1;
+
 int32_t detectAndInitializeSdCard(void){
     // Send initialization stream
     or32(MMCHS1_CON, (1<<MMCHS_CON_INIT));
@@ -204,8 +206,6 @@ int32_t detectAndInitializeSdCard(void){
         {
             // SD Card > v2.
             // TODO: Handle SD card v2
-            volatile int asdf = 0;
-            asdf = 4;
             return SDv2;
         }
     } while ((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)) != (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT));
@@ -346,8 +346,7 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
     set32(MMCHS1_CMD, 0x071a0000);
     delayAfterCommand();
 
-    volatile uint32_t i = 0;
-    volatile uint32_t count = 0;
+
     // Send a CMD 16 setting block length
     set32(MMCHS1_IE, 0x100f0001);
     set32(MMCHS1_ARG, 0x00000200);
@@ -385,15 +384,15 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
     } else {
         // Command completed successfully. Now read data
         // Check if the Buffer Write Ready bit is set
+        volatile uint32_t i = 0;
         if((REG(MMCHS1_STAT) & (1<<5)) == (1<<5)){
-            for(i=0; i < 512; i+=4){ // 512 bytes, 4 bytes are read
+            for(i=0; i < SD_SECTOR_SIZE; i+=4){ // 512 bytes, 4 bytes are read
                 // Read data.
                 volatile uint32_t read_data = get32(MMCHS1_DATA);
                 buffer[i+3] = read_data >> 24;
                 buffer[i+2] = read_data >> 16;
                 buffer[i+1] = read_data >> 8;
                 buffer[i+0] = read_data;
-                count++;
                 delayAfterCommand();
             }
         } else {
@@ -404,7 +403,7 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
         // Reset buffer read ready
         or32(MMCHS1_STAT, (1<<5));
     }
-    return 512;
+    return SD_SECTOR_SIZE;
 }
 
 /*
@@ -433,7 +432,6 @@ void sdCard_setTransactionBlockCount(uint32_t blockNumber){
  */
 void sdCard_setTransactionBlockSize(uint32_t blockSize){
     // Make sure only the last 11 bits are written
-    // TODO: veryfiy if any 11 bit value can be written, or if the max. value stops at 0x400
     uint32_t last11BitsMasked = blockSize && 0x7FF;
 
     if(last11BitsMasked > MMCHS_1024_BYTE_BLOCK_SIZE){
