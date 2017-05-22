@@ -20,16 +20,37 @@
 #define LARGE_PAGE  1   /* 64 KB */
 
 /* access permissions */
+/* privileged mode / user mode */
+/* NA = no access, RO = read only, RW = read/write */
 #define NANA    0x0
 #define RWNA    0x1
 #define RWRO    0x2
 #define RWRW    0x3
-/* NA = no access, RO = read only, RW = read/write */
 
+/* caches and write buffer */
 #define cb      0x0     /* not cached / not buffered */
 #define cB      0x1     /* not cached / buffered */
 #define WT      0x2     /* write through cache */
 #define WB      0x3     /* write back cache */
+
+/* domains */
+#define D0              0
+#define D1              2
+#define D2              4
+#define D3              6
+#define D4              8
+#define D5              10
+#define D6              12
+#define D7              14
+#define D8              16
+#define D9              18
+#define D10             20
+#define D11             22
+#define D12             24
+#define D13             26
+#define D14             28
+#define D15             30
+#define CHANGE_ALL_DOM  0xffffffff
 
 typedef struct {
     uint32_t vAddress;          // identifies the starting address of a 1 MB section of virtual memory controlled by either a section entry or an L2 page table
@@ -63,7 +84,8 @@ int8_t mmu_attachPT(PageTable_t* pt);
 
 void mmu_setAllDomainAccesses(void);
 void mmu_setDomainAccess(uint32_t value, uint32_t mask);
-void controlSet(uint8_t value, uint16_t mask);
+
+void mmu_setControl(uint32_t value, uint32_t mask);
 
 void mmu_initMMU(void);
 

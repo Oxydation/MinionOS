@@ -213,13 +213,8 @@ int8_t mmu_attachPT(PageTable_t* pt) {
 }
 
 void mmu_setAllDomainAccesses(void) {
-
-    mmu_setDomainAccess(0x40, 0xffffffff);
-}
-
-
-void controlSet(uint8_t value, uint16_t mask) {
-
+    uint8_t right = RWNA << D3;
+    mmu_setDomainAccess(right, CHANGE_ALL_DOM);
 }
 
 void mmu_initMMU(void) {
