@@ -212,9 +212,11 @@ int8_t mmu_attachPT(PageTable_t* pt) {
     return 0;
 }
 
-void mmu_domainAccessSet(uint8_t value, uint16_t mask) {
+void mmu_setAllDomainAccesses(void) {
 
+    mmu_setDomainAccess(0x40, 0xffffffff);
 }
+
 
 void controlSet(uint8_t value, uint16_t mask) {
 

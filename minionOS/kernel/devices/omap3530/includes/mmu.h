@@ -60,7 +60,9 @@ int8_t mmu_mapCoarseTableRegion(Region_t* region);
 
 void mmu_attachAllPT(void);
 int8_t mmu_attachPT(PageTable_t* pt);
-void mmu_domainAccessSet(uint8_t value, uint16_t mask);
+
+void mmu_setAllDomainAccesses(void);
+void mmu_setDomainAccess(uint32_t value, uint32_t mask);
 void controlSet(uint8_t value, uint16_t mask);
 
 void mmu_initMMU(void);

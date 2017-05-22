@@ -59,6 +59,7 @@ int main(void)
     mmu_initAllPT();
     mmu_mapAllRegions();
     mmu_attachAllPT();
+    mmu_setAllDomainAccesses();
     _disable_interrupts();
     interrupts_initIrq();
 
