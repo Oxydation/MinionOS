@@ -263,7 +263,8 @@ static bool isReadyToTransmit(UART_t uartModule) {
 void transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
     // TODO buffer overflow?
     UART_t uartModule = modules[module];
-    for (int i = 0; i < bufferSize; i++) {
+    int i;
+    for (i = 0; i < bufferSize; i++) {
         while (!isReadyToTransmit(uartModule));
         *uartModule.THR = buffer[i];
     }
@@ -273,10 +274,11 @@ static bool hasReceived(UART_t uartModule) {
     return getBit(uartModule.LSR, LSR_RX_FIFO_E);
 }
 
-void receive(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
+void receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
     // TODO buffer overflow?
     UART_t uartModule = modules[module];
-    for (int i = 0; i < bufferSize; i++) {
+    int i;
+    for (i = 0; i < bufferSize; i++) {
         while (!hasReceived(uartModule));
         buffer[i] = *uartModule.RHR;
     }
