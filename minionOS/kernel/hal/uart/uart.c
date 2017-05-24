@@ -7,6 +7,8 @@
 #define UART2_BASE       0x4806C000
 #define UART3_BASE       0x49020000
 
+#define UART_OPERATING_FREQUENCY    48000000
+
 // Register offsets
 #define DLL_OFF     0x0
 #define DLH_OFF     0x4
@@ -46,6 +48,8 @@
 #define SCR_DMA_MODE_2_1    1
 
 #define LCR_PARITY_EN       3
+#define LCR_PARITY_TYPE2    5
+#define LCR_PARITY_TYPE1    4
 #define LCR_DIV_EN          7
 #define LCR_BREAK_EN        6
 #define LCR_CHAR_LENGTH_1   0
@@ -124,6 +128,19 @@ void restoreBit(uint8_t* address, uint8_t bit, uint8_t savedBit) {
     *address |= (savedBit << bit);
 }
 
+static uint16_t calcDivisor(uint64_t baudRate, UartBaudMultiple_t baudMultiple) {
+    uint8_t multiple;
+    switch (baudMultiple) {
+    case x16:
+        multiple = 16;
+        break;
+    case x13:
+        multiple = 13;
+        break;
+    }
+    return UART_OPERATING_FREQUENCY / (multiple * baudRate);
+}
+
 void doSwReset(UART_t uart) {
     // 17.5.1.1.1 Software Reset
     // 1. Initiate a software reset
@@ -172,7 +189,7 @@ static void setupFifoAndDma(UART_t uart) {
     *uart.LCR = savedLcr;
 }
 
-static void setupProtocolBaudAndInterrupt(UART_t uart) {
+static void setupProtocolBaudAndInterrupt(UART_t uart, UartConfig_t config) {
     // 17.5.1.1.3 Protocol, Baud Rate, and Interrupt Settings
     // 1. Disable UART to access UARTi.DLL_REG and UARTi.DLH_REG
     *uart.MDR1 = 0x7;
@@ -188,8 +205,9 @@ static void setupProtocolBaudAndInterrupt(UART_t uart) {
     // 6. Switch to register configuration mode B to access the UARTi.DLL_REG and UARTi.DLH_REG registers
     *uart.LCR = 0x00BF;
     // 7. Load the new divisor value
-    *uart.DLL = 0x1A;
-    *uart.DLH = 0x0;
+    uint16_t divisor = calcDivisor(config.baudRate, config.baudMultiple);
+    *uart.DLL = divisor;
+    *uart.DLH = divisor >> 8;
     // 8. Switch to register operational mode to access the UARTi.IER_REG register
     *uart.LCR = 0x0;
     // 9. Load the new interrupt configuration
@@ -202,12 +220,59 @@ static void setupProtocolBaudAndInterrupt(UART_t uart) {
     clearBit(uart.LCR, LCR_DIV_EN);
     clearBit(uart.LCR, LCR_BREAK_EN);
 
-    clearBit(uart.LCR, LCR_PARITY_EN);
+    switch (config.parityMode) {
+    case NO_PARITY:
+        clearBit(uart.LCR, LCR_PARITY_EN);
+        break;
+    case ODD_PARITY:
+        setBit(uart.LCR, LCR_PARITY_EN);
+        clearBit(uart.LCR, LCR_PARITY_TYPE1);
+        clearBit(uart.LCR, LCR_PARITY_TYPE2);
+        break;
+    case EVEN_PARITY:
+        setBit(uart.LCR, LCR_PARITY_EN);
+        setBit(uart.LCR, LCR_PARITY_TYPE1);
+        clearBit(uart.LCR, LCR_PARITY_TYPE2);
+        break;
+    case FORCED_1:
+        setBit(uart.LCR, LCR_PARITY_EN);
+        clearBit(uart.LCR, LCR_PARITY_TYPE1);
+        setBit(uart.LCR, LCR_PARITY_TYPE2);
+        break;
+    case FORCED_0:
+        setBit(uart.LCR, LCR_PARITY_EN);
+        setBit(uart.LCR, LCR_PARITY_TYPE1);
+        setBit(uart.LCR, LCR_PARITY_TYPE2);
+        break;
+    }
 
-    setBit(uart.LCR, LCR_CHAR_LENGTH_1);
-    setBit(uart.LCR, LCR_CHAR_LENGTH_2);
+    switch (config.wordLength) {
+    case LENGTH_5:
+        clearBit(uart.LCR, LCR_CHAR_LENGTH_1);
+        clearBit(uart.LCR, LCR_CHAR_LENGTH_2);
+        break;
+    case LENGTH_6:
+        setBit(uart.LCR, LCR_CHAR_LENGTH_1);
+        clearBit(uart.LCR, LCR_CHAR_LENGTH_2);
+        break;
+    case LENGTH_7:
+        clearBit(uart.LCR, LCR_CHAR_LENGTH_1);
+        setBit(uart.LCR, LCR_CHAR_LENGTH_2);
+        break;
+    case LENGTH_8:
+        setBit(uart.LCR, LCR_CHAR_LENGTH_1);
+        setBit(uart.LCR, LCR_CHAR_LENGTH_2);
+        break;
+    }
 
-    clearBit(uart.LCR, LCR_NB_STOP);
+    switch (config.stopMode) {
+    case STOP_1:
+        clearBit(uart.LCR, LCR_NB_STOP);
+        break;
+    case STOP_1_5:
+        setBit(uart.LCR, LCR_NB_STOP);
+        break;
+    }
     // 13. Load the new UART mode
     clearBit(uart.MDR1, MDR1_MODE_SELECT_1);
     clearBit(uart.MDR1, MDR1_MODE_SELECT_2);
@@ -252,7 +317,7 @@ void initModule(UartModule_t module, UartConfig_t config) {
     UART_t uartModule = modules[module];
     doSwReset(uartModule);
     setupFifoAndDma(uartModule);
-    setupProtocolBaudAndInterrupt(uartModule);
+    setupProtocolBaudAndInterrupt(uartModule, config);
     setupHwFlowControl(uartModule);
 }
 
@@ -284,29 +349,12 @@ void receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
     }
 }
 
+void enableBreak(UartModule_t module) {
+    UART_t uartModule = modules[module];
+    setBit(uartModule.LCR, LCR_BREAK_EN);
+}
 
-int uart_main(void) {
-    UART_t uart3 = createUart(UART3_BASE);
-
-    doSwReset(uart3);
-    setupFifoAndDma(uart3);
-    setupProtocolBaudAndInterrupt(uart3);
-    setupHwFlowControl(uart3);
-
-    char hi[] = "Hi";
-    int i = 0;
-    while (hi[i]) {
-        while (!(getBit(uart3.LSR, LSR_TX_FIFO_E)));
-        *uart3.THR = hi[i];
-        i++;
-    }
-
-    while (1) {
-        while (!getBit(uart3.LSR, LSR_RX_FIFO_E));
-        char in = *uart3.RHR;
-        while (!(getBit(uart3.LSR, LSR_TX_FIFO_E)));
-        *uart3.THR = in;
-    }
-
-    return 0;
+void disableBreak(UartModule_t module) {
+    UART_t uartModule = modules[module];
+    clearBit(uartModule.LCR, LCR_BREAK_EN);
 }
