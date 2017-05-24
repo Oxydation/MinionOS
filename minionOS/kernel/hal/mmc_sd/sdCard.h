@@ -30,6 +30,10 @@ typedef enum {
     CMD6,
     CMD7,
     CMD8,
+    CMD9,
+    CMD16,
+    CMD17,
+    CMD23,
     ACMD41,
     CMD55
     // and so on, until CMD63. TODO: finish implementation
@@ -224,7 +228,7 @@ void sdCard_sendInitializationSequence_Ch1(void);
 void sdCard_setTransactionBlockSize(uint32_t blockSize);
 void sdCard_setTransactionBlockCount(uint32_t blockNumber);
 
-void sdCard_sendCommand(SDCardCommands_t command);
+void sdCard_sendCommand(SDCardCommands_t command, uint32_t argument);
 
 uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address);
 

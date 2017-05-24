@@ -122,17 +122,8 @@ void delayAfterCommand(void){
 
 // Check if card is SDIO
 static uint32_t checkSDIO(void){
-    // CMD 5
-    while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
-        // Line in use, wait until released
-    }
-    // Enable CTO, CC, CEB
-    set32(MMCHS1_IE, 0x00050001);
-
-    // Send command (CMD5) + Response Type 48 bits
-    set32(MMCHS1_CMD, 0x05020000);
-
-    delayAfterCommand();
+    // CMD 5 to check for SDIO
+    sdCard_sendCommand(CMD5, 0);
 
     // Check if it is an SDIO card
     do {
@@ -156,16 +147,9 @@ static uint32_t checkSDCardV2(void){
     }
 
     or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT));
-    // 1<<8 => voltage of 2.7-3.6 V, 1<<9=> "low voltage" check pattern 10101010
-    set32(MMCHS1_ARG, 0x000001AA);
 
-    // Enable s CERR, CIE, CCRC, CC, CTO and CEB events
-    set32(MMCHS1_IE, 0x100f0001);
-
-    // Send CMD8
-    set32(MMCHS1_CMD, 0x081a0000);
-    delayAfterCommand();
-
+    // Send a CMD8 to check for SD card v2
+    sdCard_sendCommand(CMD8, 0x000001AA);
 
     // Read CC and CTO bits from from STAT to see if it is an SD card > v2
     do {
@@ -185,28 +169,13 @@ static uint32_t checkSDCardV2(void){
 
 static uint32_t checkSDCardV1(void){
     do{
-        // CMD 55
-        //sdCard_sendCommand(CMD55);
-        while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE))
-        {
-            // Line in use, wait until released
-        }
-        // Enable events
-        set32(MMCHS1_IE, 0x100f0001);
-
         or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT));
 
-        // Send CMD55
-        set32(MMCHS1_CMD, 0x371a0000);
-        delayAfterCommand();
-        // CMD 55 END
+        // Send CMD55, so that an ACMD command can be sent
+        sdCard_sendCommand(CMD55, 0);
 
-        // ACMD41
-        // Enable CTO, CC, CEB
-        set32(MMCHS1_IE, 0x00050001);
-        // Set command plus response type
-        set32(MMCHS1_CMD, (0x29<<24)|(0x02<<16));
-
+        // ACMD41, must be preceeded by a CMD55
+        sdCard_sendCommand(ACMD41, 0);
 
         // ACMD41 END
         delayAfterCommand();
@@ -220,33 +189,20 @@ static uint32_t checkSDCardV1(void){
                     break;
                 } else {
                     // Send a CMD 2 command to get information on how to access card content (CID register content)
-                    set32(MMCHS1_IE, 0x00070001);
-                    set32(MMCHS1_CMD, 0x02090000);
-                    delayAfterCommand();
-
+                    sdCard_sendCommand(CMD2, 0);
 
                     // Send a CMD 3 - ask the card to publish new relative card address (RCA)
-                    set32(MMCHS1_IE, 0x100f0001);
-                    set32(MMCHS1_ARG, 0x00000000);
-                    set32(MMCHS1_CMD, 0x031a0000);
-                    delayAfterCommand();
+                    sdCard_sendCommand(CMD3, 0x00000000);
 
                     // Get card address from register (48 bit response)
                     uint32_t adressedCard = get32(MMCHS1_RSP10) & 0xFFFF0000; // Upper 16 + stuff bits
                     gCardAddress = (adressedCard>>16);
+
                     // Read card CSD Register
-                    set32(MMCHS1_IE, 0x00070001);
-                    set32(MMCHS1_ARG, adressedCard); // Card address (upper 16 bits) + stuff bits
-                    set32(MMCHS1_CMD, 0x09090000);
-                    delayAfterCommand();
+                    sdCard_sendCommand(CMD9, adressedCard);
 
                     // Send a CMD 7 = Select card (after knowing its address). Sending 0 deselects all cards.
-                    // Bus in push pull mode
-                    delayAfterCommand();
-                    set32(MMCHS1_IE, 0x100f0001);
-                    set32(MMCHS1_ARG, adressedCard);
-                    set32(MMCHS1_CMD, 0x071a0000);
-                    delayAfterCommand();
+                    sdCard_sendCommand(CMD7, adressedCard);
 
                     return SDv1;
                 }
@@ -260,7 +216,7 @@ static uint32_t checkSDCardV1(void){
 }
 
 static uint32_t checkMMC(void){
-    sdCard_sendCommand(CMD1);
+    sdCard_sendCommand(CMD1,0);
     // Check if card is MMC
     do {
         if((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_COMPLETE)) == (1<<MMCHS_STAT_COMMAND_COMPLETE))
@@ -297,8 +253,8 @@ int32_t detectAndInitializeSdCard(void){
     softwareResetCMDLine();
 
     // Send CMD 0 command (reset all cards to idle state)
-    sdCard_sendCommand(CMD0);
-    delayAfterCommand();
+    sdCard_sendCommand(CMD0,0);
+
     if((get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_COMPLETE)) == (1<<MMCHS_STAT_COMMAND_COMPLETE)){
         // TODO: not part of flow. Clear flag
         or32(MMCHS1_STAT, (1<<MMCHS_STAT_COMMAND_COMPLETE));
@@ -362,42 +318,15 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
     }
 
     // CMD 7, select card
-    set32(MMCHS1_IE, 0x100f0001);
-    set32(MMCHS1_ARG, gCardAddress<<16);
-    set32(MMCHS1_CMD, 0x071a0000);
-    delayAfterCommand();
-
+    sdCard_sendCommand(CMD7, gCardAddress<<16);
 
     // Send a CMD 16 setting block length
-    set32(MMCHS1_IE, 0x100f0001);
-    set32(MMCHS1_ARG, 0x00000200);
-    set32(MMCHS1_CMD, 0x101a0000);
-    delayAfterCommand();
+    sdCard_sendCommand(CMD16, 0x00000200);
 
+    // Reset STAT register (cancelling any errors)
     set32(MMCHS1_STAT, 0xFFFFFFFF);
-    // Send a CMD 17 (one block, with data)
-    // Set block size and length (512 byte block, 1 block), 512 bytes
-    set32(MMCHS1_BLK, 0x00010200);
-    set32(MMCHS1_ARG, address); // Set block to read (byte address!)
 
-    // Enable interrupts
-    set32(MMCHS1_IE,
-          (1<<MMCHS_IE_COMMAND_COMPLETED_IE) |
-          (1<<MMCHS_IE_TRANSFER_COMPLETED_IE) |
-          (1<<MMCHS_IE_BUFFER_READ_READY_IE) |
-          (1<<MMCHS_IE_OUT_OF_BAND_IE) |
-          (1<<MMCHS_IE_COMMAND_TIMEOUT_ERROR_IE) |
-          (1<<MMCHS_IE_COMMAND_CRC_ERROR_IE) |
-          (1<<MMCHS_IE_COMMAND_END_BIT_ERROR_IE) |
-          (1<<MMCHS_IE_COMMAND_INDEX_ERROR_IE) |
-          (1<<MMCHS_IE_DATA_TIMEOUT_ERROR_IE) |
-          (1<<MMCHS_IE_DATA_CRC_ERROR_IE) |
-          (1<<MMCHS_IE_DATA_END_BIT_ERROR_IE) |
-          (1<<MMCHS_IE_CARD_ERROR_IE) |
-          (1<<MMCHS_IE_BAD_ACCESS_TO_DATA_SPACE_IE));
-
-    set32(MMCHS1_CMD, (17<<24) | (1<<21) | (1<<20) | (1<<19) | (0x2<<16) | (0<<5) | (1<<4)| (0<<2)| (0<<1));
-    delayAfterCommand();
+    sdCard_sendCommand(CMD17, address);
 
     // Check if there was an error sending the command. If yes, return
     if((get32(MMCHS1_STAT) & (1<<15)) == (1<<15)){
@@ -466,7 +395,7 @@ void sdCard_setTransactionBlockSize(uint32_t blockSize){
  * Send a command to an SD card. If an argument needs to be provided (no stuff bits), the
  * sdCard_sendCommandWithArgument should be used.
  */
-void sdCard_sendCommand(SDCardCommands_t command){
+void sdCard_sendCommand(SDCardCommands_t command, uint32_t argument){
     // Check if cmd line is in use
     while((get32(MMCHS1_PSTATE) & (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)) == (1<<MMCHS_PSTATE_COMMAND_INHIBIT_CMD_LINE)){
         // Line in use, wait until released
@@ -474,12 +403,8 @@ void sdCard_sendCommand(SDCardCommands_t command){
 
     switch (command){
     case CMD0:
-        // Set open drain for broadcast (only for MMC)
-        //or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
-
         // Enable CC, CEB events
         set32(MMCHS1_IE, 0x00040001);
-
         // Send CMD0
         set32(MMCHS1_CMD, 0x00000000);
         break;
@@ -489,52 +414,82 @@ void sdCard_sendCommand(SDCardCommands_t command){
         set32(MMCHS1_IE, 0x00050001);
         set32(MMCHS1_CMD, 0x01020000);
         break;
+    case CMD2:
+        set32(MMCHS1_IE, 0x00070001);
+        set32(MMCHS1_CMD, 0x02090000);
+        break;
+    case CMD3:
+        set32(MMCHS1_IE, 0x100f0001);
+        set32(MMCHS1_ARG, 0x00000000);
+        set32(MMCHS1_CMD, 0x031a0000);
+        break;
     case CMD5:
-        // Set open drain for broadcast (only for MMC)
-        //or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
-
         // Enable CTO, CC, CEB
         set32(MMCHS1_IE, 0x00050001);
-
         // Send command (CMD5) + Response Type 48 bits
         set32(MMCHS1_CMD, 0x05020000);
         break;
+    case CMD7:
+        set32(MMCHS1_IE, 0x100f0001);
+        set32(MMCHS1_ARG, argument);
+        set32(MMCHS1_CMD, 0x071a0000);
+        break;
     case CMD8:
-        // Set open drain for broadcast (only for MMC)
-        //or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
-
-        // 1<<8 => voltage of 2.7-3.6 V, check pattern 10101010
-        set32(MMCHS1_ARG, (1<<9)|(0xAA<<0));
-
+        set32(MMCHS1_ARG, argument);
         // Enable s CERR, CIE, CCRC, CC, CTO and CEB events
         set32(MMCHS1_IE, 0x100f0001);
-
         // Send CMD8
         set32(MMCHS1_CMD, 0x081a0000);
         break;
-    case ACMD41:
-        // Set open drain for broadcast (only for MMC)
-        //or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
+    case CMD9:
+        set32(MMCHS1_IE, 0x00070001);
+        set32(MMCHS1_ARG, argument); // Card address (upper 16 bits) + stuff bits
+        set32(MMCHS1_CMD, 0x09090000);
+        break;
+    case CMD16:
+        set32(MMCHS1_IE, 0x100f0001);
+        set32(MMCHS1_ARG, 0x00000200);
+        set32(MMCHS1_CMD, 0x101a0000);
+        break;
+    case CMD17:
+        set32(MMCHS1_BLK, 0x00010200);
+        set32(MMCHS1_ARG, argument); // Set block to read (byte address!)
 
+        // Enable interrupts
+        set32(MMCHS1_IE,
+              (1<<MMCHS_IE_COMMAND_COMPLETED_IE) |
+              (1<<MMCHS_IE_TRANSFER_COMPLETED_IE) |
+              (1<<MMCHS_IE_BUFFER_READ_READY_IE) |
+              (1<<MMCHS_IE_OUT_OF_BAND_IE) |
+              (1<<MMCHS_IE_COMMAND_TIMEOUT_ERROR_IE) |
+              (1<<MMCHS_IE_COMMAND_CRC_ERROR_IE) |
+              (1<<MMCHS_IE_COMMAND_END_BIT_ERROR_IE) |
+              (1<<MMCHS_IE_COMMAND_INDEX_ERROR_IE) |
+              (1<<MMCHS_IE_DATA_TIMEOUT_ERROR_IE) |
+              (1<<MMCHS_IE_DATA_CRC_ERROR_IE) |
+              (1<<MMCHS_IE_DATA_END_BIT_ERROR_IE) |
+              (1<<MMCHS_IE_CARD_ERROR_IE) |
+              (1<<MMCHS_IE_BAD_ACCESS_TO_DATA_SPACE_IE));
+
+        set32(MMCHS1_CMD, (17<<24) | (1<<21) | (1<<20) | (1<<19) | (0x2<<16) | (0<<5) | (1<<4)| (0<<2)| (0<<1));
+        break;
+    case ACMD41:
         // Enable CTO, CC, CEB
         set32(MMCHS1_IE, 0x00050001);
-
         // Set command plus response type
         set32(MMCHS1_CMD, (0x29<<24)|(0x02<<16));
         break;
     case CMD55:
-        // Set open drain for broadcast (only for MMC)
-        //or32(MMCHS1_CON, (1<<MMCHS_CON_OPEN_DRAIN_MODE));
-
         // Enable events
         set32(MMCHS1_IE, 0x100f0001);
-
         // Send CMD55
         set32(MMCHS1_CMD, 0x371a0000);
         break;
     default:
         break;
     }
+
+    delayAfterCommand();
 
     // CTO (timeout) ocurred
     if( (get32(MMCHS1_STAT) & (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)) == (1<<MMCHS_STAT_COMMAND_TIMEOUT_INTERRUPT)){
