@@ -7,7 +7,6 @@
 #include "kernel/hal/dmx/dmx.h"
 #include "kernel/hal/uart/uart.h"
 
-
 //DMX pins
 #define DMX_DI_PIN 6 //DI Driver Input of ST485
 #define DMX_DE_PIN 8 //DE Driver Output Enable of ST485
@@ -33,31 +32,18 @@ void dmx_writeToChannel(int channel, uint8_t value) {
 }
 
 int main_dmx(void) {
-    UartConfig_t config;
+    UartConfig_t config = { .baudMultiple = x16, .baudRate = 250000, .stopMode =
+                                    STOP_1,
+                            .parityMode = NO_PARITY, .wordLength = LENGTH_8 };
     initModule(UART2, config);
+    while (1) {
 
- /*       //TODO UART2 configuration
-
-        // 12. Load the new protocol formatting (parity, stop bit, char length) and switch to register operational mode
-        clearBit(uart2.LCR, LCR_DIV_EN);
-        clearBit(uart2.LCR, LCR_BREAK_EN);
-
-        clearBit(uart2.LCR, LCR_PARITY_EN);
-
-        setBit(uart2.LCR, LCR_CHAR_LENGTH_1);
-        setBit(uart2.LCR, LCR_CHAR_LENGTH_2);
-
-        clearBit(uart2.LCR, LCR_NB_STOP);
-
-
-        setBit(uart2.RHR, 0);
-        setBit(uart2.RHR, 1);
-        setBit(uart2.RHR, 2);
-        setBit(uart2.RHR, 3);
-        setBit(uart2.RHR, 4);
-        setBit(uart2.RHR, 5);
-        setBit(uart2.RHR, 6);
-        setBit(uart2.RHR, 7);*/
+        enableBreak(UART2);
+        volatile int i = 0;
+        while (i <= 10000) {
+            i++;
+        }
+        disableBreak(UART2);
 
         //fill dmxData
         dmxData[0] = 0; //StartCode
@@ -75,5 +61,6 @@ int main_dmx(void) {
 
         //send data
         transmit(UART2, dmxData, DMX_CHANNELS);
-        return 0;
     }
+    return 0;
+}
