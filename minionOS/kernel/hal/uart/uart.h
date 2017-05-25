@@ -48,9 +48,9 @@ void receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize);
 
 void transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize);
 
-void enableBreak(UartModule_t module);
+void enableModule(UartModule_t module);
 
-void disableBreak(UartModule_t module);
+void disableModule(UartModule_t module);
 
 void initModule(UartModule_t module, UartConfig_t config);
 

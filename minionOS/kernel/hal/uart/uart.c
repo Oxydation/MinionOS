@@ -349,12 +349,12 @@ void receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
     }
 }
 
-void enableBreak(UartModule_t module) {
+void enableModule(UartModule_t module) {
     UART_t uartModule = modules[module];
-    setBit(uartModule.LCR, LCR_BREAK_EN);
+    uartModule.MDR1 &= ~0x7;
 }
 
-void disableBreak(UartModule_t module) {
+void disableModule(UartModule_t module) {
     UART_t uartModule = modules[module];
-    clearBit(uartModule.LCR, LCR_BREAK_EN);
+    uartModule.MDR1 |= 0x7;
 }

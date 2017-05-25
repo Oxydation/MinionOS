@@ -38,12 +38,13 @@ int main_dmx(void) {
     initModule(UART2, config);
     while (1) {
 
-        enableBreak(UART2);
+        disableModule(UART2);
         volatile int i = 0;
         while (i <= 10000) {
             i++;
         }
-        disableBreak(UART2);
+
+        enableModule(UART2);
 
         //fill dmxData
         dmxData[0] = 0; //StartCode
