@@ -32,15 +32,20 @@ void dmx_writeToChannel(int channel, uint8_t value) {
 }
 
 int main_dmx(void) {
-    UartConfig_t config = { .baudMultiple = x16, .baudRate = 250000, .stopMode =
-                                    STOP_1,
-                            .parityMode = NO_PARITY, .wordLength = LENGTH_8 };
+    UartConfig_t config = {
+        .baudMultiple = x16,
+        .baudRate = 250000,
+        .stopMode =  STOP_1,
+        .parityMode = NO_PARITY,
+        .wordLength = LENGTH_8 };
+
     initModule(UART2, config);
+
     while (1) {
 
         disableModule(UART2);
-        volatile int i = 0;
-        while (i <= 10000) {
+        volatile uint32_t i = 0;
+        while (i <= 170) {
             i++;
         }
 
@@ -48,17 +53,29 @@ int main_dmx(void) {
 
         //fill dmxData
         dmxData[0] = 0; //StartCode
-        dmx_writeToChannel(1, 128);
-        dmx_writeToChannel(2, 128);
-        dmx_writeToChannel(3, 0);
-        dmx_writeToChannel(4, 0);
-        dmx_writeToChannel(5, 0);
-        dmx_writeToChannel(6, 255);
-        dmx_writeToChannel(7, 0);
-        dmx_writeToChannel(8, 255);
-        dmx_writeToChannel(9, 0);
-        dmx_writeToChannel(10, 0);
-        dmx_writeToChannel(11, 0);
+//        dmx_writeToChannel(1, 128);
+//        dmx_writeToChannel(2, 128);
+//        dmx_writeToChannel(3, 0);
+//        dmx_writeToChannel(4, 0);
+//        dmx_writeToChannel(5, 0);
+//        dmx_writeToChannel(6, 255);
+//        dmx_writeToChannel(7, 0);
+//        dmx_writeToChannel(8, 255);
+//        dmx_writeToChannel(9, 0);
+//        dmx_writeToChannel(10, 0);
+//        dmx_writeToChannel(11, 0);
+//
+        dmx_writeToChannel(1, 50);
+       dmx_writeToChannel(2, 100);
+       dmx_writeToChannel(3, 255);
+       dmx_writeToChannel(4, 0);
+       dmx_writeToChannel(5, 0);
+       dmx_writeToChannel(6, 255);
+       dmx_writeToChannel(7, 255);
+       dmx_writeToChannel(8, 255);
+       dmx_writeToChannel(9, 255);
+       dmx_writeToChannel(10, 255);
+       dmx_writeToChannel(11, 255);
 
         //send data
         transmit(UART2, dmxData, DMX_CHANNELS);

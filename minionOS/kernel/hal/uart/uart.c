@@ -351,10 +351,10 @@ void receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
 
 void enableModule(UartModule_t module) {
     UART_t uartModule = modules[module];
-    uartModule.MDR1 &= ~0x7;
+    *uartModule.MDR1 &= ~0x7;
 }
 
 void disableModule(UartModule_t module) {
     UART_t uartModule = modules[module];
-    uartModule.MDR1 |= 0x7;
+    *uartModule.MDR1 |= 0x7;
 }
