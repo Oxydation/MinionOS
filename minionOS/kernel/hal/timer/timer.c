@@ -121,7 +121,7 @@ static uint32_t getClockRateFromInterval(uint32_t interval_us)
       // use system clock
         return CLK_32KHZ; //TODO not working this way!
     }
-    else if (interval_us >= 1000)
+    else if (interval_us >= 65)
     {
         return CLK_32KHZ;
     }
