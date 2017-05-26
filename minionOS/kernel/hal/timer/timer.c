@@ -12,7 +12,7 @@
 
 static void init_timer(Timer_t * timer);
 static int8_t getFreeTimerIndex(void);
-static void isr_handler(uint32_t source);
+static void isr_handler(uint32_t source, PCB_t * currentPcb);
 static uint32_t getClockRateFromInterval(uint32_t interval_us);
 static float getSecondsFromMicroseconds(uint32_t microseconds);
 static uint32_t calcLoadValue(uint32_t clockRate, uint32_t interval_us);
@@ -77,10 +77,10 @@ static void init_timer(Timer_t * timer)
     interrupts_registerHandler(&isr_handler, irq_nr);
 }
 
-static void isr_handler(uint32_t source)
+static void isr_handler(uint32_t source, PCB_t * currentPcb)
 {
     TimerNumber_t timerNumber = timer_getTimerNumberFromIrqSource(source);
-    g_timer[timerNumber].callback();
+    g_timer[timerNumber].callback(currentPcb);
 }
 
 void timer_start(Timer_t * timer)
