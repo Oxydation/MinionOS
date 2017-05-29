@@ -18,6 +18,7 @@
 /* page sizes */
 #define SMALL_PAGE  0   /* 4 KB */
 #define LARGE_PAGE  1   /* 64 KB */
+#define SECTION     2   /* 1 MB */
 
 /* access permissions */
 /* privileged mode / user mode */
@@ -50,8 +51,22 @@
 #define D13             26
 #define D14             28
 #define D15             30
-#define CHANGE_ALL_DOM  0xffffffff
+#define MASK_ALL_DOM    0xffffffff
 
+/* CP15 c1 control register */
+#define ENABLE_MMU          (1 << 0)
+#define ENABLE_ALIGNMENT    (1 << 1)    /* alignment detection */
+#define ENABLE_D_CACHE      (1 << 2)    /* data cache */
+#define ENABLE_I_CACHE      (1 << 12)   /* instruction cache */
+
+#define CHANGE_MMU          (1 << 0)
+#define CHANGE_ALIGNMENT    (1 << 1)    /* alignment detection */
+#define CHANGE_D_CACHE      (1 << 2)    /* data cache */
+#define CHANGE_I_CACHE      (1 << 12)   /* instruction cache */
+#define CHANGE_TRE          (1 << 28)   /* controls the TEX remap functionality in the MMU */
+#define CHANGE_AFE          (1 << 29)   /* is the Access Flag Enable bit */
+
+/* structs */
 typedef struct {
     uint32_t vAddress;          // identifies the starting address of a 1 MB section of virtual memory controlled by either a section entry or an L2 page table
     uint32_t ptAddress;         // is the address where the page table is located in virtual memory
@@ -70,7 +85,98 @@ typedef struct {
     PageTable_t* PT;            // is a pointer to the Pagetable in which the region resides
 } Region_t;
 
-/* functions */
+typedef union {
+    struct {
+        uint8_t Type    : 2;
+        uint32_t IGN    : 30;   // ignore
+    } descriptor;
+    uint32_t raw;
+} FirstLevelFaultDescriptor_t;
+
+typedef union {
+    struct {
+        uint8_t Type    : 2;
+        uint8_t PXN     : 1;    // privileged execute-never bit
+        uint8_t NS      : 1;    // non-secure bit
+        uint8_t SBZ     : 1;    // should be zero
+        uint8_t DOM     : 4;    // domain
+        uint8_t IMP     : 1;    // implementation defined
+        uint32_t PTBA   : 22;   // page table base address
+    } descriptor;
+    uint32_t raw;
+} FirstLevelPagetableDescriptor_t;
+
+typedef union {
+    struct {
+        uint8_t PXN     : 1;    // privileged execute-never bit
+        uint8_t Type    : 1;
+        uint8_t B       : 1;    // buffered bit
+        uint8_t C       : 1;    // cached bit
+        uint8_t XN      : 1;    // execute-never bit
+        uint8_t DOM     : 4;    // domain
+        uint8_t IMP     : 1;    // implementation defined
+        uint8_t AP0_1   : 2;    // access permission bits [1:0]
+        uint8_t TEX     : 3;    // memory region attribute bits
+        uint8_t AP2     : 1;    // access permission bit [2]
+        uint8_t S       : 1;    // shared bit
+        uint8_t nG      : 1;    // not global bit (TLB)
+        uint8_t SBZ     : 1;    // should be zero
+        uint8_t NS      : 1;    // non-secure bit
+        uint16_t SBA    : 12;   // section base address
+    } descriptor;
+    uint32_t raw;
+} FirstLevelSectionDescriptor_t;
+
+typedef union {
+    struct {
+        uint8_t Type    : 2;
+        uint32_t IGN   : 30;   // ignore
+    } descriptor;
+    uint32_t raw;
+} SecondLevelFaultDescriptor_t;
+
+typedef union {
+    struct {
+        uint8_t Type    : 2;
+        uint8_t B       : 1;    // buffered bit
+        uint8_t C       : 1;    // cached bit
+        uint8_t AP1_0   : 2;    // access permission bits [1:0]
+        uint8_t SBZ     : 3;    // should be zero
+        uint8_t AP2     : 1;    // access permission bit [2]
+        uint8_t S       : 1;    // shared bit
+        uint8_t nG      : 1;    // not global bit (TLB)
+        uint8_t TEX     : 3;    // memory region attribute bits
+        uint8_t XN      : 1;    // executed-never bit
+        uint16_t LPBA   : 16;   // large page base address
+    } descriptor;
+    uint32_t raw;
+} SecondLevelLargePageDescriptor_t;
+
+typedef union {
+    struct {
+        uint8_t XN      : 1;    // execute-never bit
+        uint8_t Type    : 1;
+        uint8_t B       : 1;    // buffered bit
+        uint8_t C       : 1;    // cached bit
+        uint8_t AP1_0   : 2;    // access permission bits [1:0]
+        uint8_t TEX     : 3;    // memory region attribute bits
+        uint8_t AP2     : 1;    // access permission bit [2]
+        uint8_t S       : 1;    // shared bit
+        uint8_t nG      : 1;    // not global bit (TLB)
+        uint32_t SPBA   : 20;   // small page base address
+    } descriptor;
+    uint32_t raw;
+} SecondLevelSmallPageDescriptor_t;
+
+/* functions for creating descriptors */
+uint32_t mmu_createFirstLevelFaultDescriptor(void);
+uint32_t mmu_createFirstLevelPageTableDescriptor(uint8_t domain);
+uint32_t mmu_createFirstLevelSectionDescriptor(uint8_t domain, uint8_t buffered, uint8_t cached, uint8_t accessPermission);
+uint32_t mmu_createSecondLevelFaultDescriptor(void);
+uint32_t mmu_createSecondLevelLargePageDescriptor(uint8_t buffered, uint8_t cached, uint8_t accessPermission);
+uint32_t mmu_createSecondLevelSmallPageDescriptor(uint8_t buffered, uint8_t cached, uint8_t accessPermission);
+
+/* functions for initializing MMU */
 void mmu_initAllPT(void);
 int8_t mmu_initPT(PageTable_t* pt);
 
@@ -85,13 +191,19 @@ int8_t mmu_attachPT(PageTable_t* pt);
 void mmu_setAllDomainAccesses(void);
 void mmu_setDomainAccess(uint32_t value, uint32_t mask);
 
-void mmu_setControl(uint32_t value, uint32_t mask);
+void mmu_setMMUControl(uint32_t value, uint32_t mask);
 
 void mmu_initMMU(void);
 
-void ttbSet(uint8_t ttb);
-void flushCache(void);
-void flushTLB(void);
+void mmu_flushCache(void);
+void mmu_flushTLB(void);
 void processIDSet(uint8_t value);
+
+void mmu_writeValueToPTE(uint32_t* PTEptr, uint32_t value, uint16_t nrOfEntries);
+void mmu_initTTB(void);
+void mmu_setTTBR0(uint32_t ttb, uint32_t clearBitmask);
+void mmu_setTTBR1(uint32_t ttb, uint32_t clearBitmask);
+void mmu_setTTBCR(void);
+void mmu_initCP15(uint32_t vectorTableAddress);
 
 #endif /* KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_ */

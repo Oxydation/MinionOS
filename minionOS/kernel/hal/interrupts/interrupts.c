@@ -37,6 +37,7 @@ void disable_interrupts(){
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
+    printf("irq");
     //__asm(" STMFD SP!, {R0-R12, LR}"); // save critical context (Register, link register, spsr)
     //__asm(" MRS R11, SPSR");
 
@@ -81,22 +82,24 @@ void isr_swi(void)
 #pragma INTERRUPT (isr_fiq, FIQ)
 void isr_fiq(void)
 {
-
+    printf("fiq");
 }
 
 #pragma INTERRUPT (isr_undef, UDEF)
 void isr_undef(void)
 {
-
+    printf("udef");
 }
 #pragma INTERRUPT (isr_undef, DABT)
 void isr_dabt(void)
 {
-
+    printf("dabt");
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
 void isr_pabt(void)
 {
-
+    int i = 0;
+    int j = i + 1;
+    printf("pabt, %0", j);
 }

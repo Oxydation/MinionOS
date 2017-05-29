@@ -56,10 +56,6 @@ void timerHandler2(void)
 }
 int main(void)
 {
-    mmu_initAllPT();
-    mmu_mapAllRegions();
-    mmu_attachAllPT();
-    mmu_setAllDomainAccesses();
     _disable_interrupts();
     interrupts_initIrq();
 
@@ -67,14 +63,17 @@ int main(void)
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
     gpio_pinMode(GPIO_USR2_LED, OUTPUT);
 
+
 #ifdef USE_SYSTEMTMR
     systemTimer_init(1000);
 #else
     g_timer1 = timer_create(OVERFLOW, AUTORELOAD, 1000 * 1000, &timerHandler1);
     g_timer2 = timer_create(OVERFLOW, AUTORELOAD, 1000 * 500, &timerHandler2);
 #endif
+
     _enable_interrupts();
     _enable_IRQ();
+
 
 #ifdef USE_SYSTEMTMR
     //Start system timer and subscribe handlers
@@ -86,10 +85,10 @@ int main(void)
     timer_start(g_timer2);
 #endif
 
+    mmu_initMMU();
     modeSwitch_switchToUserMode();
     while (1)
     {
 
     }
-    return 0;
 }
