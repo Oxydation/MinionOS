@@ -56,13 +56,13 @@ void timerHandler2(void)
 }
 int main(void)
 {
+    mmu_initMMU();
     _disable_interrupts();
     interrupts_initIrq();
 
     // Set output direction
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
     gpio_pinMode(GPIO_USR2_LED, OUTPUT);
-
 
 #ifdef USE_SYSTEMTMR
     systemTimer_init(1000);
@@ -85,8 +85,8 @@ int main(void)
     timer_start(g_timer2);
 #endif
 
-    mmu_initMMU();
     modeSwitch_switchToUserMode();
+
     while (1)
     {
 

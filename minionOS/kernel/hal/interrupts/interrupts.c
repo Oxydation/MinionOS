@@ -37,7 +37,6 @@ void disable_interrupts(){
 #pragma INTERRUPT (isr_irq, IRQ)
 void isr_irq(void)
 {
-    printf("irq");
     //__asm(" STMFD SP!, {R0-R12, LR}"); // save critical context (Register, link register, spsr)
     //__asm(" MRS R11, SPSR");
 

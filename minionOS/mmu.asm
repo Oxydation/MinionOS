@@ -31,10 +31,6 @@ mmu_setMMUControl:
 	orr r2, r2, r0					; set bits
 	mcr p15, #0, r2, c1, c0, #0		; save content of register r2 to CP15:c1 register
 	nop								; time to allow MMU to finish
-	nop
-	nop
-	nop
-	nop
 	mov pc, lr						; jump back to calling function
 
 ;------------------------------------------------------------------------------------------------------

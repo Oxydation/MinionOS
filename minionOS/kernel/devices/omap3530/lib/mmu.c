@@ -24,12 +24,12 @@ PageTable_t task3PT = {0x00000000, 0x80510000, 0x80504000, COARSE, 0};
 
 /* Region tables */
 /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
-Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, cb, 0x40000000, &masterPTOS};
-Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, cb, 0x80000000, &masterPTOS};
-Region_t pageTableRegion = {0x80500000, LARGE_PAGE, 1, RWRW, cb, 0x80500000, &masterPTOS};
-Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, cb, 0x80600000, &task1PT};
-Region_t t2Region = {0x00000000, SMALL_PAGE, 256, RWRW, cb, 0x80700000, &task2PT};
-Region_t t3Region = {0x00000000, SMALL_PAGE, 256, RWRW, cb, 0x80800000, &task3PT};
+Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, WT, 0x40000000, &masterPTOS};
+Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, WT, 0x80000000, &masterPTOS};
+Region_t pageTableRegion = {0x80500000, LARGE_PAGE, 1, RWRW, WT, 0x80500000, &masterPTOS};
+Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80600000, &task1PT};
+Region_t t2Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80700000, &task2PT};
+Region_t t3Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80800000, &task3PT};
 
 void mmu_initTTB(void) {
     mmu_setTTBCR();
@@ -124,6 +124,7 @@ void mmu_mapSectionTableRegion(Region_t* region) {
     pAddress = region->pAddress & 0xfff00000;       /* take only bits [31:20] */
     for (i = 0; i < region->numPages; i++) {
         uint32_t descriptor = mmu_createFirstLevelSectionDescriptor(domain, buffered, cached, AP);
+        descriptor &= ~0xFFF00000;
         descriptor |= pAddress;
         *PTEptr++ = descriptor;
         pAddress += (1 << 20);                      /* jump to start of next 1 MB section */
@@ -280,7 +281,7 @@ void mmu_initMMU(void) {
 
     /* enable MMU, caches and write buffer */
     //enable = ENABLE_MMU | ENABLE_D_CACHE | ENABLE_I_CACHE;
-    enable = ENABLE_MMU; // | ENABLE_ALIGNMENT | ENABLE_I_CACHE | ENABLE_D_CACHE;
+    enable = ENABLE_MMU | ENABLE_ALIGNMENT | ENABLE_I_CACHE; // | ENABLE_D_CACHE;
     mmu_setMMUControl(enable, changeMask);
 }
 
@@ -317,6 +318,7 @@ uint32_t mmu_createFirstLevelSectionDescriptor(uint8_t domain, uint8_t buffered,
     sectionDescriptor.descriptor.nG = 0;
     sectionDescriptor.descriptor.SBZ = 0;
     sectionDescriptor.descriptor.NS = 0;
+    sectionDescriptor.descriptor.SBA = 0;
     return sectionDescriptor.raw;
 }
 
