@@ -10,6 +10,7 @@
 #include "global/types.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/systemModules/processManagement/processManager.h"
+#include "kernel/hal/dmx/dmx.h"
 
 void process1(void);
 void process2(void);
@@ -26,8 +27,8 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    processManager_loadProcess(&process1+0x4, 0x80607500);
-    processManager_loadProcess(&process2+0x4, 0x8060FF00);
+    processManager_loadProcess(&process1 + 0x4, 0x80607500);
+    //processManager_loadProcess(&process2 + 0x4, 0x8060FF00);
 
     //processManager_startFirstProcess();
 
@@ -39,6 +40,7 @@ int main(void)
 
     modeSwitch_switchToUserMode();
 
+
     while (1)
     {
 
@@ -49,13 +51,7 @@ int main(void)
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
-    volatile unsigned long i = 0;
-    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
-
-    while (1)
-    {
-        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    }
+   main_dmx();
 }
 
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80608000

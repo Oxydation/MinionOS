@@ -61,6 +61,14 @@ static int8_t getFreeTimerIndex(void)
     }
 }
 
+void timer_resetCounter(Timer_t * timer)
+{
+    uint32_t clockRate = getClockRateFromInterval(timer->interval_us);
+    uint32_t loadValue = calcLoadValue(clockRate, timer->interval_us);
+
+    timer_setTimerLoadValue(timer->timerNr, loadValue);
+}
+
 static void init_timer(Timer_t * timer)
 {
     uint32_t timerBaseAddress = timer_getTimerAddress(timer->timerNr);
@@ -97,7 +105,6 @@ void timer_clearInterruptFlag(Timer_t * timer)
 {
     omapTimer_clearInterruptFlag(timer->timerNr);
 }
-
 
 static uint32_t calcLoadValue(uint32_t clockRate, uint32_t interval_us)
 {
