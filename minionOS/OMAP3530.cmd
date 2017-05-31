@@ -19,7 +19,7 @@ MEMORY
 
 #ifndef DSP_CORE  /* ARM memory map */
     SRAM:           o = 0x40200000  l = 0x0000FFC0  /* 64kB Internal SRAM */
-    INTVEC:			o = 0x4020FFC0	l = 0x0000003F  // ffcc?
+    INTVEC:			o = 0x4020FFC0	l = 0x0000003F  /* 64B interrupt vector table */
     IVASHL2RAM:     o = 0x5C7F8000  l = 0x00008000  /* 32kB Shared IVA L2 RAM */
     IVASHL2RAM_C:   o = 0x5C800000  l = 0x00010000  /* 64kB Shared IVA L2 Cache RAM */
     IVASHL1PRAM:    o = 0x5CE00000  l = 0x00008000  /* 32kB Shared IVA L1 Program RAM */
@@ -27,15 +27,14 @@ MEMORY
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
     DDR0_OS:        o = 0x80000000  l = 0x00500000  /* 5 MB for operating system */
     DDR0_PT:		o = 0x80500000  l = 0x00020000  /* 128 KB for page tables (master & L2) */
- 	DDR0_T1:		o = 0x80520000	l = 0x00100000	/* 1 MB for task 1 */
- 	DDR0_T2:		o = 0x80620000	l = 0x00100000	/* 1 MB for task 2 */
- 	DDR0_T3:		o = 0x80720000	l = 0x00100000	/* 1 MB for task 3 */
- 	DDR0_REM:		o = 0x80820000	l = 0x3F600000	/* 1014 MB DDR0 remaining */
+ 	DDR0_PROC1:		o = 0x80600000	l = 0x00100000	/* 1 MB for task 1 */
+ 	DDR0_PROC2:		o = 0x80700000	l = 0x00100000	/* 1 MB for task 2 */
+ 	DDR0_REM:		o = 0x80800000	l = 0x3F800000	/* 1016 MB DDR0 remaining */
     DDR1:           o = 0xC0000000  l = 0x40000000  /* 1GB external DDR Bank 1 */
 
 #else             /* DSP memory map */
 
-    IVASHL2RAM:     o = 0x007F8000  l = 0x00008000  /* 32kB IVA L2 RAM */
+    IVASHL2RAM:     o = 0x007F8000  l = 0x10008000  /* 32kB IVA L2 RAM */
     IVASHL2RAM_C:   o = 0x00800000  l = 0x00010000  /* 64kB IVA L2 Cache RAM */
     IVASHL1PRAM:    o = 0x00E00000  l = 0x00008000  /* 32kB IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x00F04000  l = 0x0000C000  /* 48kB IVA L1 Data RAM */
@@ -44,16 +43,15 @@ MEMORY
 #endif
 }
 
-stackSize = 0x40000; // 1048kB
+stackSize = 0x20000; // 1048kB
 
 SECTIONS
 {
 	.intvecs	   >  INTVEC
 	.ISR		   >  SRAM
-	.DDR0_PT	   >  DDR0_PT
-	.DDR0_T1	   >  DDR0_T1
-	.DDR0_T2       >  DDR0_T2
-	.DDR0_T3	   >  DDR0_T3
+	.process1	   > DDR0_PROC1
+	.process2	   > DDR0_PROC2
+
 #ifndef DSP_CORE   /* ARM memory map */
 
     .text          >  DDR0_OS

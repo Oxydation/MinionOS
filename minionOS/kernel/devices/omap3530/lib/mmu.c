@@ -10,26 +10,20 @@
 
 /* Page tables */
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
-//PageTable_t masterPT = {0x80000000, 0x80500000, 0x80500000, MASTER, 3};
-//PageTable_t systemPT = {0x80000000, 0x80504000, 0x80500000, COARSE, 3};
-//PageTable_t task1PT =  {0x84700000, 0x80508000, 0x80500000, COARSE, 3};
-//PageTable_t task2PT =  {0x84700000, 0x8050C000, 0x80500000, COARSE, 3};
-//PageTable_t task3PT =  {0x84700000, 0x80510000, 0x80500000, COARSE, 3};
-
 PageTable_t masterPTOS = {0x80000000, 0x80500000, 0x80500000, MASTER, 0};
 PageTable_t masterPTProcess = {0x00000000, 0x80504000, 0x80504000, MASTER, 0};
 PageTable_t task1PT = {0x00000000, 0x80508000, 0x80504000, COARSE, 0};
 PageTable_t task2PT = {0x00000000, 0x8050C000, 0x80504000, COARSE, 0};
-PageTable_t task3PT = {0x00000000, 0x80510000, 0x80504000, COARSE, 0};
 
 /* Region tables */
 /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
 Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, WT, 0x40000000, &masterPTOS};
 Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, WT, 0x80000000, &masterPTOS};
-Region_t pageTableRegion = {0x80500000, LARGE_PAGE, 1, RWRW, WT, 0x80500000, &masterPTOS};
-Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80600000, &task1PT};
-Region_t t2Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80700000, &task2PT};
-Region_t t3Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80800000, &task3PT};
+Region_t pageTableRegion = {0x80500000, SECTION, 1, RWRW, WT, 0x80500000, &masterPTOS};
+//Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80600000, &task1PT};
+//Region_t t2Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80700000, &task2PT};
+Region_t t1Region = {0x80600000, SECTION, 1, RWRW, WT, 0x80600000, &masterPTOS};
+Region_t t2Region = {0x80700000, SECTION, 1, RWRW, WT, 0x80700000, &masterPTOS};
 
 void mmu_initTTB(void) {
     mmu_setTTBCR();
@@ -81,6 +75,8 @@ void mmu_mapAllRegions(void) {
     mmu_mapRegion(&bootRegion);
     mmu_mapRegion(&kernelRegion);
     mmu_mapRegion(&pageTableRegion);
+    mmu_mapRegion(&t1Region);
+    mmu_mapRegion(&t2Region);
     //mmu_mapRegion(&t1Region);
     //mmu_mapRegion(&t2Region);
     //mmu_mapRegion(&t3Region);

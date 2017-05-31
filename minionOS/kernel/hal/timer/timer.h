@@ -9,13 +9,14 @@
 #define KERNEL_HAL_TIMER_TIMER_H_
 
 #include "../../common/mmio.h"
+#include "kernel/systemModules/processManagement/contextSwitch.h"
 
 #define AMOUNT_OF_TIMERS 10
 #define MAX_TIMER_LOAD_VAL 0xFFFFFFFE
 
 #define CLK_32KHZ 32768 // clock period
 
-typedef void (*TickCallback_t)(void);
+typedef void (*TickCallback_t)(PCB_t *);
 
 // TIMER1 is not being used,
 // as setting the clock source is not a standard procedure

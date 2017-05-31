@@ -10,50 +10,15 @@
 #include <kernel/hal/timer/timer.h>
 #include <kernel/devices/omap3530/includes/mmu.h>
 #include "global/types.h"
+#include "kernel/systemModules/scheduler/scheduler.h"
+#include "kernel/systemModules/processManagement/processManager.h"
+#include "applications/syscallApi.h"
 
-#define USE_SYSTEMTMR 1 // uncomment if you want to test system timer; comment if you want to use bare timers
+#define USE_SYSTEMTMR   1
 
-uint8_t g_on1 = TRUE;
-uint8_t g_on2 = TRUE;
+void process1(void);
+void process2(void);
 
-Timer_t * g_timer1;
-Timer_t * g_timer2;
-
-void timerHandler1(void)
-{
-    if (g_on1)
-    {
-        gpio_digitalWrite(GPIO_USR1_LED, HIGH);
-        g_on1 = FALSE;
-    }
-    else
-    {
-        gpio_digitalWrite(GPIO_USR1_LED, LOW);
-        g_on1 = TRUE;
-    }
-
-#ifndef USE_SYSTEMTMR
-    timer_clearInterruptFlag(g_timer1);
-#endif
-}
-
-void timerHandler2(void)
-{
-    if (g_on2)
-    {
-        gpio_digitalWrite(GPIO_USR2_LED, HIGH);
-        g_on2 = FALSE;
-    }
-    else
-    {
-        gpio_digitalWrite(GPIO_USR2_LED, LOW);
-        g_on2 = TRUE;
-    }
-
-#ifndef USE_SYSTEMTMR
-    timer_clearInterruptFlag(g_timer2);
-#endif
-}
 int main(void)
 {
     mmu_initMMU();
@@ -61,34 +26,51 @@ int main(void)
     interrupts_initIrq();
 
     // Set output direction
+    gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
-    gpio_pinMode(GPIO_USR2_LED, OUTPUT);
 
-#ifdef USE_SYSTEMTMR
     systemTimer_init(1000);
-#else
-    g_timer1 = timer_create(OVERFLOW, AUTORELOAD, 1000 * 1000, &timerHandler1);
-    g_timer2 = timer_create(OVERFLOW, AUTORELOAD, 1000 * 500, &timerHandler2);
-#endif
+    scheduler_init();
+
+    processManager_loadProcess(&process1+0x4, 0x806FFC00);
+    processManager_loadProcess(&process2+0x4, 0x8070FF00);
+
+    //processManager_startFirstProcess();
 
     _enable_interrupts();
     _enable_IRQ();
 
-
-#ifdef USE_SYSTEMTMR
-    //Start system timer and subscribe handlers
     systemTimer_start();
-    systemTimer_subscribeCallback(1000, &timerHandler1);
-    systemTimer_subscribeCallback(500, &timerHandler2);
-#else
-    timer_start(g_timer1);
-    timer_start(g_timer2);
-#endif
+    scheduler_start();
 
     modeSwitch_switchToUserMode();
 
     while (1)
     {
 
+    }
+}
+
+#pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
+void process1(void)
+{
+    volatile unsigned long i = 0;
+    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
+
+    while (1)
+    {
+        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    }
+}
+
+#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80700000
+void process2(void)
+{
+    volatile unsigned long i = 0;
+    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
+
+    while (1)
+    {
+        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
     }
 }
