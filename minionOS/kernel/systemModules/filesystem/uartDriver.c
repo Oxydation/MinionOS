@@ -9,7 +9,7 @@
 
 static void open(UartModule_t module, const char* configFile) {
     int file = vfs_open(configFile);
-    if (file >= 0) {
+    if (isValidFile(file)) {
         char buf[100] = {};
         vfs_read(file, (uint8_t*) buf, sizeof(buf));
         UartConfig_t config;

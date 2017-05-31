@@ -1,9 +1,8 @@
 #include "kernel/systemModules/filesystem/vfs.h"
+#include "kernel/systemModules/shell/shell.h"
 
 void main(void) {
     vfs_init();
-    int file = vfs_open("/dev/uart3");
-    if (file >= 0) {
 
-    }
+    shell_loop();
 }

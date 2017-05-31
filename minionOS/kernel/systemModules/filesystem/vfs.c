@@ -29,7 +29,7 @@ int vfs_open(const char* fileName) {
     int i;
     for (i = 0; i < fileSystemCount; ++i) {
         int file = fileSystems[i]->open(fileName);
-        if (file >= 0) {
+        if (isValidFile(file)) {
             return concreteToVirtualDescriptor(file, i);
         }
     }

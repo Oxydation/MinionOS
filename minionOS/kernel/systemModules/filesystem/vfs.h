@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 
+#define isValidFile(fileDescriptor) (fileDescriptor >= 0)
 #define FILE_NOT_FOUND (-1)
 
 typedef struct {
