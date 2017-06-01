@@ -1,12 +1,6 @@
-/*
- * syscalls.c
- *
- *  Created on: 19.04.2017
- *      Author: Jasmin
- */
-#include <applications/syscallApi.h>
-#include <kernel/systemModules/syscalls/arguments.h>
-#include <kernel/systemModules/syscalls/syscallNumbers.h>
+#include "kernel/systemModules/systemCalls/systemCallArguments.h"
+#include "kernel/systemModules/systemCalls/systemCallNumber.h"
+#include "applications/systemCallApi.h"
 
 #define UNUSED_SWI_NUMBER 0
 

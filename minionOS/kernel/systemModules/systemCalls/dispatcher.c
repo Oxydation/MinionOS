@@ -1,11 +1,5 @@
-/*
- * dispatcher.c
- *
- *  Created on: 05.04.2017
- *      Author: Jasmin
- */
-#include <kernel/systemModules/syscalls/dispatcher.h>
-#include <kernel/systemModules/syscalls/syscallNumbers.h>
+#include "kernel/systemModules/systemCalls/systemCallNumber.h"
+#include "kernel/systemModules/systemCalls/dispatcher.h"
 #include "drivers/led/ledControl.h"
 
 void dispatcher_dispatch(SysCallArgs_t args) {

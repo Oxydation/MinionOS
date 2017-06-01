@@ -7,14 +7,14 @@
  *  Important information: The stack must be set up to handle interrupts.
  */
 
-#include <kernel/common/mmio.h>
-#include <kernel/devices/omap3530/includes/interrupts.h>
-#include <kernel/hal/interrupts/interrupts.h>
-#include <kernel/systemModules/syscalls/arguments.h>
-#include <kernel/systemModules/syscalls/dispatcher.h>
-#include <stdio.h>
-#include "global/types.h"
+#include "kernel/common/mmio.h"
+#include "kernel/devices/omap3530/includes/interrupts.h"
+#include "kernel/hal/interrupts/interrupts.h"
+#include "kernel/systemModules/systemCalls/dispatcher.h"
+#include "kernel/systemModules/systemCalls/systemCallArguments.h"
 #include "kernel/systemModules/processManagement/contextSwitch.h"
+#include "global/types.h"
+#include <stdio.h>
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
