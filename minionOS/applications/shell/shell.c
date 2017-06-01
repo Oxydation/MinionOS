@@ -15,7 +15,7 @@
 
 #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 
-int stdoutFile, stdinFile;
+static int stdoutFile, stdinFile;
 
 static char read() {
     uint8_t in;
@@ -53,6 +53,11 @@ static int tokenize(char lineBuffer[], char* tokenBuffer[]) {
 }
 
 static int execute(int argc, char* argv[]) {
+    if (strcmp(argv[0], "clear") == 0) {
+        write("\e[2J");
+        write("\e[H");
+        return 0;
+    }
     char buf[80];
     sprintf(buf, "%d arguments read.", argc);
     writeln(buf);
