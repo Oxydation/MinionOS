@@ -74,8 +74,8 @@ void isr_reset(void) {
 }
 
 #pragma INTERRUPT (isr_swi, SWI)
-void isr_swi(SysCallArgs_t args) {
-    dispatcher_dispatch(args);
+int isr_swi(SysCallArgs_t args) {
+    return dispatcher_dispatch(args);
 }
 
 #pragma INTERRUPT (isr_fiq, FIQ)

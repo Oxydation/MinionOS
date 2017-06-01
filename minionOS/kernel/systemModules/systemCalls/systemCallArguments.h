@@ -1,8 +1,10 @@
 #ifndef KERNEL_SYSTEMMODULES_SYSTEMCALLS_SYSTEMCALLARGUMENTS_H_
 #define KERNEL_SYSTEMMODULES_SYSTEMCALLS_SYSTEMCALLARGUMENTS_H_
 
+#include "systemCallNumber.h"
+
 typedef struct {
-    int syscallNumber;
+    SystemCallNumber systemCallNumber;
     int a;
     int b;
     int c;

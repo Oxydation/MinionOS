@@ -3,6 +3,6 @@
 
 #include "systemCallArguments.h"
 
-void dispatcher_dispatch(SysCallArgs_t args);
+int dispatcher_dispatch(SysCallArgs_t args);
 
 #endif /* KERNEL_SYSTEMMODULES_SYSTEMCALLS_DISPATCHER_H_ */
