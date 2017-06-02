@@ -2,6 +2,7 @@
 #include "deviceDriverFs.h"
 #include "confFs.h"
 #include <limits.h>
+#include <stddef.h>
 
 #define MAX_FILESYSTEMS (10)
 #define DESCRIPTORS_PER_FS  (1024)
@@ -53,6 +54,25 @@ void vfs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSiz
 
 void vfs_addFileSystem(FileSystem_t* fileSystem) {
     fileSystems[fileSystemCount++] = fileSystem;
+}
+
+const char* vfs_readdir(const char* dirName) {
+    static const char* currentDir;
+    static int currentFs;
+    if (!currentDir || currentDir != dirName) {
+        currentDir = dirName;
+        currentFs = 0;
+    }
+    const char* dirEntry
+    do {
+        dirEntry = fileSystems[currentFs]->readdir(currentDir);
+    } while (dirEntry == NULL && ++currentFs < fileSystemCount);
+
+    if (!dirEntry) {
+        currentDir = NULL;
+    }
+
+    return dirEntry;
 }
 
 void vfs_init(void) {

@@ -11,6 +11,7 @@ typedef struct {
     void (*close)(const int fileDescriptor);
     void (*read)(const int fileDescriptor, uint8_t* buffer, unsigned int bufferSize);
     void (*write)(const int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize);
+    const char* (*readdir)(const char* dirName);
     void (*init)(void);
 } FileSystem_t;
 
@@ -21,6 +22,8 @@ void vfs_close(int fileDescriptor);
 void vfs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize);
 
 void vfs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize);
+
+const char* vfs_readdir(const char* dirName);
 
 void vfs_init(void);
 

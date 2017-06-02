@@ -3,6 +3,7 @@
 #include "uartDriver.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define DEVICES_FOLDER "/dev/"
 #define MAX_DEVICES (10)
@@ -50,6 +51,33 @@ void devFs_addDevice(const char* name, FileOperations_t* fileOperations) {
     devices[deviceCount++] = dev;
 }
 
+const char* devFs_readdir(const char* dirName) {
+    static const char* currentDir;
+    static int currentDev;
+    if (!currentDir || currentDir != dirName) {
+        currentDir = dirName;
+        currentDev = 0;
+    }
+
+    bool matches = true;
+    int i = 0;
+    while (dirName[i] && matches) {
+        if (dirName[i] != devices[currentDev].name[i]) {
+            matches = false;
+        } else {
+            ++i;
+        }
+    }
+    // provided dirName ends without /
+    if (matches && devices[currentDev].name[i] == '/') {
+        return devices[currentDev].name[i + 1];
+    } else if (matches && devices[currentDev].name[i - 1] == '/') { // end with /
+        return devices[currentDev].name[i];
+    }
+
+}
+
+
 void devFs_init() {
     devFs_addDevice("uart1", &devUart1);
     devFs_addDevice("uart2", &devUart2);
@@ -61,5 +89,6 @@ FileSystem_t deviceDriverFs = {
         .open = devFs_open,
         .read = devFs_read,
         .write = devFs_write,
+        .readdir = devFs_readdir,
         .init = devFs_init
 };
