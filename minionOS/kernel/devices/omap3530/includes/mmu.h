@@ -77,6 +77,11 @@ typedef struct {
 } PageTable_t;
 
 typedef struct {
+    uint8_t reserved;
+    uint32_t processId;
+} PageStatus_t;
+
+typedef struct {
     uint32_t vAddress;          // is the starting address of the region in virtual memory
     uint16_t pageSize;          // is the size of a virtual page
     uint16_t numPages;          // is the number of pages in the region
@@ -84,6 +89,8 @@ typedef struct {
     uint8_t CB;                 // is the cache and write buffer attributes for the region
     uint32_t pAddress;          // is the starting address of the region in physical memory
     PageTable_t* PT;            // is a pointer to the page table in which the region resides
+    PageStatus_t* pageStatus;   // holds the status for each page of the region: 0 - page is free, 1 - page is occupied
+    uint16_t reservedPages;     // number of reserved pages in region
 } Region_t;
 
 typedef union {

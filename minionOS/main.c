@@ -34,8 +34,6 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    //mmu_initProcessOne();
-    //mmu_initProcessTwo();
     /* vAddress, pAddress, ptAddress */
     mmu_initProcess(0x00000000, 0x80600000, 0x80508000);
     mmu_initProcess(0x20000000, 0x80700000, 0x8050C000) ;

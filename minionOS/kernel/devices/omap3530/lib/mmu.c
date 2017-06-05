@@ -13,11 +13,16 @@
 PageTable_t masterPTOS = {0x80000000, 0x80500000, 0x80500000, MASTER, 0};
 PageTable_t masterPTProcess = {0x00000000, 0x80504000, 0x80504000, MASTER, 0};
 
+/* Page status arrays */
+PageStatus_t bootRegionStatus[1024];        // 1024 pages with 1 MB
+PageStatus_t kernelRegionStatus[5];         // 5 pages with 1 MB
+PageStatus_t pageTableRegionStatus[256];    // 256 pages with 4 KB
+
 /* Region tables */
-/* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
-Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, WT, 0x40000000, &masterPTOS};
-Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, WT, 0x80000000, &masterPTOS};
-Region_t pageTableRegion = {0x80500000, SECTION, 1, RWRW, WT, 0x80500000, &masterPTOS};
+/* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT, page status, nrOfReservedPages */
+Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, WT, 0x40000000, &masterPTOS, bootRegionStatus, 0};
+Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, WT, 0x80000000, &masterPTOS, kernelRegionStatus, 0};
+Region_t pageTableRegion = {0x80500000, SECTION, 1, RWRW, WT, 0x80500000, &masterPTOS, pageTableRegionStatus, 0};
 
 void mmu_initTTB(void) {
     mmu_setTTBCR();
