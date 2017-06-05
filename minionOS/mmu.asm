@@ -8,6 +8,7 @@
 	.global mmu_writeValueToPTE
 	.global mmu_initCP15
 	.global mmu_flushCache
+	.global mmu_startProcess
 
 ;------------------------------------------------------------------------------------------------------
 
@@ -105,3 +106,6 @@ mmu_initCP15:
 
 ;------------------------------------------------------------------------------------------------------
 
+mmu_startProcess:
+	mov pc, r0
+	mov pc, lr

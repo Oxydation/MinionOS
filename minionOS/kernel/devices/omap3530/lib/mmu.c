@@ -13,17 +13,18 @@
 PageTable_t masterPTOS = {0x80000000, 0x80500000, 0x80500000, MASTER, 0};
 PageTable_t masterPTProcess = {0x00000000, 0x80504000, 0x80504000, MASTER, 0};
 PageTable_t task1PT = {0x00000000, 0x80508000, 0x80504000, COARSE, 0};
-PageTable_t task2PT = {0x00000000, 0x8050C000, 0x80504000, COARSE, 0};
+//PageTable_t task2PT = {0x00000000, 0x8050C000, 0x80504000, COARSE, 0};
+PageTable_t task2PT = {0x20000000, 0x8050C000, 0x80504000, COARSE, 0};
 
 /* Region tables */
 /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
 Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, WT, 0x40000000, &masterPTOS};
 Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, WT, 0x80000000, &masterPTOS};
 Region_t pageTableRegion = {0x80500000, SECTION, 1, RWRW, WT, 0x80500000, &masterPTOS};
-//Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80600000, &task1PT};
-//Region_t t2Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80700000, &task2PT};
-Region_t t1Region = {0x80600000, SECTION, 1, RWRW, WT, 0x80600000, &masterPTOS};
-Region_t t2Region = {0x80700000, SECTION, 1, RWRW, WT, 0x80700000, &masterPTOS};
+Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80600000, &task1PT};
+Region_t t2Region = {0x20000000, SMALL_PAGE, 256, RWRW, WT, 0x80700000, &task2PT};
+//Region_t t1Region = {0x80600000, SECTION, 1, RWRW, WT, 0x80600000, &masterPTOS};
+//Region_t t2Region = {0x80700000, SECTION, 1, RWRW, WT, 0x80700000, &masterPTOS};
 
 void mmu_initTTB(void) {
     mmu_setTTBCR();
@@ -34,9 +35,8 @@ void mmu_initTTB(void) {
 void mmu_initAllPT(void) {
     mmu_initPT(&masterPTOS);
     mmu_initPT(&masterPTProcess);
-    //mmu_initPT(&task1PT);
-    //mmu_initPT(&task2PT);
-    //mmu_initPT(&task3PT);
+    mmu_initPT(&task1PT);
+    mmu_initPT(&task2PT);
 }
 
 /**
@@ -72,25 +72,22 @@ int8_t mmu_initPT(PageTable_t* pt) {
 }
 
 void mmu_mapAllRegions(void) {
-    mmu_mapRegion(&bootRegion);
-    mmu_mapRegion(&kernelRegion);
-    mmu_mapRegion(&pageTableRegion);
-    mmu_mapRegion(&t1Region);
-    mmu_mapRegion(&t2Region);
-    //mmu_mapRegion(&t1Region);
-    //mmu_mapRegion(&t2Region);
-    //mmu_mapRegion(&t3Region);
+    mmu_mapRegion(&bootRegion, bootRegion.numPages);
+    mmu_mapRegion(&kernelRegion, kernelRegion.numPages);
+    mmu_mapRegion(&pageTableRegion, pageTableRegion.numPages);
+    //mmu_mapRegion(&t1Region, t1Region.numPages);
+    //mmu_mapRegion(&t2Region, t2Region.numPages);
 }
 
-void mmu_mapRegion(Region_t* region) {
+void mmu_mapRegion(Region_t* region, uint16_t nrOfPages) {
 
     switch(region->PT->type) {
         case MASTER: {
-            mmu_mapSectionTableRegion(region);
+            mmu_mapSectionTableRegion(region, nrOfPages);
             break;
         }
         case COARSE: {
-            mmu_mapCoarseTableRegion(region);
+            mmu_mapCoarseTableRegion(region, nrOfPages);
             break;
         }
         default: {
@@ -99,11 +96,11 @@ void mmu_mapRegion(Region_t* region) {
     }
 }
 
-void mmu_mapSectionTableRegion(Region_t* region) {
+void mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages) {
 
     int16_t i;
-    uint32_t* PTEptr;                               /* pointer to page table entry */
-    uint32_t pAddress;                              /* physical address */
+    uint32_t* PTEptr;                                       /* pointer to page table entry */
+    uint32_t pAddress;                                      /* physical address */
     uint32_t tableIndex;
     uint8_t domain = region->PT->dom;
     uint8_t buffered = region->CB & 0x1;
@@ -111,80 +108,53 @@ void mmu_mapSectionTableRegion(Region_t* region) {
     uint8_t AP = region->AP;
 
     PTEptr = (uint32_t*)region->PT->ptAddress;
-    //tableIndex = region->vAddress &= ~0xC0000000;   /* clear bits [31:30] - see "Cortex A8 - TRM", Figure B3-9 */
     tableIndex = region->vAddress;
-    tableIndex = tableIndex >> 20;                  /* take bits [31:20] as table index */
+    tableIndex = tableIndex >> 20;                          /* take bits [31:20] as table index */
     tableIndex = tableIndex << 2;
-    PTEptr = (uint32_t*)((uint32_t)PTEptr + tableIndex);         /* set to first PTE in region */
+    PTEptr = (uint32_t*)((uint32_t)PTEptr + tableIndex);    /* set to first PTE in region */
 
-    pAddress = region->pAddress & 0xfff00000;       /* take only bits [31:20] */
-    for (i = 0; i < region->numPages; i++) {
+    pAddress = region->pAddress & 0xfff00000;               /* take only bits [31:20] */
+    for (i = 0; i < nrOfPages; i++) {
         uint32_t descriptor = mmu_createFirstLevelSectionDescriptor(domain, buffered, cached, AP);
         descriptor &= ~0xFFF00000;
         descriptor |= pAddress;
         *PTEptr++ = descriptor;
-        pAddress += (1 << 20);                      /* jump to start of next 1 MB section */
+        pAddress += (1 << 20);                              /* jump to start of next 1 MB section */
     }
 }
 
-int8_t mmu_mapCoarseTableRegion(Region_t* region) {
+int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages) {
 
     int16_t i;
-    uint32_t* PTEptr;
-    uint32_t PTE;
+    uint32_t* PTEptr;                                       /* pointer to page table entry */
+    uint32_t pAddress;                                      /* physical address */
+    uint32_t tableIndex;
+    uint8_t buffered = region->CB & 0x1;
+    uint8_t cached = region->CB >> 1;
     uint8_t AP = region->AP;
-    uint8_t C = region->CB & 0x10;
-    uint8_t B = region->CB & 0x01;
-    uint32_t pAddress;
 
-    PTEptr = (uint32_t*)region->PT->ptAddress;      /* base address of the page table */
+    PTEptr = (uint32_t*)region->PT->ptAddress;                  /* base address of the page table */
 
     switch (region->pageSize) {
         case LARGE_PAGE: {
-            PTEptr += (region->vAddress & 0x000ff000) >> 12;    /* set to first PTE in region */
-            while (*PTEptr != 0) {                              /* jumps over existing PTEs if page table maps more than one region */
-                PTEptr++;
-            }
-            PTEptr += (region->numPages - 1);                   /* set to last PTE in region */
-
-            PTE = region->pAddress & 0xffff0000;                /* set physical address - in large page 16 bits are for base physical address */
-            PTE |= AP << 10;                                /* set access permissions subpage 3 */
-            PTE |= AP << 8;                                 /* set access permissions subpage 2 */
-            PTE |= AP << 6;                                 /* set access permissions subpage 1 */
-            PTE |= AP << 4;                                 /* set access permissions subpage 0 */
-            PTE |= (region->CB & 0x3) << 2;                     /* set cache & WB attribute */
-            PTE |= 0x1;                                         /* set as large page */
-
-            for (i = region->numPages -1; i >= 0; i--) {
-                *PTEptr-- = PTE + (i << 16);                    /* i = 64 KB large page */
-            }
+            // TODO
             break;
         }
         case SMALL_PAGE: {
-//            PTEptr += (region->vAddress & 0x000ff000) >> 12;    /* set to first PTE in region */
-//            while (*PTEptr != 0) {                              /* jumps over existing PTEs if page table maps more than one region */
-//                PTEptr++;
-//            }
-//            PTEptr += (region->numPages - 1);                   /* set to last PTE in region */
 
-//            PTE = region->pAddress & 0xfffff000;                /* set physical address - in small page 20 bits are for base physical address */
-//            PTE |= tempAP << 10;                                /* set access permissions subpage 3 */
-//            PTE |= tempAP << 8;                                 /* set access permissions subpage 2 */
-//            PTE |= tempAP << 6;                                 /* set access permissions subpage 1 */
-//            PTE |= tempAP << 4;                                 /* set access permissions subpage 0 */
-//            PTE |= (region->CB & 0x3) << 2;                     /* set cache & WB attribute */
-//            PTE |= 0x2;                                         /* set as small page */
+            tableIndex = region->vAddress;
+            tableIndex &= ~0xFFF00000;                              /* clear bits [31:20] */
+            tableIndex = tableIndex >> 12;                          /* take bits [19:12] as table index */
+            tableIndex = tableIndex << 2;                           /* add two 0-bits at the end */
+            PTEptr = (uint32_t*)((uint32_t)PTEptr + tableIndex);    /* set to first PTE in region */
 
-//            for (i = region->numPages -1; i >= 0; i--) {        /* fill in table entries for region */
-//                *PTEptr-- = PTE + (i << 12);                    /* i = 4 KB small page */
-//            }
-//            break;
-
-            pAddress = region->pAddress & 0xfffff000;
-            for (i = 0; i <= region->numPages -1; i++) {
-                // TODO!
-                *PTEptr++ = mmu_createSecondLevelSmallPageDescriptor(B, C, AP);
-                pAddress += (i << 12);                          /* 4 KB small page */
+            pAddress = region->pAddress & 0xFFFFF000;               /* take only bits [31:12] */
+            for (i = 0; i < nrOfPages; i++) {
+                uint32_t descriptor = mmu_createSecondLevelSmallPageDescriptor(buffered, cached, AP);
+                descriptor &= ~0xFFFFF000;
+                descriptor |= pAddress;
+                *PTEptr++ = descriptor;
+                pAddress += (1 << 12);                              /* jump to start of next 4 KB page */
             }
             break;
         }
@@ -200,6 +170,27 @@ void mmu_attachAllPT(void) {
     //mmu_attachPT(&masterPT);
     //mmu_attachPT(&systemPT);
     //mmu_attachPT(&task1PT);
+}
+
+void mmu_attachProcessPT(PageTable_t* pt) {
+
+    uint32_t* masterPTEptr;
+    uint32_t tableIndex;
+    uint32_t pteEntry;
+    uint32_t pAddress;
+
+    masterPTEptr = (uint32_t*)masterPTProcess.ptAddress;
+
+    tableIndex = pt->vAddress;
+    tableIndex = tableIndex >> 20;      /* take bits [31:20] as table index */
+    tableIndex = tableIndex << 2;       /* add to 0-bits at the end */
+    pAddress = pt->ptAddress & 0xFFFFF000;
+
+    masterPTEptr = (uint32_t*)((uint32_t)masterPTEptr + tableIndex);
+    pteEntry = mmu_createFirstLevelPageTableDescriptor(pt->dom);
+    pteEntry &= ~0xFFFFF000;
+    pteEntry |= pAddress;
+    *masterPTEptr = pteEntry;
 }
 
 int8_t mmu_attachPT(PageTable_t* pt) {
@@ -354,3 +345,30 @@ uint32_t mmu_createSecondLevelSmallPageDescriptor(uint8_t buffered, uint8_t cach
     return spDescriptor.raw;
 }
 
+void mmu_initProcessOne(void) {
+
+    mmu_attachProcessPT(&task1PT);
+    mmu_initPT(&task1PT);
+    mmu_mapRegion(&t1Region, t1Region.numPages);    /* TODO: map only first page of region */
+
+    //processManager_loadProcess((uint32_t)t1Region.vAddress + 0x4, (uint32_t)t1Region.vAddress + 0x10000);
+    processManager_loadProcess(t1Region.vAddress, (uint32_t)t1Region.vAddress + 0x10000);
+}
+
+void mmu_initProcessTwo(void) {
+
+    mmu_attachProcessPT(&task2PT);
+    mmu_initPT(&task2PT);
+    mmu_mapRegion(&t2Region, t2Region.numPages);    /* TODO: map only first page of region */
+
+    //processManager_loadProcess((uint32_t)t2Region.vAddress + 0x4, (uint32_t)t2Region.vAddress + 0x10000);
+    processManager_loadProcess(t2Region.vAddress, (uint32_t)t2Region.vAddress + 0x10000);
+}
+
+void mmu_switchProcess(void) {
+    mmu_flushTLB();
+}
+
+void mmu_killProcess(void) {
+
+}

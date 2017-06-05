@@ -9,6 +9,7 @@
 #define KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_
 
 #include <inttypes.h>
+#include "kernel/systemModules/processManagement/processManager.h"
 
 /* page table types */
 #define FAULT   0
@@ -82,7 +83,7 @@ typedef struct {
     uint8_t AP;                 // is the region access permissions
     uint8_t CB;                 // is the cache and write buffer attributes for the region
     uint32_t pAddress;          // is the starting address of the region in physical memory
-    PageTable_t* PT;            // is a pointer to the Pagetable in which the region resides
+    PageTable_t* PT;            // is a pointer to the page table in which the region resides
 } Region_t;
 
 typedef union {
@@ -181,12 +182,13 @@ void mmu_initAllPT(void);
 int8_t mmu_initPT(PageTable_t* pt);
 
 void mmu_mapAllRegions(void);
-void mmu_mapRegion(Region_t* region);
-void mmu_mapSectionTableRegion(Region_t* region);
-int8_t mmu_mapCoarseTableRegion(Region_t* region);
+void mmu_mapRegion(Region_t* region, uint16_t nrOfPages);
+void mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages);
+int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages);
 
 void mmu_attachAllPT(void);
 int8_t mmu_attachPT(PageTable_t* pt);
+void mmu_attachProcessPT(PageTable_t* pt);
 
 void mmu_setAllDomainAccesses(void);
 void mmu_setDomainAccess(uint32_t value, uint32_t mask);
@@ -197,13 +199,19 @@ void mmu_initMMU(void);
 
 void mmu_flushCache(void);
 void mmu_flushTLB(void);
-void processIDSet(uint8_t value);
 
+/* assembler functions */
 void mmu_writeValueToPTE(uint32_t* PTEptr, uint32_t value, uint16_t nrOfEntries);
 void mmu_initTTB(void);
 void mmu_setTTBR0(uint32_t ttb, uint32_t clearBitmask);
 void mmu_setTTBR1(uint32_t ttb, uint32_t clearBitmask);
 void mmu_setTTBCR(void);
 void mmu_initCP15(uint32_t vectorTableAddress);
+
+/* functions for process management */
+void mmu_initProcessOne(void);
+void mmu_initProcessTwo(void);
+void mmu_switchProcess(void);
+void mmu_killProcess(void);
 
 #endif /* KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_ */

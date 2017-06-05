@@ -9,8 +9,9 @@
 #include "kernel/hal/timer/systemTimer.h"
 #include "global/queue/queue.h"
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
+#include "kernel/devices/omap3530/includes/mmu.h"
 
-#define SCHEDULER_INTERVAL_MS 50
+#define SCHEDULER_INTERVAL_MS 50       //50
 
 PCB_t g_processes[MAX_ALLOWED_PROCESSES];
 ProcessId_t nextProcessId = 1;
@@ -49,8 +50,9 @@ void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
                             uint32_t cpsr)
 {
     // 1. Step: Create PCB
-    PCB_t newProcessPcb = { .lr = startAddress, .processId = nextProcessId,
-                            .registers.R13 = stackPointer, .cpsr = cpsr };
+    PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = nextProcessId,
+                            .registers.R13 = stackPointer, .registers.R14 = startAddress,
+                            .cpsr = cpsr };
     // 2. Step store into pcb array
     g_processes[nextProcessId] = newProcessPcb;
 
@@ -60,6 +62,7 @@ void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
 
 static void handleSchedulerTick(PCB_t * currentPcb)
 {
+    mmu_flushTLB();
     if (g_queueReady.size > 0 && g_currentProcess == NULL)
     {
         g_currentProcess = getNextProcess();

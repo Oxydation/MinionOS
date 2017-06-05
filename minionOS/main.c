@@ -18,11 +18,14 @@
 
 void process1(void);
 void process2(void);
+void mmu_startProcess(uint32_t address);
 
 int main(void)
 {
-    mmu_initMMU();
     _disable_interrupts();
+
+    mmu_initMMU();
+
     interrupts_initIrq();
 
     // Set output direction
@@ -32,8 +35,12 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    processManager_loadProcess(&process1+0x4, 0x806FFC00);
-    processManager_loadProcess(&process2+0x4, 0x8070FF00);
+    mmu_initProcessOne();
+    mmu_initProcessTwo();
+    mmu_startProcess(0x20000000);
+
+    //processManager_loadProcess(&process1+0x4, 0x806FFC00);
+    //processManager_loadProcess(&process2+0x4, 0x807FFC00);
 
     //processManager_startFirstProcess();
 
@@ -42,6 +49,9 @@ int main(void)
 
     systemTimer_start();
     scheduler_start();
+
+    //mmu_startProcess(0x00000000);
+    //mmu_startProcess(0x20000000);
 
     modeSwitch_switchToUserMode();
 
@@ -57,10 +67,10 @@ void process1(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    while (1)
-    {
+    //while (1)
+    //{
         bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    }
+    //}
 }
 
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80700000
@@ -69,8 +79,8 @@ void process2(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    while (1)
-    {
+    //while (1)
+    //{
         bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    }
+    //}
 }

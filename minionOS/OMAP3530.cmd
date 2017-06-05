@@ -18,6 +18,7 @@ MEMORY
 
 
 #ifndef DSP_CORE  /* ARM memory map */
+    //DDR0_PROC1:		o = 0x00000000	l = 0x00100000
     SRAM:           o = 0x40200000  l = 0x0000FFC0  /* 64kB Internal SRAM */
     INTVEC:			o = 0x4020FFC0	l = 0x0000003F  /* 64B interrupt vector table */
     IVASHL2RAM:     o = 0x5C7F8000  l = 0x00008000  /* 32kB Shared IVA L2 RAM */
