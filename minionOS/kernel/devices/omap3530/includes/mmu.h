@@ -186,8 +186,6 @@ void mmu_mapRegion(Region_t* region, uint16_t nrOfPages);
 void mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages);
 int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages);
 
-void mmu_attachAllPT(void);
-int8_t mmu_attachPT(PageTable_t* pt);
 void mmu_attachProcessPT(PageTable_t* pt);
 
 void mmu_setAllDomainAccesses(void);
@@ -207,10 +205,13 @@ void mmu_setTTBR0(uint32_t ttb, uint32_t clearBitmask);
 void mmu_setTTBR1(uint32_t ttb, uint32_t clearBitmask);
 void mmu_setTTBCR(void);
 void mmu_initCP15(uint32_t vectorTableAddress);
+uint8_t mmu_getDataFaultStatus(void);
+uint32_t mmu_getDataFaultAddress(void);
+uint8_t mmu_getInstructionFaultStatus(void);
+uint32_t mmu_getInstructionFaultAddress(void);
 
 /* functions for process management */
-void mmu_initProcessOne(void);
-void mmu_initProcessTwo(void);
+void mmu_initProcess(uint32_t vAddress, uint32_t pAddress, uint32_t ptAddress);
 void mmu_switchProcess(void);
 void mmu_killProcess(void);
 

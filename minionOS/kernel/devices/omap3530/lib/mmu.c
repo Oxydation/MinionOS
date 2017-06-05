@@ -12,19 +12,12 @@
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
 PageTable_t masterPTOS = {0x80000000, 0x80500000, 0x80500000, MASTER, 0};
 PageTable_t masterPTProcess = {0x00000000, 0x80504000, 0x80504000, MASTER, 0};
-PageTable_t task1PT = {0x00000000, 0x80508000, 0x80504000, COARSE, 0};
-//PageTable_t task2PT = {0x00000000, 0x8050C000, 0x80504000, COARSE, 0};
-PageTable_t task2PT = {0x20000000, 0x8050C000, 0x80504000, COARSE, 0};
 
 /* Region tables */
 /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
 Region_t bootRegion = {0x40000000, SECTION, 1024, RWRW, WT, 0x40000000, &masterPTOS};
 Region_t kernelRegion = {0x80000000, SECTION, 5, RWRW, WT, 0x80000000, &masterPTOS};
 Region_t pageTableRegion = {0x80500000, SECTION, 1, RWRW, WT, 0x80500000, &masterPTOS};
-Region_t t1Region = {0x00000000, SMALL_PAGE, 256, RWRW, WT, 0x80600000, &task1PT};
-Region_t t2Region = {0x20000000, SMALL_PAGE, 256, RWRW, WT, 0x80700000, &task2PT};
-//Region_t t1Region = {0x80600000, SECTION, 1, RWRW, WT, 0x80600000, &masterPTOS};
-//Region_t t2Region = {0x80700000, SECTION, 1, RWRW, WT, 0x80700000, &masterPTOS};
 
 void mmu_initTTB(void) {
     mmu_setTTBCR();
@@ -35,8 +28,6 @@ void mmu_initTTB(void) {
 void mmu_initAllPT(void) {
     mmu_initPT(&masterPTOS);
     mmu_initPT(&masterPTProcess);
-    mmu_initPT(&task1PT);
-    mmu_initPT(&task2PT);
 }
 
 /**
@@ -75,8 +66,6 @@ void mmu_mapAllRegions(void) {
     mmu_mapRegion(&bootRegion, bootRegion.numPages);
     mmu_mapRegion(&kernelRegion, kernelRegion.numPages);
     mmu_mapRegion(&pageTableRegion, pageTableRegion.numPages);
-    //mmu_mapRegion(&t1Region, t1Region.numPages);
-    //mmu_mapRegion(&t2Region, t2Region.numPages);
 }
 
 void mmu_mapRegion(Region_t* region, uint16_t nrOfPages) {
@@ -166,12 +155,6 @@ int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages) {
     return 0;
 }
 
-void mmu_attachAllPT(void) {
-    //mmu_attachPT(&masterPT);
-    //mmu_attachPT(&systemPT);
-    //mmu_attachPT(&task1PT);
-}
-
 void mmu_attachProcessPT(PageTable_t* pt) {
 
     uint32_t* masterPTEptr;
@@ -191,42 +174,6 @@ void mmu_attachProcessPT(PageTable_t* pt) {
     pteEntry &= ~0xFFFFF000;
     pteEntry |= pAddress;
     *masterPTEptr = pteEntry;
-}
-
-int8_t mmu_attachPT(PageTable_t* pt) {
-
-    uint32_t* ttb;                          /* translation table base address */
-    uint32_t PTE;
-    uint32_t offset;
-    uint32_t * pEntry;
-
-    ttb = (uint32_t*)pt->masterPtAddress;   /* read translation table base address from PT */
-    offset = (pt->vAddress)>>20;            /* determine PTE from vAddress -> virtual address is divided by 1 MB
-                                               by shifting the virtual address right by 20 bits. Adding this offset
-                                               to the master L1 base address generates a pointer to the address
-                                               within the L1 master table that represents the translation for the
-                                               1 MB section */
-
-    switch (pt->type) {
-        case MASTER: {
-            //mmu_setTTBR0(ttb);
-            break;
-        }
-        case COARSE: {
-            /* PTE = addr L2 PT | domain | COARSE PT type */
-            PTE = (pt->ptAddress & 0xfffffc00);
-            PTE |= pt->dom<<5;
-            PTE |= 0x11;
-            pEntry = ttb + offset;      /* offset acts as an index */
-            *pEntry = PTE;
-            break;
-        }
-        default: {
-            printf("UNKNOWN page table type\n");
-            return -1;
-        }
-    }
-    return 0;
 }
 
 void mmu_setAllDomainAccesses(void) {
@@ -345,24 +292,19 @@ uint32_t mmu_createSecondLevelSmallPageDescriptor(uint8_t buffered, uint8_t cach
     return spDescriptor.raw;
 }
 
-void mmu_initProcessOne(void) {
+void mmu_initProcess(uint32_t vAddress, uint32_t pAddress, uint32_t ptAddress) {
 
-    mmu_attachProcessPT(&task1PT);
-    mmu_initPT(&task1PT);
-    mmu_mapRegion(&t1Region, t1Region.numPages);    /* TODO: map only first page of region */
+    /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
+    PageTable_t taskPT = {vAddress, ptAddress, masterPTProcess.ptAddress, COARSE, 0};
 
-    //processManager_loadProcess((uint32_t)t1Region.vAddress + 0x4, (uint32_t)t1Region.vAddress + 0x10000);
-    processManager_loadProcess(t1Region.vAddress, (uint32_t)t1Region.vAddress + 0x10000);
-}
+    /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
+    Region_t taskRegion = {vAddress, SMALL_PAGE, 256, RWRW, WT, pAddress, &taskPT};
 
-void mmu_initProcessTwo(void) {
+    mmu_attachProcessPT(&taskPT);
+    mmu_initPT(&taskPT);
+    mmu_mapRegion(&taskRegion, taskRegion.numPages);
 
-    mmu_attachProcessPT(&task2PT);
-    mmu_initPT(&task2PT);
-    mmu_mapRegion(&t2Region, t2Region.numPages);    /* TODO: map only first page of region */
-
-    //processManager_loadProcess((uint32_t)t2Region.vAddress + 0x4, (uint32_t)t2Region.vAddress + 0x10000);
-    processManager_loadProcess(t2Region.vAddress, (uint32_t)t2Region.vAddress + 0x10000);
+    processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
 }
 
 void mmu_switchProcess(void) {

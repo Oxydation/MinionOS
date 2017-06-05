@@ -8,7 +8,10 @@
 	.global mmu_writeValueToPTE
 	.global mmu_initCP15
 	.global mmu_flushCache
-	.global mmu_startProcess
+	.global mmu_getDataFaultStatus
+	.global mmu_getInstructionFaultStatus
+	.global mmu_getDataFaultAddress
+	.global mmu_getInstructionFaultAddress
 
 ;------------------------------------------------------------------------------------------------------
 
@@ -106,6 +109,24 @@ mmu_initCP15:
 
 ;------------------------------------------------------------------------------------------------------
 
-mmu_startProcess:
-	mov pc, r0
+mmu_getDataFaultStatus:
+	; TodO
+	mov pc, lr
+
+;------------------------------------------------------------------------------------------------------
+
+mmu_getInstructionFaultStatus:
+	; todo
+	mov pc, lr
+
+;------------------------------------------------------------------------------------------------------
+
+mmu_getDataFaultAddress:
+	; todo
+	mov pc, lr
+
+;------------------------------------------------------------------------------------------------------
+
+mmu_getInstructionFaultAddress:
+	; todo
 	mov pc, lr
