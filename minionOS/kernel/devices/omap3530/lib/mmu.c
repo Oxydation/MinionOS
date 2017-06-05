@@ -160,14 +160,14 @@ int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages) {
     return 0;
 }
 
-void mmu_attachProcessPT(PageTable_t* pt) {
+void mmu_attachPT(PageTable_t* pt, PageTable_t* masterPT) {
 
     uint32_t* masterPTEptr;
     uint32_t tableIndex;
     uint32_t pteEntry;
     uint32_t pAddress;
 
-    masterPTEptr = (uint32_t*)masterPTProcess.ptAddress;
+    masterPTEptr = (uint32_t*)masterPT->ptAddress;
 
     tableIndex = pt->vAddress;
     tableIndex = tableIndex >> 20;      /* take bits [31:20] as table index */
@@ -305,7 +305,7 @@ void mmu_initProcess(uint32_t vAddress, uint32_t pAddress, uint32_t ptAddress) {
     /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
     Region_t taskRegion = {vAddress, SMALL_PAGE, 256, RWRW, WT, pAddress, &taskPT};
 
-    mmu_attachProcessPT(&taskPT);
+    mmu_attachPT(&taskPT, &masterPTProcess);
     mmu_initPT(&taskPT);
     mmu_mapRegion(&taskRegion, taskRegion.numPages);
 
