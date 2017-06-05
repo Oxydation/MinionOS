@@ -319,3 +319,18 @@ void mmu_switchProcess(void) {
 void mmu_killProcess(void) {
 
 }
+
+int16_t mmu_findFreePageInRegion(Region_t* region) {
+
+    if (region->numPages == region->reservedPages) {
+        return -1;
+    }
+
+    int i;
+    for (i = 0; i < region->numPages; i++) {
+        if (region->pageStatus[i].reserved == 0) {
+            return i;
+        }
+    }
+    return -1;
+}

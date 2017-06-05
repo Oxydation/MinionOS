@@ -222,4 +222,6 @@ void mmu_initProcess(uint32_t vAddress, uint32_t pAddress, uint32_t ptAddress);
 void mmu_switchProcess(void);
 void mmu_killProcess(void);
 
+int16_t mmu_findFreePageInRegion(Region_t* region);
+
 #endif /* KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_ */
