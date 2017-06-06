@@ -9,7 +9,9 @@
 #define KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_
 
 #include <inttypes.h>
+#include <stdio.h>
 #include "kernel/systemModules/processManagement/processManager.h"
+#include "kernel/systemModules/scheduler/scheduler.h"
 
 /* page table types */
 #define FAULT   0
@@ -176,6 +178,11 @@ typedef union {
     uint32_t raw;
 } SecondLevelSmallPageDescriptor_t;
 
+typedef struct {
+    PCB_t* pcb;
+    PageTable_t* pageTable;
+} Process_t;
+
 /* functions for creating descriptors */
 uint32_t mmu_createFirstLevelFaultDescriptor(void);
 uint32_t mmu_createFirstLevelPageTableDescriptor(uint8_t domain);
@@ -205,6 +212,8 @@ void mmu_initMMU(void);
 void mmu_flushCache(void);
 void mmu_flushTLB(void);
 
+void mmu_setProcessPT(PageTable_t* pt);
+
 /* assembler functions */
 void mmu_writeValueToPTE(uint32_t* PTEptr, uint32_t value, uint16_t nrOfEntries);
 void mmu_initTTB(void);
@@ -219,7 +228,7 @@ uint32_t mmu_getInstructionFaultAddress(void);
 
 /* functions for process management */
 void mmu_initProcess(uint32_t vAddress, uint32_t pAddress);
-void mmu_switchProcess(void);
+void mmu_switchProcess(PCB_t pcb);
 void mmu_killProcess(void);
 
 int16_t mmu_findFreePageInRegion(Region_t* region);

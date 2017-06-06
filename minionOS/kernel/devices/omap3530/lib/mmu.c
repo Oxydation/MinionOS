@@ -6,7 +6,8 @@
  */
 
 #include <kernel/devices/omap3530/includes/mmu.h>
-#include <stdio.h>
+
+Process_t processes[MAX_ALLOWED_PROCESSES];
 
 /* Page tables */
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
@@ -29,6 +30,10 @@ void mmu_initTTB(void) {
     mmu_setTTBCR();
     mmu_setTTBR0(masterPTProcess.ptAddress, 0xFFF);     /* master PT for processes */
     mmu_setTTBR1(masterPTOS.ptAddress, 0x3FFF);          /* master PT for OS */
+}
+
+void mmu_setProcessPT(PageTable_t* pt) {
+    mmu_setTTBR0(pt->ptAddress, 0xFFF);
 }
 
 void mmu_initAllPT(void) {
@@ -336,12 +341,18 @@ void mmu_initProcess(uint32_t vAddress, uint32_t pAddress) {
         mmu_initPT(&taskPT);
         mmu_mapRegion(&taskRegion, taskRegion.numPages, processId);
 
-        processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
+        PCB_t pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
+        Process_t process = {.pcb = &pcb, .pageTable = &taskPT};
+        processes[pcb.processId] = process;
     }
 }
 
-void mmu_switchProcess(void) {
+void mmu_switchProcess(PCB_t pcb) {
+    Process_t* process = &processes[pcb.processId];
+    mmu_setProcessPT(process->pageTable);
+
     mmu_flushTLB();
+    mmu_flushCache();
 }
 
 void mmu_killProcess(void) {

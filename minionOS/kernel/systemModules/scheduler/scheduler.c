@@ -4,12 +4,8 @@
  *  Created on: 13 Apr 2017
  *      Author: Mathias
  */
-#include <stdio.h>
+
 #include "kernel/systemModules/scheduler/scheduler.h"
-#include "kernel/hal/timer/systemTimer.h"
-#include "global/queue/queue.h"
-#include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
-#include "kernel/devices/omap3530/includes/mmu.h"
 
 #define SCHEDULER_INTERVAL_MS 50       //50
 
@@ -46,8 +42,7 @@ void scheduler_stop(void)
     systemTimer_disableSubscription(g_systemTimerId);
 }
 
-void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
-                            uint32_t cpsr)
+PCB_t scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint32_t cpsr)
 {
     // 1. Step: Create PCB
     PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = nextProcessId,
@@ -58,11 +53,12 @@ void scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer,
 
     // 3. Load process into ready queue
     addReadyProcess(&g_processes[nextProcessId++]);
+
+    return g_processes[nextProcessId - 1];
 }
 
 static void handleSchedulerTick(PCB_t * currentPcb)
 {
-    mmu_flushTLB();
     if (g_queueReady.size > 0 && g_currentProcess == NULL)
     {
         g_currentProcess = getNextProcess();
