@@ -122,3 +122,7 @@ static PCB_t * removeBlockedProcess()
     queue_remove(&g_queueBlocked);
     return result;
 }
+
+ProcessId_t scheduler_getNexProcessId(void) {
+    return nextProcessId;
+}

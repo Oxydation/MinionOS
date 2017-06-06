@@ -24,4 +24,6 @@ void scheduler_stopProcess(ProcessId_t processId);
 void scheduler_blockProcess(ProcessId_t processId);
 void scheduler_unblockProcess(ProcessId_t processId);
 
+ProcessId_t scheduler_getNexProcessId(void);
+
 #endif /* KERNEL_SYSTEMMODULES_SCHEDULER_SCHEDULER_H_ */

@@ -77,8 +77,8 @@ typedef struct {
 } PageTable_t;
 
 typedef struct {
-    uint8_t reserved;
-    uint32_t processId;
+    char reserved;
+    uint8_t processId;
 } PageStatus_t;
 
 typedef struct {
@@ -87,10 +87,10 @@ typedef struct {
     uint16_t numPages;          // is the number of pages in the region
     uint8_t AP;                 // is the region access permissions
     uint8_t CB;                 // is the cache and write buffer attributes for the region
+    uint16_t reservedPages;     // number of reserved pages in region
     uint32_t pAddress;          // is the starting address of the region in physical memory
     PageTable_t* PT;            // is a pointer to the page table in which the region resides
     PageStatus_t* pageStatus;   // holds the status for each page of the region: 0 - page is free, 1 - page is occupied
-    uint16_t reservedPages;     // number of reserved pages in region
 } Region_t;
 
 typedef union {
@@ -189,9 +189,9 @@ void mmu_initAllPT(void);
 int8_t mmu_initPT(PageTable_t* pt);
 
 void mmu_mapAllRegions(void);
-void mmu_mapRegion(Region_t* region, uint16_t nrOfPages);
-void mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages);
-int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages);
+void mmu_mapRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId);
+void mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId);
+int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId);
 
 void mmu_attachPT(PageTable_t* pt, PageTable_t* masterPT);
 
@@ -218,7 +218,7 @@ uint8_t mmu_getInstructionFaultStatus(void);
 uint32_t mmu_getInstructionFaultAddress(void);
 
 /* functions for process management */
-void mmu_initProcess(uint32_t vAddress, uint32_t pAddress, uint32_t ptAddress);
+void mmu_initProcess(uint32_t vAddress, uint32_t pAddress);
 void mmu_switchProcess(void);
 void mmu_killProcess(void);
 
