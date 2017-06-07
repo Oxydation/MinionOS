@@ -11,10 +11,13 @@ int confFs_open(const char* fileName) {
 void confFs_close(int fileDescriptor) {
 }
 
-void confFs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
+int confFs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
     if (fileDescriptor == 0) {
-        strcpy((char*) buffer, "0 0 3 115200 0");
+        const char contents[] = "0 0 3 115200 0";
+        strcpy((char*) buffer, contents);
+        return sizeof(contents) - 1;
     }
+    return -1;
 }
 
 void confFs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize) {

@@ -3,6 +3,7 @@
 #include "confFs.h"
 #include <limits.h>
 #include <stddef.h>
+#include <string.h>
 
 #define MAX_FILESYSTEMS (10)
 #define DESCRIPTORS_PER_FS  (1024)
@@ -42,9 +43,9 @@ void vfs_close(int fileDescriptor) {
     fileSystems[descriptor.filesystem]->close(descriptor.concreteDescriptor);
 }
 
-void vfs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
+int vfs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
     ConcreteDescriptor_t descriptor = virtualToConcreteDescriptor(fileDescriptor);
-    fileSystems[descriptor.filesystem]->read(descriptor.concreteDescriptor, buffer, bufferSize);
+    return fileSystems[descriptor.filesystem]->read(descriptor.concreteDescriptor, buffer, bufferSize);
 }
 
 void vfs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize) {
@@ -57,29 +58,37 @@ void vfs_addFileSystem(FileSystem_t* fileSystem) {
 }
 
 const char* vfs_readdir(const char* dirName) {
-    static const char* currentDir;
+    static const char* previousDirectory;
     static int currentFs;
-    if (!currentDir || currentDir != dirName) {
-        currentDir = dirName;
+
+    if (previousDirectory == NULL || previousDirectory != dirName || strcmp(previousDirectory, dirName) != 0) {
+        previousDirectory = dirName;
         currentFs = 0;
     }
     const char* dirEntry;
     do {
-        dirEntry = fileSystems[currentFs]->readdir(currentDir);
+        dirEntry = fileSystems[currentFs]->readdir(previousDirectory);
     } while (dirEntry == NULL && ++currentFs < fileSystemCount);
 
     if (!dirEntry) {
-        currentDir = NULL;
+        previousDirectory = NULL;
     }
 
     return dirEntry;
 }
 
+static void initStdStreams() {
+    int stdout = vfs_open("/dev/uart3");
+}
+
 void vfs_init(void) {
     vfs_addFileSystem(&deviceDriverFs);
     vfs_addFileSystem(&confFs);
+
     int i;
     for (i = 0; i < fileSystemCount; ++i) {
         fileSystems[i]->init();
     }
+
+    initStdStreams();
 }

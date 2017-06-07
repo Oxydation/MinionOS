@@ -30,8 +30,9 @@ static void open(UartModule_t module, const char* configFile) {
 static void open1() {
     open(UART1, "/etc/uart/uart1.conf");
 }
-static void read1(uint8_t* buffer, unsigned int bufferSize) {
+static int read1(uint8_t* buffer, unsigned int bufferSize) {
     uart_receive(UART1, buffer, bufferSize);
+    return bufferSize;
 }
 static void write1(const uint8_t* buffer, unsigned int bufferSize) {
     uart_transmit(UART1, buffer, bufferSize);
@@ -40,8 +41,9 @@ static void write1(const uint8_t* buffer, unsigned int bufferSize) {
 static void open2() {
     open(UART2, UART2_CONF);
 }
-static void read2(uint8_t* buffer, unsigned int bufferSize) {
+static int read2(uint8_t* buffer, unsigned int bufferSize) {
     uart_receive(UART2, buffer, bufferSize);
+    return bufferSize;
 }
 static void write2(const uint8_t* buffer, unsigned int bufferSize) {
     uart_transmit(UART2, buffer, bufferSize);
@@ -50,8 +52,9 @@ static void write2(const uint8_t* buffer, unsigned int bufferSize) {
 static void open3() {
     open(UART3, UART3_CONF);
 }
-static void read3(uint8_t* buffer, unsigned int bufferSize) {
+static int read3(uint8_t* buffer, unsigned int bufferSize) {
     uart_receive(UART3, buffer, bufferSize);
+    return bufferSize;
 }
 static void write3(const uint8_t* buffer, unsigned int bufferSize) {
     uart_transmit(UART3, buffer, bufferSize);

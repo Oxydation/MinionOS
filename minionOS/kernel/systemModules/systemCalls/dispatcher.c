@@ -11,8 +11,7 @@ int dispatcher_dispatch(SysCallArgs_t args) {
     case SYSCALL_FILE_OPEN:
         return vfs_open((const char*) args.a);
     case SYSCALL_FILE_READ:
-        vfs_read(args.a, (uint8_t*) args.b, args.c);
-        break;
+        return vfs_read(args.a, (uint8_t*) args.b, args.c);
     case SYSCALL_FILE_WRITE:
         vfs_write(args.a, (const uint8_t*) args.b, args.c);
         break;
@@ -20,10 +19,8 @@ int dispatcher_dispatch(SysCallArgs_t args) {
         vfs_close(args.a);
         break;
     case SYSCALL_READDIR:
-        return vfs_readdir((const char*) args.a);
-    default:
-        //TODO
-        break;
+        return (int) vfs_readdir((const char*) args.a);
     }
+    return -1;
 }
 

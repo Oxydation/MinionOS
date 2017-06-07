@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 typedef struct {
-    void (*read)(uint8_t* buffer, unsigned int bufferSize);
+    int (*read)(uint8_t* buffer, unsigned int bufferSize);
     void (*write)(const uint8_t* buffer, unsigned int bufferSize);
     void (*open)(void);
     void (*release)(void);

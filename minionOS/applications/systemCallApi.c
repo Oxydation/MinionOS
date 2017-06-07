@@ -17,9 +17,9 @@ int sysCalls_openFile(const char* fileName) {
     return makeSysCall(args);
 }
 
-void sysCalls_readFile(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
+int sysCalls_readFile(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
     SysCallArgs_t args = { SYSCALL_FILE_READ, fileDescriptor, (int) buffer, bufferSize };
-    makeSysCall(args);
+    return makeSysCall(args);
 }
 
 void sysCalls_writeFile(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize) {

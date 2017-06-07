@@ -11,7 +11,7 @@ void sysCalls_enableLed(bool turnOn, int led);
 
 int sysCalls_openFile(const char* fileName);
 
-void sysCalls_readFile(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize);
+int sysCalls_readFile(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize);
 
 void sysCalls_writeFile(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize);
 

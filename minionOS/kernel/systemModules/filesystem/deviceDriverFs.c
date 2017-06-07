@@ -36,8 +36,8 @@ void devFs_close(int fileDescriptor) {
     devices[fileDescriptor].fileOperations->release();
 }
 
-void devFs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
-    devices[fileDescriptor].fileOperations->read(buffer, bufferSize);
+int devFs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
+    return devices[fileDescriptor].fileOperations->read(buffer, bufferSize);
 }
 
 void devFs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize) {
@@ -54,7 +54,7 @@ void devFs_addDevice(const char* name, FileOperations_t* fileOperations) {
 const char* devFs_readdir(const char* dirName) {
     static const char* currentDir;
     static int successiveCall;
-    if (!currentDir || currentDir != dirName) {
+    if (!currentDir || currentDir != dirName || strcmp(currentDir, dirName) != 0) {
         currentDir = dirName;
         successiveCall = 0;
     }
@@ -67,7 +67,11 @@ const char* devFs_readdir(const char* dirName) {
     } else {
         result = NULL;
     }
-    successiveCall += 1;
+    if (result) {
+        successiveCall += 1;
+    } else {
+        currentDir = NULL;
+    }
     return result;
 }
 
