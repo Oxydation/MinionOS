@@ -319,30 +319,33 @@ void mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages) {
     int16_t freePageIndexForPT = mmu_findFreePagesInRegion(&pageTableRegion, nrOfNeededPagesForPT);
     int16_t pageIndexOfProcess = mmu_getPageIndexInRegion(&processMemoryRegion, pAddress);
     uint32_t* ptPtr;
+    PageStatus_t* status = (PageStatus_t*)(processMemoryRegion.pageStatus + pageIndexOfProcess);
 
-    if (freePageIndexForPT != -1) {
+    if (status->reserved == 0) {
+        if (freePageIndexForPT != -1) {
 
-        ptPtr = (uint32_t*)((uint32_t)pageTableRegion.pAddress + freePageIndexForPT * SMALL_PAGE_SIZE);
+            ptPtr = (uint32_t*)((uint32_t)pageTableRegion.pAddress + freePageIndexForPT * SMALL_PAGE_SIZE);
 
-        PageTable_t taskPT = {VIRTUAL_START_ADDRESS, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
+            PageTable_t taskPT = {VIRTUAL_START_ADDRESS, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
 
-        PageStatus_t* ptStatus = (PageStatus_t*)(pageTableRegionStatus + freePageIndexForPT);
-        Region_t taskPTRegion = {(uint32_t)ptPtr, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)ptPtr, &pageTablePT, ptStatus};
-        pageTableRegion.reservedPages += nrOfNeededPagesForPT;
+            PageStatus_t* ptStatus = (PageStatus_t*)(pageTableRegionStatus + freePageIndexForPT);
+            Region_t taskPTRegion = {(uint32_t)ptPtr, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)ptPtr, &pageTablePT, ptStatus};
+            pageTableRegion.reservedPages += nrOfNeededPagesForPT;
 
-        uint8_t processId = processManager_getNextProcessId();
-        PageStatus_t* taskRegionStatus = (PageStatus_t*)(processMemoryRegionStatus + pageIndexOfProcess);
-        Region_t taskRegion = {VIRTUAL_START_ADDRESS, SECTION, nrOfNeededPages, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
-        processMemoryRegion.reservedPages += nrOfNeededPages;
+            uint8_t processId = processManager_getNextProcessId();
+            PageStatus_t* taskRegionStatus = (PageStatus_t*)(processMemoryRegionStatus + pageIndexOfProcess);
+            Region_t taskRegion = {VIRTUAL_START_ADDRESS, SECTION, nrOfNeededPages, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
+            processMemoryRegion.reservedPages += nrOfNeededPages;
 
-        mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
-        mmu_setProcessPT(taskPT);
-        mmu_initPT(&taskPT);
+            mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
+            mmu_setProcessPT(taskPT);
+            mmu_initPT(&taskPT);
 
-        PCB_t* pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
-        Process_t process = {.pcb = pcb, .pageTable = taskPT, .region = taskRegion};
-        processes[pcb->processId] = process;
-        mmu_reservePagesForProcess(&process);
+            PCB_t* pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
+            Process_t process = {.pcb = pcb, .pageTable = taskPT, .region = taskRegion};
+            processes[pcb->processId] = process;
+            mmu_reservePagesForProcess(&process);
+        }
     }
 }
 
