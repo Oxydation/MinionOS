@@ -111,6 +111,8 @@ typedef struct {
 UART_t modules[3] = { createUart(UART1_BASE), createUart(UART2_BASE),
         createUart(UART3_BASE) };
 
+static void setupProtocolBaudAndInterrupt(UART_t uart, UartConfig_t config);
+
 void setBit(uint8_t* address, uint8_t bit) {
     *address |= 1 << bit;
 }
@@ -187,6 +189,11 @@ static void setupFifoAndDma(UART_t uart) {
     restoreBit(uart.MCR, MCR_TCR_TLR, savedTcrTlr);
     // 12. Restore the UARTi.LCR_REG value saved in Step 1a
     *uart.LCR = savedLcr;
+}
+
+void uart_updateConfig(UartModule_t module, UartConfig_t config){
+    UART_t uartModule = modules[module];
+    setupProtocolBaudAndInterrupt(uartModule, config);
 }
 
 static void setupProtocolBaudAndInterrupt(UART_t uart, UartConfig_t config) {
@@ -325,6 +332,11 @@ static bool isReadyToTransmit(UART_t uartModule) {
     return getBit(uartModule.LSR, LSR_TX_FIFO_E);
 }
 
+static void delay(int amount){
+    volatile int i = 0;
+    for(i = 0; i < amount; i++);
+}
+
 void transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
     // TODO buffer overflow?
     UART_t uartModule = modules[module];
@@ -332,6 +344,7 @@ void transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
     for (i = 0; i < bufferSize; i++) {
         while (!isReadyToTransmit(uartModule));
         *uartModule.THR = buffer[i];
+        delay(15);
     }
 }
 

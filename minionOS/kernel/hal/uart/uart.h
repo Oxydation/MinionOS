@@ -54,4 +54,6 @@ void disableModule(UartModule_t module);
 
 void initModule(UartModule_t module, UartConfig_t config);
 
+void uart_updateConfig(UartModule_t module, UartConfig_t config);
+
 #endif
