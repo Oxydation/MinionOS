@@ -3,6 +3,7 @@
 #include "kernel/devices/omap3530/includes/uart.h"
 #include <inttypes.h>
 #include <stdbool.h>
+#include "global/delay/delay.h"
 
 typedef struct {
     uint8_t* MDR1;
@@ -67,10 +68,6 @@ static uint16_t calcDivisor(uint64_t baudRate, UartBaudMultiple_t baudMultiple) 
     return UART_OPERATING_FREQUENCY / (multiple * baudRate);
 }
 
-static void delay(int amount){
-    volatile int i = 0;
-    for(i = 0; i < amount; i++);
-}
 
 static void doSwReset(Uart_t uart) {
     // 17.5.1.1.1 Software Reset

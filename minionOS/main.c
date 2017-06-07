@@ -11,6 +11,9 @@
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/systemModules/processManagement/processManager.h"
 #include "kernel/hal/dmx/dmx.h"
+#include "drivers/dmx/tmh7/dmxTmh7.h"
+#include "drivers/dmx/mx25/dmxMx25.h"
+#include "global/delay/delay.h"
 
 void process1(void);
 void process2(void);
@@ -24,6 +27,8 @@ int main(void)
     gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
 
+    // Initialization
+    dmx_init();
     systemTimer_init(1000);
     scheduler_init();
 
@@ -51,7 +56,31 @@ int main(void)
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
-   main_dmx();
+    DmxDataTMH7_t data = {
+                                 .pan = 0,
+                                 .tilt = 100,
+                                 .green = 10,
+                                 .blue = 128,
+                                 .red = 10,
+                                 .dimmingIntensity = 20,
+                                 .colorMacro = 0,
+                                 .ledCircuit = 255,
+                                 .speed = 50,
+
+           };
+
+//    DmxDataMx25_t data = {
+//                                    .pan = 0,
+//                                    .tilt = 100,
+//
+//              };
+    while(1){
+        delay(900000);
+        data.pan+=1;
+
+        //dmx_sendMx25(1, &data);
+        dmx_sendTMH7(1, &data);
+    }
 }
 
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80608000
