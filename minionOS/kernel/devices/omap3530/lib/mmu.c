@@ -316,7 +316,7 @@ uint32_t mmu_createSecondLevelSmallPageDescriptor(uint8_t buffered, uint8_t cach
     return spDescriptor.raw;
 }
 
-void mmu_initProcess(uint32_t vAddress, uint32_t pAddress) {
+void mmu_initProcess(uint32_t pAddress) {
 
     uint16_t nrOfNeededPages = 4;
 
@@ -329,7 +329,7 @@ void mmu_initProcess(uint32_t vAddress, uint32_t pAddress) {
 
         /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
         //PageTable_t taskPT = {vAddress, (uint32_t)ptPtr, masterPTProcess.ptAddress, COARSE, 0};
-        PageTable_t taskPT = {vAddress, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
+        PageTable_t taskPT = {VIRTUAL_START_ADDRESS, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
 
         /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
         PageStatus_t* status = (PageStatus_t*)(pageTableRegionStatus + freePageIndexForPT);
@@ -337,7 +337,7 @@ void mmu_initProcess(uint32_t vAddress, uint32_t pAddress) {
 
         uint8_t processId = processManager_getNextProcessId();
         PageStatus_t taskRegionStatus[256] = {{0,0}};
-        Region_t taskRegion = {vAddress, SMALL_PAGE, 1, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
+        Region_t taskRegion = {VIRTUAL_START_ADDRESS, SMALL_PAGE, 1, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
 
         mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
         mmu_setProcessPT(taskPT);

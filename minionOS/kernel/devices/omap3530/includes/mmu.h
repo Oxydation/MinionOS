@@ -13,6 +13,8 @@
 #include "kernel/systemModules/processManagement/processManager.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
 
+#define VIRTUAL_START_ADDRESS   0x0000000
+
 /* page table types */
 #define FAULT   0
 #define COARSE  1
@@ -227,7 +229,7 @@ uint8_t mmu_getInstructionFaultStatus(void);
 uint32_t mmu_getInstructionFaultAddress(void);
 
 /* functions for process management */
-void mmu_initProcess(uint32_t vAddress, uint32_t pAddress);
+void mmu_initProcess(uint32_t pAddress);
 void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(void);
 
