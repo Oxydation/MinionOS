@@ -52,7 +52,7 @@ typedef struct {
 static Uart_t modules[3] = { createUart(UART1_BASE), createUart(UART2_BASE),
         createUart(UART3_BASE) };
 
-static void setupProtocolBaudAndInterrupt(UART_t uart, UartConfig_t config);
+static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config);
 
 static uint16_t calcDivisor(uint64_t baudRate, UartBaudMultiple_t baudMultiple) {
     uint8_t multiple;
@@ -122,7 +122,7 @@ static void setupFifoAndDma(Uart_t uart) {
 
 
 void uart_updateConfig(UartModule_t module, UartConfig_t config){
-    UART_t uartModule = modules[module];
+    Uart_t uartModule = modules[module];
     setupProtocolBaudAndInterrupt(uartModule, config);
 }
 
