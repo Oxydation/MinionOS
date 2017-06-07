@@ -180,7 +180,7 @@ typedef union {
 
 typedef struct {
     PCB_t* pcb;
-    PageTable_t* pageTable;
+    PageTable_t pageTable;
 } Process_t;
 
 /* functions for creating descriptors */
@@ -212,7 +212,7 @@ void mmu_initMMU(void);
 void mmu_flushCache(void);
 void mmu_flushTLB(void);
 
-void mmu_setProcessPT(PageTable_t* pt);
+void mmu_setProcessPT(PageTable_t pt);
 
 /* assembler functions */
 void mmu_writeValueToPTE(uint32_t* PTEptr, uint32_t value, uint16_t nrOfEntries);
@@ -228,9 +228,9 @@ uint32_t mmu_getInstructionFaultAddress(void);
 
 /* functions for process management */
 void mmu_initProcess(uint32_t vAddress, uint32_t pAddress);
-void mmu_switchProcess(PCB_t pcb);
+void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(void);
 
-int16_t mmu_findFreePageInRegion(Region_t* region);
+int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages);
 
 #endif /* KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_ */

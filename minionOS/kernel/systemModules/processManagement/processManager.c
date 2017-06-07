@@ -7,7 +7,7 @@
 
 #include "processManager.h"
 
-PCB_t processManager_loadProcess(uint32_t startAddress, uint32_t stackPointer){
+PCB_t* processManager_loadProcess(uint32_t startAddress, uint32_t stackPointer){
     return scheduler_startProcess(startAddress, stackPointer, 0x60000110);
 }
 

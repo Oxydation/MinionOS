@@ -42,7 +42,7 @@ void scheduler_stop(void)
     systemTimer_disableSubscription(g_systemTimerId);
 }
 
-PCB_t scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint32_t cpsr)
+PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint32_t cpsr)
 {
     // 1. Step: Create PCB
     PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = nextProcessId,
@@ -54,7 +54,7 @@ PCB_t scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint3
     // 3. Load process into ready queue
     addReadyProcess(&g_processes[nextProcessId++]);
 
-    return g_processes[nextProcessId - 1];
+    return &g_processes[nextProcessId - 1];
 }
 
 static void handleSchedulerTick(PCB_t * currentPcb)
@@ -64,6 +64,7 @@ static void handleSchedulerTick(PCB_t * currentPcb)
         g_currentProcess = getNextProcess();
         copyPcb(g_currentProcess, currentPcb);
         currentPcb->processId = g_currentProcess->processId;
+        mmu_switchProcess(currentPcb);
     }
     else if (g_queueReady.size > 0 && g_currentProcess != NULL)
     {
@@ -75,6 +76,7 @@ static void handleSchedulerTick(PCB_t * currentPcb)
         g_currentProcess = getNextProcess();
         copyPcb(g_currentProcess, currentPcb);
         currentPcb->processId = g_currentProcess->processId;
+        mmu_switchProcess(currentPcb);
     }
     else if (g_queueReady.size == 0)
     {

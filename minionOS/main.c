@@ -39,7 +39,7 @@ int main(void)
 
     /* vAddress, pAddress, ptAddress */
     mmu_initProcess(0x00000000, 0x80600000);
-    mmu_initProcess(0x20000000, 0x80700000) ;
+    mmu_initProcess(0x00000000, 0x80700000) ;
 
     _enable_interrupts();
     _enable_IRQ();

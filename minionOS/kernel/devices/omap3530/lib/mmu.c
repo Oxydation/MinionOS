@@ -12,7 +12,7 @@ Process_t processes[MAX_ALLOWED_PROCESSES];
 /* Page tables */
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
 PageTable_t masterPTOS = {0x80000000, 0x80500000, 0x80500000, MASTER, 0};
-PageTable_t masterPTProcess = {0x00000000, 0x80508000, 0x80508000, MASTER, 0};
+//PageTable_t masterPTProcess = {0x00000000, 0x80508000, 0x80508000, MASTER, 0};
 PageTable_t pageTablePT = {0x80500000, 0x80504000, 0x80500000, COARSE, 0};
 
 /* Page status arrays */
@@ -28,17 +28,17 @@ Region_t pageTableRegion = {0x80500000, SMALL_PAGE, 256, RWRW, WT, 0, 0x80500000
 
 void mmu_initTTB(void) {
     mmu_setTTBCR();
-    mmu_setTTBR0(masterPTProcess.ptAddress, 0xFFF);     /* master PT for processes */
+    //mmu_setTTBR0(masterPTProcess.ptAddress, 0xFFF);     /* master PT for processes */
     mmu_setTTBR1(masterPTOS.ptAddress, 0x3FFF);          /* master PT for OS */
 }
 
-void mmu_setProcessPT(PageTable_t* pt) {
-    mmu_setTTBR0(pt->ptAddress, 0xFFF);
+void mmu_setProcessPT(PageTable_t pt) {
+    mmu_setTTBR0(pt.ptAddress, 0xFFF);
 }
 
 void mmu_initAllPT(void) {
     mmu_initPT(&masterPTOS);
-    mmu_initPT(&masterPTProcess);
+    //mmu_initPT(&masterPTProcess);
     mmu_initPT(&pageTablePT);
 }
 
@@ -318,7 +318,9 @@ uint32_t mmu_createSecondLevelSmallPageDescriptor(uint8_t buffered, uint8_t cach
 
 void mmu_initProcess(uint32_t vAddress, uint32_t pAddress) {
 
-    int16_t freePageIndexForPT = mmu_findFreePageInRegion(&pageTableRegion);
+    uint16_t nrOfNeededPages = 4;
+
+    int16_t freePageIndexForPT = mmu_findFreePagesInRegion(&pageTableRegion, nrOfNeededPages);
     uint32_t* ptPtr;
 
     if (freePageIndexForPT != -1) {
@@ -326,29 +328,32 @@ void mmu_initProcess(uint32_t vAddress, uint32_t pAddress) {
         ptPtr = (uint32_t*)((uint32_t)pageTableRegion.pAddress + freePageIndexForPT * 0x1000);
 
         /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
-        PageTable_t taskPT = {vAddress, (uint32_t)ptPtr, masterPTProcess.ptAddress, COARSE, 0};
+        //PageTable_t taskPT = {vAddress, (uint32_t)ptPtr, masterPTProcess.ptAddress, COARSE, 0};
+        PageTable_t taskPT = {vAddress, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
 
         /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
         PageStatus_t* status = (PageStatus_t*)(pageTableRegionStatus + freePageIndexForPT);
-        Region_t taskPTRegion = {(uint32_t)ptPtr, SMALL_PAGE, 4, RWRW, WT, 0, (uint32_t)ptPtr, &pageTablePT, status};
+        Region_t taskPTRegion = {(uint32_t)ptPtr, SMALL_PAGE, nrOfNeededPages, RWRW, WT, 0, (uint32_t)ptPtr, &pageTablePT, status};
 
         uint8_t processId = processManager_getNextProcessId();
         PageStatus_t taskRegionStatus[256] = {{0,0}};
-        Region_t taskRegion = {vAddress, SMALL_PAGE, 256, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
+        Region_t taskRegion = {vAddress, SMALL_PAGE, 1, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
 
         mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
-        mmu_attachPT(&taskPT, &masterPTProcess);
+        mmu_setProcessPT(taskPT);
+        //mmu_attachPT(&taskPT, &masterPTProcess);
         mmu_initPT(&taskPT);
         mmu_mapRegion(&taskRegion, taskRegion.numPages, processId);
 
-        PCB_t pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
-        Process_t process = {.pcb = &pcb, .pageTable = &taskPT};
-        processes[pcb.processId] = process;
+        PCB_t* pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
+        Process_t process = {.pcb = pcb, .pageTable = taskPT};
+        processes[pcb->processId] = process;
     }
 }
 
-void mmu_switchProcess(PCB_t pcb) {
-    Process_t* process = &processes[pcb.processId];
+void mmu_switchProcess(PCB_t* pcb) {
+
+    Process_t* process = &processes[pcb->processId];
     mmu_setProcessPT(process->pageTable);
 
     mmu_flushTLB();
@@ -359,7 +364,10 @@ void mmu_killProcess(void) {
 
 }
 
-int16_t mmu_findFreePageInRegion(Region_t* region) {
+int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages) {
+
+    uint16_t counter = 0;
+    int16_t index = 0;
 
     if (region->numPages == region->reservedPages) {
         return -1;
@@ -368,7 +376,16 @@ int16_t mmu_findFreePageInRegion(Region_t* region) {
     int i;
     for (i = 0; i < region->numPages; i++) {
         if (region->pageStatus[i].reserved == 0) {
-            return i;
+            counter++;
+            if (counter == 1) {
+                index = i;
+            }
+            if (counter == nrOfPages) {
+                return index;
+            }
+        }
+        else {
+            counter = 0;
         }
     }
     return -1;
