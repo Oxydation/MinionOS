@@ -110,23 +110,27 @@ mmu_initCP15:
 ;------------------------------------------------------------------------------------------------------
 
 mmu_getDataFaultStatus:
-	; TodO
-	mov pc, lr
+	mrc p15, #0, r0, c5, c0, #0		; write content of data fault status register to register r0
+	mvn r1, #0xF					; save mask for clearing bits [31:4] to r1
+	bic r0, r0, r1					; clear bits [31:4]
+	mov pc, lr						; jump back to calling function
 
 ;------------------------------------------------------------------------------------------------------
 
 mmu_getInstructionFaultStatus:
-	; todo
-	mov pc, lr
+	mrc p15, #0, r0, c5, c0, #1		; write content of instruction fault status register to register r0
+	mvn r1, #0xF					; save mask for clearing bits [31:4] to r1
+	bic r0, r0, r1					; clear bits [31:4]
+	mov pc, lr						; jump back to calling function
 
 ;------------------------------------------------------------------------------------------------------
 
 mmu_getDataFaultAddress:
-	; todo
-	mov pc, lr
+	mrc p15, #0, r0, c6, c0, #0		; write content of data fault address register to register r0
+	mov pc, lr						; jump back to calling function
 
 ;------------------------------------------------------------------------------------------------------
 
 mmu_getInstructionFaultAddress:
-	; todo
-	mov pc, lr
+	mrc p15, #0, r0, c6, c0, #2		; write content of instruction fault address register to register r0
+	mov pc, lr						; jump back to calling function

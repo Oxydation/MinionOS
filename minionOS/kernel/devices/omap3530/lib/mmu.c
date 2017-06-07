@@ -8,6 +8,7 @@
 #include <kernel/devices/omap3530/includes/mmu.h>
 
 Process_t processes[MAX_ALLOWED_PROCESSES];
+uint32_t g_pStartAddCurrProcess;
 
 /* Page tables */
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
@@ -328,7 +329,6 @@ void mmu_initProcess(uint32_t pAddress) {
         ptPtr = (uint32_t*)((uint32_t)pageTableRegion.pAddress + freePageIndexForPT * 0x1000);
 
         /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
-        //PageTable_t taskPT = {vAddress, (uint32_t)ptPtr, masterPTProcess.ptAddress, COARSE, 0};
         PageTable_t taskPT = {VIRTUAL_START_ADDRESS, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
 
         /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
@@ -341,12 +341,11 @@ void mmu_initProcess(uint32_t pAddress) {
 
         mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
         mmu_setProcessPT(taskPT);
-        //mmu_attachPT(&taskPT, &masterPTProcess);
         mmu_initPT(&taskPT);
         mmu_mapRegion(&taskRegion, taskRegion.numPages, processId);
 
         PCB_t* pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
-        Process_t process = {.pcb = pcb, .pageTable = taskPT};
+        Process_t process = {.pcb = pcb, .pageTable = taskPT, .region = taskRegion};
         processes[pcb->processId] = process;
     }
 }
@@ -355,6 +354,7 @@ void mmu_switchProcess(PCB_t* pcb) {
 
     Process_t* process = &processes[pcb->processId];
     mmu_setProcessPT(process->pageTable);
+    g_pStartAddCurrProcess = process->region.pAddress;
 
     mmu_flushTLB();
     mmu_flushCache();

@@ -183,6 +183,7 @@ typedef union {
 typedef struct {
     PCB_t* pcb;
     PageTable_t pageTable;
+    Region_t region;
 } Process_t;
 
 /* functions for creating descriptors */

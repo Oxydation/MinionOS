@@ -90,10 +90,10 @@ void isr_undef(void) {
 }
 #pragma INTERRUPT (isr_undef, DABT)
 void isr_dabt(void) {
-
+    uint8_t status = mmu_getDataFaultStatus();
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
 void isr_pabt(void) {
-
+    uint8_t status = mmu_getInstructionFaultStatus();
 }
