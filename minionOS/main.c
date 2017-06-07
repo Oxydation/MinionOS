@@ -38,8 +38,8 @@ int main(void)
     scheduler_init();
 
     /* vAddress, pAddress, ptAddress */
-    mmu_initProcess(0x80600000);
-    mmu_initProcess(0x80700000) ;
+    mmu_initProcess(0x80600000, 1);
+    mmu_initProcess(0x80700000, 1);
 
     _enable_interrupts();
     _enable_IRQ();

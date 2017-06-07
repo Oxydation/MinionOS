@@ -29,6 +29,10 @@
 #define LARGE_PAGE_SIZE     0x10000
 #define SECTION_SIZE        0x100000
 
+#define NR_OF_BYTES_IN_SMALL_PAGE   4096
+#define NR_OF_BYTES_IN_LARGE_PAGE   65536
+#define NR_OF_BYTES_IN_SECTION      1048576
+
 /* access permissions */
 /* privileged mode / user mode */
 /* NA = no access, RO = read only, RW = read/write */
@@ -245,11 +249,14 @@ uint8_t mmu_getInstructionFaultStatus(void);
 uint32_t mmu_getInstructionFaultAddress(void);
 
 /* functions for process management */
-void mmu_initProcess(uint32_t pAddress);
+void mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages);
 void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(void);
+uint32_t* mmu_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes);
 
 int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages);
+uint16_t mmu_getPageIndexInRegion(Region_t* region, uint32_t pAddress);
+void mmu_reservePagesForProcess(Process_t* process);
 
 void mmu_handleSectionTranslationFault(uint32_t faultAddress);
 

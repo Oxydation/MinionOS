@@ -27,7 +27,7 @@ MEMORY
     IVASHL1DRAM:    o = 0x5CF04000  l = 0x0000C000  /* 48kB Shared IVA L1 Data RAM */
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
     DDR0_OS:        o = 0x80000000  l = 0x00500000  /* 5 MB for operating system */
-    DDR0_PT:		o = 0x80500000  l = 0x00020000  /* 128 KB for page tables (master & L2) */
+    DDR0_PT:		o = 0x80500000  l = 0x00100000  /* 128 KB for page tables (master & L2) */
  	DDR0_PROC1:		o = 0x80600000	l = 0x00100000	/* 1 MB for task 1 */
  	DDR0_PROC2:		o = 0x80700000	l = 0x00100000	/* 1 MB for task 2 */
  	DDR0_REM:		o = 0x80800000	l = 0x3F800000	/* 1016 MB DDR0 remaining */
