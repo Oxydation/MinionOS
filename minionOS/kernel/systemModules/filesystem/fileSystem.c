@@ -8,6 +8,10 @@
 #include "fileSystem.h"
 #include "abstractStorage.h"
 
+#include <string.h>
+
+#define PATH_DELIMITER '/'
+
 // File types
 #define FAT16_DIRECTORY_ENTRY 0x10
 
@@ -19,6 +23,16 @@
 
 #define PARTITION_SECTOR_SIGNATURE 0xAA55 // inverted byte order
 
+// Must not be greater than 255
+#define MAX_NUMBER_FILE_DESCRIPTORS 16
+
+typedef struct{
+    uint32_t bytesAlreadyRead;
+    uint32_t beginningOfFileAsClusterNumber;
+
+    // Use uint16 instead of uint8 because of memory alignment issues
+    uint16_t isSlotTaken;
+}__attribute((packed)) FileDescriptor_t;
 
 // A struct that contains data for accessing the file system.
 typedef struct{
@@ -30,6 +44,9 @@ typedef struct{
     uint32_t bytesRemainingInFile;
     uint32_t bytesRemainingInCluster;
     uint32_t sectorsPerCluster;
+
+    // Array containing the file descriptors
+    FileDescriptor_t fileDescriptors[MAX_NUMBER_FILE_DESCRIPTORS];
 
     // This is the directory currently being read. After initialization, this directory is the root directory by default.
     uint32_t currentDirectoryAddressInBytes;
@@ -43,6 +60,23 @@ static uint8_t compareFileNames(uint8_t* file1, uint8_t* ext1, uint8_t* file2, u
 static uint32_t getClusterAdressInBytes(uint32_t clusterNumber);
 static uint32_t readBootSector(void);
 static uint32_t readPartitionTable(PartitionTable_t * partitionTable);
+static int16_t getNextFreeFileDescriptorSlot(void);
+static uint32_t getNextDirectory(uint8_t * dirName, uint32_t currentDirectory);
+static int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOfCurrentDir);
+
+/*
+ * Returns next free FD slot, or -1 if no free FD slot
+ */
+int16_t getNextFreeFileDescriptorSlot(void){
+    volatile uint8_t i = 0;
+    for(i = 0; i < MAX_NUMBER_FILE_DESCRIPTORS; i++){
+        if(fileSystemState.fileDescriptors[i].isSlotTaken == 0){
+            // slot not taken, return 0
+            return i;
+        }
+    }
+    return -1;
+}
 
 /*
  * Internal helper function to compare two file names (with extensions).
@@ -162,44 +196,168 @@ uint32_t filesystem_Initialize(void){
     return readBootSector();
 }
 
-uint32_t fileSystem_openFile(uint8_t * fileName, uint8_t * extension){
+/*
+ * Returns address of next directory, or 0 if not found/not a directory.
+ */
+uint32_t getNextDirectory(uint8_t * dirName, uint32_t currentDirectory){
+    // Local buffer
+    uint8_t buffer[STORAGE_SECTOR_SIZE];
+
+    uint32_t sizeOfFatEntry = sizeof(Fat16Entry_t);
+
+    // Local variable to store the currently read entry
+    Fat16Entry_t currentEntry;
+    volatile uint16_t i = 0;
+
+    uint8_t * dirExtension = "   ";
+
+
+    for(i=0; i < fileSystemState.maximumNumberOfEntriesInRoot; i+=sizeOfFatEntry){
+
+        if(i%STORAGE_SECTOR_SIZE==0){
+            // Read current directory
+            readSector(buffer, currentDirectory+i);
+        }
+
+        memcpy((void*)&currentEntry, buffer+i, sizeof(currentEntry));
+
+        if(compareFileNames(currentEntry.filename, currentEntry.ext, dirName, dirExtension)){
+            // File found. Check if it is a directory. If yes, change the current directory global variable.
+            if(currentEntry.attributes == FAT16_DIRECTORY_ENTRY){
+                // Entry is a directory
+                return getClusterAdressInBytes(currentEntry.starting_cluster);
+            }
+            else {
+                return 0;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/*
+ * Opens a file entry. If fileName points to a directory name, -2 (error) is returned.
+ */
+int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOfCurrentDir){
     // Calculate size of a FAT entry
     uint32_t sizeOfFatEntry = sizeof(Fat16Entry_t);
     // Iterate through entries in the root directory, until file is found
 
     uint8_t buffer[STORAGE_SECTOR_SIZE];
-    readSector(buffer, fileSystemState.currentDirectoryAddressInBytes);
+
     // Local variable to store the currently read entry
     Fat16Entry_t currentEntry;
     volatile uint32_t i = 0;
     for(i=0; i < fileSystemState.maximumNumberOfEntriesInRoot; i+=sizeOfFatEntry){
+
+        if(i%STORAGE_SECTOR_SIZE==0){
+            readSector(buffer, addressOfCurrentDir+i);
+        }
+
         memcpy((void*)&currentEntry, buffer+i, sizeof(currentEntry));
         if(compareFileNames(currentEntry.filename, currentEntry.ext, fileName, extension)){
             // File found. Check if it is a directory. If yes, change the current directory global variable.
             if(currentEntry.attributes == FAT16_DIRECTORY_ENTRY){
                 // Entry is a directory
-                fileSystemState.currentDirectoryAddressInBytes = getClusterAdressInBytes(currentEntry.starting_cluster);
+                return -2;
             }
 
-            // File found. Note cluster and return file size.
-            fileSystemState.currentClusterBeingRead = currentEntry.starting_cluster;
-            fileSystemState.bytesRemainingInFile = currentEntry.file_size;
-            return currentEntry.file_size;
+            int16_t fileDescriptor = getNextFreeFileDescriptorSlot();
+
+            // Get a file descriptor (if available)
+            if(fileDescriptor==-1){
+                // Too many files are opened, and no FD available
+                return -1;
+            }
+
+            fileSystemState.fileDescriptors[fileDescriptor].beginningOfFileAsClusterNumber = currentEntry.starting_cluster;
+            fileSystemState.fileDescriptors[fileDescriptor].bytesAlreadyRead = 0;
+            // Slot taken
+            fileSystemState.fileDescriptors[fileDescriptor].isSlotTaken = 1;
+
+            return fileDescriptor;
         }
     }
 
-    // Nothing found. Return 0.
-    return 0;
+    // File not found
+    return -1;
 }
 
-uint32_t fileSystem_readBytes(uint32_t bytesToRead, uint8_t * buffer){
-    if(fileSystemState.currentClusterBeingRead==INVALID_CLUSTER){
-        // User probably forgot to open any file.
+
+int16_t fileSystem_openFile(uint8_t * fileName){
+
+    // Split fileName according to delimiter. Use strnchr in order not to change the original string
+    uint8_t * currentName = (uint8_t*) strchr((char*)fileName, PATH_DELIMITER);
+
+    // Initialize dir name with spaces
+    uint8_t currentDirName[8];
+    memset(currentDirName,' ', 8);
+
+    uint8_t fileToOpen[8];
+    memset(fileToOpen,' ', 8);
+
+    uint8_t fileToOpenExtension[3];
+    memset(fileToOpenExtension,' ', 3);
+
+    uint32_t addressOfNextDirectoryToOpen = fileSystemState.rootDirectoryAddress;
+    uint32_t lastPosition = 0;
+
+    // As long as currentPath is not null, navigate through directories
+    while(currentName!=0){
+        // Copy current directory name to local buffer
+        strncpy((char*)currentDirName, (char*)(fileName + lastPosition), currentName - fileName - lastPosition);
+
+        // currentDirName now contains the name of the directory to open
+        addressOfNextDirectoryToOpen = getNextDirectory(currentDirName, addressOfNextDirectoryToOpen);
+
+        if(addressOfNextDirectoryToOpen==0){
+            // Not a directory, or does not exist
+            return -3;
+        }
+
+        // Update last position
+        lastPosition = currentName - fileName + 1;
+
+        currentName = (uint8_t*)strchr((char*)(currentName+1), PATH_DELIMITER);
+
+        // Reinitialize current name with spaces
+        memset(currentDirName,' ', 8);
+    }
+    // currentPath has reached 0, meaning all directories have been accessed and only the filename + extension remains
+    // Split filename and extension
+    uint8_t * firstOccurenceOfDot = (uint8_t*)strchr((char*)(fileName + lastPosition), '.');
+
+    // Copy name of file to open, without extension, to local buffer
+    strncpy((char*)fileToOpen, (char*)(fileName + lastPosition) , firstOccurenceOfDot - (fileName + lastPosition));
+
+    // Copy extension
+    strncpy((char*)fileToOpenExtension, (char*)(firstOccurenceOfDot + 1), 3);
+
+    return openFileEntry(fileToOpen, fileToOpenExtension, addressOfNextDirectoryToOpen);
+}
+
+void fileSystem_closeFile(uint8_t fileDescriptor){
+    if(fileDescriptor < MAX_NUMBER_FILE_DESCRIPTORS){
+        // Free slot
+        fileSystemState.fileDescriptors[fileDescriptor].isSlotTaken = 0;
+    }
+}
+
+uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t bufferSize){
+
+    if(fileDescriptor>=MAX_NUMBER_FILE_DESCRIPTORS){
+        // Invalid file descriptor
+        return 0;
+    }
+
+    if(fileSystemState.fileDescriptors[fileDescriptor].isSlotTaken==0){
+        // Slot not taken => no file opened for this descriptor
         return 0;
     }
 
     // Get current cluster
-    uint16_t currentCluster = fileSystemState.currentClusterBeingRead;
+    uint16_t currentCluster = fileSystemState.fileDescriptors[fileDescriptor].beginningOfFileAsClusterNumber;
 
     // Tracks how many clusters have been read
     uint16_t clustersRead = 0;
@@ -210,7 +368,7 @@ uint32_t fileSystem_readBytes(uint32_t bytesToRead, uint8_t * buffer){
     uint8_t localBuffer[STORAGE_SECTOR_SIZE];
 
     volatile uint32_t i = 0;
-    for(i = 0; i < bytesToRead; i++){
+    for(i = 0; i < bufferSize; i++){
         // if sector beginning, read sector
         if(i%STORAGE_SECTOR_SIZE==0){
             // Check if next cluster needs to be read
@@ -227,10 +385,4 @@ uint32_t fileSystem_readBytes(uint32_t bytesToRead, uint8_t * buffer){
     }
 
     return 0;
-}
-
-void fileSystem_openRootDir(void){
-    fileSystemState.currentDirectoryAddressInBytes = fileSystemState.rootDirectoryAddress;
-    // Set to invalid cluster
-    fileSystemState.currentClusterBeingRead = INVALID_CLUSTER;
 }

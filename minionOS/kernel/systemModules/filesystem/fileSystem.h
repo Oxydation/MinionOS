@@ -84,23 +84,24 @@ typedef enum{
 uint32_t filesystem_Initialize(void);
 
 /*
- * Open file (could also be a directory!). File name MUST be 8 characters in length. Unused characters must be padded with space.
- * Extension must be 3 characters in length. Unused characters must be padded with space. In case of a directory, extension should contain 3 spaces.
- * Returns: size of file if file found, 0 otherwise (or if a directory was opened).
+ * Open file specified by fileName. Path must be absolute, with UNIX-style separation '/'.
+ * Use ALL CAPS for both directories and file names (because that's how FAT16 saves files on disk).
+ * fileName parameter is guaranteed to NOT be changed by the function.
+ * Returns: negative number in case of error, or a file descriptor (positive integer).
  */
-uint32_t fileSystem_openFile(uint8_t * fileName, uint8_t * extension);
+int16_t fileSystem_openFile(uint8_t * fileName);
 
 /*
- * In case user is currently in a subdirectory, and wants to go back to root.
+ * Close a file (free the file descriptor).
  */
-void fileSystem_openRootDir(void);
+void fileSystem_closeFile(uint8_t fileDescriptor);
 
 /*
  * Read amount of bytes from previously opened file. Buffer needs to be as large as the number of bytes to read.
  * Returns number of bytes read on success, or 0 otherwise. It is possible that the amount of bytes read is smaller
  * that the amount specified in the input parameter - this happens if the end of file has been reached.
  */
-uint32_t fileSystem_readBytes(uint32_t bytesToRead, uint8_t * buffer);
+uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t bufferSize);
 
 
 #endif
