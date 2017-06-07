@@ -25,6 +25,10 @@
 #define LARGE_PAGE  1   /* 64 KB */
 #define SECTION     2   /* 1 MB */
 
+#define SMALL_PAGE_SIZE     0x1000
+#define LARGE_PAGE_SIZE     0x10000
+#define SECTION_SIZE        0x100000
+
 /* access permissions */
 /* privileged mode / user mode */
 /* NA = no access, RO = read only, RW = read/write */
@@ -70,6 +74,17 @@
 #define CHANGE_I_CACHE      (1 << 12)   /* instruction cache */
 #define CHANGE_TRE          (1 << 28)   /* controls the TEX remap functionality in the MMU */
 #define CHANGE_AFE          (1 << 29)   /* is the Access Flag Enable bit */
+
+/* fault status codes */
+#define ALIGNMENT_FAULT             1
+#define TRANSLATION_FAULT_SECTION   5
+#define TRANSLATION_FAULT_PAGE      7
+#define ACCESS_FLAG_FAULT_SECTION   3
+#define ACCESS_FLAG_FAULT_PAGE      6
+#define DOMAIN_FAULT_SECTION        9
+#define DOMAIN_FAULT_PAGE           11
+#define PERMISSION_FAULT_SECTION    13
+#define PERMISSION_FAULT_PAGE       15
 
 /* structs */
 typedef struct {
@@ -235,5 +250,7 @@ void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(void);
 
 int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages);
+
+void mmu_handleSectionTranslationFault(uint32_t faultAddress);
 
 #endif /* KERNEL_DEVICES_OMAP3530_INCLUDES_MMU_H_ */

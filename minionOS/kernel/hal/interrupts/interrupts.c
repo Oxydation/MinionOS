@@ -21,6 +21,7 @@
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
 static PCB_t g_pcb;
 static volatile uint32_t g_lrError = 0;
+PCB_t interruptPcb;
 
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
@@ -90,10 +91,26 @@ void isr_undef(void) {
 }
 #pragma INTERRUPT (isr_undef, DABT)
 void isr_dabt(void) {
-    uint8_t status = mmu_getDataFaultStatus();
+
+    uint8_t faultStatus = mmu_getDataFaultStatus();
+    uint32_t faultAddress = mmu_getDataFaultAddress();
+
+    if (faultStatus == TRANSLATION_FAULT_SECTION) {
+        mmu_handleSectionTranslationFault(faultAddress);
+    }
+
+    asm_loadContext(&g_pcb);
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
 void isr_pabt(void) {
-    uint8_t status = mmu_getInstructionFaultStatus();
+
+    uint8_t faultStatus = mmu_getInstructionFaultStatus();
+    uint32_t faultAddress = mmu_getInstructionFaultAddress();
+
+    if (faultStatus == TRANSLATION_FAULT_SECTION) {
+        mmu_handleSectionTranslationFault(faultAddress);
+    }
+
+    asm_loadContext(&g_pcb);
 }

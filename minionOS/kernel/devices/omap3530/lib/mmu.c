@@ -8,7 +8,7 @@
 #include <kernel/devices/omap3530/includes/mmu.h>
 
 Process_t processes[MAX_ALLOWED_PROCESSES];
-uint32_t g_pStartAddCurrProcess;
+Process_t* g_currentMMUProcess;
 
 /* Page tables */
 /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
@@ -326,7 +326,7 @@ void mmu_initProcess(uint32_t pAddress) {
 
     if (freePageIndexForPT != -1) {
 
-        ptPtr = (uint32_t*)((uint32_t)pageTableRegion.pAddress + freePageIndexForPT * 0x1000);
+        ptPtr = (uint32_t*)((uint32_t)pageTableRegion.pAddress + freePageIndexForPT * SMALL_PAGE_SIZE);
 
         /* VADDRESS, PTADDRESS, MasterPTADDRESS, PTTYPE, DOM */
         PageTable_t taskPT = {VIRTUAL_START_ADDRESS, (uint32_t)ptPtr, (uint32_t)ptPtr, MASTER, 0};
@@ -334,15 +334,15 @@ void mmu_initProcess(uint32_t pAddress) {
         /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, PADDRESS, &PT */
         PageStatus_t* status = (PageStatus_t*)(pageTableRegionStatus + freePageIndexForPT);
         Region_t taskPTRegion = {(uint32_t)ptPtr, SMALL_PAGE, nrOfNeededPages, RWRW, WT, 0, (uint32_t)ptPtr, &pageTablePT, status};
+        pageTableRegion.reservedPages += nrOfNeededPages;
 
         uint8_t processId = processManager_getNextProcessId();
         PageStatus_t taskRegionStatus[256] = {{0,0}};
-        Region_t taskRegion = {VIRTUAL_START_ADDRESS, SMALL_PAGE, 1, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
+        Region_t taskRegion = {VIRTUAL_START_ADDRESS, SECTION, 0, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
 
         mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
         mmu_setProcessPT(taskPT);
         mmu_initPT(&taskPT);
-        mmu_mapRegion(&taskRegion, taskRegion.numPages, processId);
 
         PCB_t* pcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
         Process_t process = {.pcb = pcb, .pageTable = taskPT, .region = taskRegion};
@@ -354,7 +354,7 @@ void mmu_switchProcess(PCB_t* pcb) {
 
     Process_t* process = &processes[pcb->processId];
     mmu_setProcessPT(process->pageTable);
-    g_pStartAddCurrProcess = process->region.pAddress;
+    g_currentMMUProcess = process;
 
     mmu_flushTLB();
     mmu_flushCache();
@@ -389,4 +389,25 @@ int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages) {
         }
     }
     return -1;
+}
+
+void mmu_handleSectionTranslationFault(uint32_t faultAddress) {
+
+    uint8_t index;
+    uint32_t vAddress;
+    uint32_t pAddress;
+
+    index = faultAddress / SECTION_SIZE;      // get index of page to map by dividing through section size
+
+    vAddress = (uint32_t)g_currentMMUProcess->region.vAddress + index * SECTION_SIZE;
+    pAddress = (uint32_t)g_currentMMUProcess->region.pAddress + index * SECTION_SIZE;
+    g_currentMMUProcess->region.numPages++;
+
+    uint8_t AP = g_currentMMUProcess->region.AP;
+    uint8_t CB = g_currentMMUProcess->region.CB;
+    PageStatus_t* status = (PageStatus_t*)(g_currentMMUProcess->region.pageStatus + index);
+    PageTable_t* pt = &g_currentMMUProcess->pageTable;
+    Region_t taskRegion = {vAddress, SECTION, 1, AP, CB, 0, pAddress, pt, status};
+
+    mmu_mapRegion(&taskRegion, taskRegion.numPages, g_currentMMUProcess->pcb->processId);
 }
