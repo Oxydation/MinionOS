@@ -57,6 +57,13 @@ static int execute(int argc, char* argv[]) {
         write("\e[2J");
         write("\e[H");
         return 0;
+    } else if (strcmp(argv[0], "ls") == 0) {
+        const char* dirName = argc > 1 ? argv[1] : "";
+        const char* dirEntry;
+        while ((dirEntry = sysCalls_readDirectory(dirName)) != NULL) {
+            writeln(dirEntry);
+        }
+        return 0;
     }
     char buf[80];
     sprintf(buf, "%d arguments read.", argc);

@@ -63,7 +63,7 @@ const char* vfs_readdir(const char* dirName) {
         currentDir = dirName;
         currentFs = 0;
     }
-    const char* dirEntry
+    const char* dirEntry;
     do {
         dirEntry = fileSystems[currentFs]->readdir(currentDir);
     } while (dirEntry == NULL && ++currentFs < fileSystemCount);

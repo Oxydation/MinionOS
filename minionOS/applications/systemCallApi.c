@@ -31,3 +31,8 @@ void sysCalls_closeFile(int fileDescriptor) {
     SysCallArgs_t args = { SYSCALL_FILE_CLOSE, fileDescriptor };
     makeSysCall(args);
 }
+
+const char* sysCalls_readDirectory(const char* directoryName) {
+    SysCallArgs_t args = { SYSCALL_READDIR, (int) directoryName };
+    return (const char*) makeSysCall(args);
+}

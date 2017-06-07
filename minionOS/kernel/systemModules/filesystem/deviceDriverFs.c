@@ -53,28 +53,22 @@ void devFs_addDevice(const char* name, FileOperations_t* fileOperations) {
 
 const char* devFs_readdir(const char* dirName) {
     static const char* currentDir;
-    static int currentDev;
+    static int successiveCall;
     if (!currentDir || currentDir != dirName) {
         currentDir = dirName;
-        currentDev = 0;
+        successiveCall = 0;
     }
 
-    bool matches = true;
-    int i = 0;
-    while (dirName[i] && matches) {
-        if (dirName[i] != devices[currentDev].name[i]) {
-            matches = false;
-        } else {
-            ++i;
-        }
+    const char* result;
+    if (strcmp("", dirName) == 0 || strcmp("/", dirName) == 0) {
+        result = successiveCall == 0 ? "dev" : NULL;
+    } else if (strcmp("/dev", dirName) == 0 || strcmp("/dev/", dirName) == 0) {
+        result = successiveCall < deviceCount ? devices[successiveCall].name : NULL;
+    } else {
+        result = NULL;
     }
-    // provided dirName ends without /
-    if (matches && devices[currentDev].name[i] == '/') {
-        return devices[currentDev].name[i + 1];
-    } else if (matches && devices[currentDev].name[i - 1] == '/') { // end with /
-        return devices[currentDev].name[i];
-    }
-
+    successiveCall += 1;
+    return result;
 }
 
 

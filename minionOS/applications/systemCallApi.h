@@ -15,6 +15,8 @@ void sysCalls_readFile(int fileDescriptor, uint8_t* buffer, unsigned int bufferS
 
 void sysCalls_writeFile(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize);
 
+const char* sysCalls_readDirectory(const char* directoryName);
+
 void sysCalls_closeFile(int fileDescriptor);
 
 #endif /* APPLICATIONS_SYSTEMCALLAPI_H_ */

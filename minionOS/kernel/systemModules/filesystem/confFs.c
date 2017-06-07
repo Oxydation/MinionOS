@@ -20,6 +20,27 @@ void confFs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
 void confFs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize) {
 }
 
+
+const char* confFs_readdir(const char* dirName) {
+    static const char* currentDir;
+    static int successiveCall;
+    if (!currentDir || currentDir != dirName) {
+        currentDir = dirName;
+        successiveCall = 0;
+    }
+
+    const char* result;
+    if (strcmp("", dirName) == 0 || strcmp("/", dirName) == 0) {
+        result = successiveCall == 0 ? "etc" : NULL;
+    } else if (strcmp("/etc", dirName) == 0 || strcmp("/etc/", dirName) == 0) {
+        result = successiveCall == 0 ? "uart3.conf" : NULL;
+    } else {
+        result = NULL;
+    }
+    successiveCall += 1;
+    return result;
+}
+
 void confFs_init() {
 
 }
@@ -29,5 +50,6 @@ FileSystem_t confFs = {
         .open = confFs_open,
         .read = confFs_read,
         .write = confFs_write,
+        .readdir = confFs_readdir,
         .init = confFs_init
 };

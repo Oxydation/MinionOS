@@ -19,6 +19,8 @@ int dispatcher_dispatch(SysCallArgs_t args) {
     case SYSCALL_FILE_CLOSE:
         vfs_close(args.a);
         break;
+    case SYSCALL_READDIR:
+        return vfs_readdir((const char*) args.a);
     default:
         //TODO
         break;
