@@ -5,21 +5,33 @@
  *      Author: Mathias
  */
 #include "dmxTmh7.h"
+#include <string.h>
 
-static uint8_t dmxData[DMX_CHANNELS_TMH7] = { 0 };
+static void createDataTmh7(uint16_t startChannel,
+                               const DmxDataTMH7_t * data, uint8_t * result);
 
-void dmx_sendTMH7(int startChannel, const DmxDataTMH7_t * data)
+void dmx_sendTMH7(uint16_t startChannel, const DmxDataTMH7_t * data)
 {
-    dmxData[0] = data->startCode;
-    dmx_writeToChannel(dmxData, startChannel, data->pan);
-    dmx_writeToChannel(dmxData, startChannel + 1, data->tilt);
-    dmx_writeToChannel(dmxData, startChannel + 2, data->speed);
-    dmx_writeToChannel(dmxData, startChannel + 3, data->red);
-    dmx_writeToChannel(dmxData, startChannel + 4, data->green);
-    dmx_writeToChannel(dmxData, startChannel + 5, data->blue);
-    dmx_writeToChannel(dmxData, startChannel + 6, data->colorMacro);
-    dmx_writeToChannel(dmxData, startChannel + 7, data->ledCircuit);
-    dmx_writeToChannel(dmxData, startChannel + 8, data->dimmingIntensity);
+    uint16_t arraySize = startChannel + DMX_CHANNELS_TMH7 - 1;
+    uint8_t dmxData[arraySize];
+    memset(dmxData, 0, arraySize * sizeof(uint8_t));
 
-    dmx_send(startChannel, &dmxData, DMX_CHANNELS_TMH7);
+    createDataTmh7(startChannel, data, dmxData);
+
+    dmx_send(startChannel, &dmxData, arraySize);
+}
+
+static void createDataTmh7(uint16_t startChannel,
+                               const DmxDataTMH7_t * data, uint8_t * result)
+{
+    result[0] = data->startCode;
+    dmx_writeToChannel(result, startChannel, data->pan);
+    dmx_writeToChannel(result, startChannel + 1, data->tilt);
+    dmx_writeToChannel(result, startChannel + 2, data->speed);
+    dmx_writeToChannel(result, startChannel + 3, data->red);
+    dmx_writeToChannel(result, startChannel + 4, data->green);
+    dmx_writeToChannel(result, startChannel + 5, data->blue);
+    dmx_writeToChannel(result, startChannel + 6, data->colorMacro);
+    dmx_writeToChannel(result, startChannel + 7, data->ledCircuit);
+    dmx_writeToChannel(result, startChannel + 8, data->dimmingIntensity);
 }

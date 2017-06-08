@@ -1,3 +1,4 @@
+#include <drivers/dmx/mhx25/dmxMx25.h>
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -12,7 +13,6 @@
 #include "kernel/systemModules/processManagement/processManager.h"
 #include "kernel/hal/dmx/dmx.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
-#include "drivers/dmx/mx25/dmxMx25.h"
 #include "global/delay/delay.h"
 
 void process1(void);

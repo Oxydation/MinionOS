@@ -2,7 +2,7 @@
  * dmx.c
  *
  *  Created on: 22.05.2017
- *      Author: Jasmin
+ *      Author: Jasmin, Mathias
  */
 #include "kernel/hal/dmx/dmx.h"
 #include "kernel/hal/uart/uart.h"
@@ -21,17 +21,28 @@ typedef enum
     UART, GPIO
 } GpioMode_t;
 
+typedef enum{
+    Mode0 = 0x00,
+    Mode1 = 0x01,
+    Mode2 = 0x02,
+    Mode3 = 0x03,
+    Mode4 = 0x04,
+    Mode5 = 0x05,
+    Mode6 = 0x06,
+    Mode7 = 0x07,
+}MuxMode_t;
+
 static void pad_setMode(GpioMode_t mode)
 {
     switch (mode)
     {
     case UART:
-        set32(CONTROL_PADCONF_UART2_TX, 0x00 << 0);
-        set32(CONTROL_PADCONF_UART2_CTS, 0x00 << 16);
+        set32(CONTROL_PADCONF_UART2_TX, Mode0 << 0);
+        set32(CONTROL_PADCONF_UART2_CTS, Mode0 << 16);
         break;
     case GPIO:
-        set32(CONTROL_PADCONF_UART2_TX, 0x04 << 0);
-        set32(CONTROL_PADCONF_UART2_CTS, 0x04 << 16);
+        set32(CONTROL_PADCONF_UART2_TX, Mode4 << 0);
+        set32(CONTROL_PADCONF_UART2_CTS, Mode4 << 16);
         break;
     }
 }
@@ -39,7 +50,7 @@ static void pad_setMode(GpioMode_t mode)
 /*
  * Writes the values 0...255 to channel 1...11
  */
-void dmx_writeToChannel(uint8_t * data, int channel, uint8_t value)
+void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value)
 {
     if (channel < 1)
         channel = 1;
@@ -49,7 +60,6 @@ void dmx_writeToChannel(uint8_t * data, int channel, uint8_t value)
     data[channel] = value;
 }
 
-
 void dmx_init()
 {
     pad_setMode(UART);
@@ -58,7 +68,7 @@ void dmx_init()
     gpio_pinMode(146, OUTPUT);
 }
 
-void dmx_send(int startChannel, const uint8_t * data, uint8_t size)
+void dmx_send(uint16_t startChannel, const uint8_t * data, uint8_t size)
 {
     // Reset
     pad_setMode(GPIO);
