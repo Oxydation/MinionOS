@@ -1,6 +1,6 @@
 #include "vfs.h"
 #include "deviceDriverFs.h"
-#include "confFs.h"
+#include "sdCardFs.h"
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
@@ -83,7 +83,7 @@ static void initStdStreams() {
 
 void vfs_init(void) {
     vfs_addFileSystem(&deviceDriverFs);
-    vfs_addFileSystem(&confFs);
+    vfs_addFileSystem(&sdCardFs);
 
     int i;
     for (i = 0; i < fileSystemCount; ++i) {
