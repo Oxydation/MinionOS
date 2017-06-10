@@ -41,6 +41,6 @@ typedef struct
     uint8_t dimmingIntensity;
 } DmxDataTMH7_t;
 
-void dmx_sendTMH7(uint16_t startChannel, const DmxDataTMH7_t * data);
+void dmx_createTmh7Packet(uint16_t startChannel, const DmxDataTMH7_t * data, uint8_t * result);
 
 #endif /* DRIVERS_DMX_DMXTMH7_H_ */

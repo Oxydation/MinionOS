@@ -5,8 +5,8 @@
  *      Author: Mathias
  */
 
-#ifndef DRIVERS_DMX_MHX25_DMXMX25_H_
-#define DRIVERS_DMX_MHX25_DMXMX25_H_
+#ifndef DRIVERS_DMX_MHX25_DMXMHX25_H_
+#define DRIVERS_DMX_MHX25_DMXMHX25_H_
 
 #include "global/types.h"
 #include "kernel/hal/dmx/dmx.h"
@@ -38,13 +38,13 @@ typedef enum {
 
 typedef enum{
     Open,
-    Gobo2 = 8,
-    Gobo3 = 16,
-    Gobo4 = 24,
-    Gobo5 = 32,
-    Gobo6 = 40,
-    Gobo7 = 48,
-    Gobo8 = 56,
+    Gobo2 = 12,
+    Gobo3 = 19,
+    Gobo4 = 28,
+    Gobo5 = 35,
+    Gobo6 = 44,
+    Gobo7 = 51,
+    Gobo8 = 58,
     Gobo8Shake = 64,
     Gobo7Shake = 72,
     Gobo6Shake = 80,
@@ -79,7 +79,7 @@ typedef struct
     uint8_t programmes;
 } DmxDataMhX25_t;
 
-void dmx_sendMhX25(uint16_t startChannel, const DmxDataMhX25_t * data);
+void dmx_createMhX25Packet(uint16_t startChannel, const DmxDataMhX25_t * data, uint8_t * result);
 
 
-#endif /* DRIVERS_DMX_MHX25_DMXMX25_H_ */
+#endif /* DRIVERS_DMX_MHX25_DMXMHX25_H_ */

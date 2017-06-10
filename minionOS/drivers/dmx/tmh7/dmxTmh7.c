@@ -5,26 +5,25 @@
  *      Author: Mathias
  */
 #include "dmxTmh7.h"
-#include <string.h>
 
-static void createDataTmh7(uint16_t startChannel,
-                               const DmxDataTMH7_t * data, uint8_t * result);
+//
+//static void createDataTmh7(uint16_t startChannel,
+//                               const DmxDataTMH7_t * data, uint8_t * result);
 
-void dmx_sendTMH7(uint16_t startChannel, const DmxDataTMH7_t * data)
-{
-    uint16_t arraySize = startChannel + DMX_CHANNELS_TMH7 - 1;
-    uint8_t dmxData[arraySize];
-    memset(dmxData, 0, arraySize * sizeof(uint8_t));
+//void dmx_sendTMH7(uint16_t startChannel, const DmxDataTMH7_t * data)
+//{
+//    uint16_t arraySize = startChannel + DMX_CHANNELS_TMH7 - 1;
+//    uint8_t dmxData[arraySize];
+//    memset(dmxData, 0, arraySize * sizeof(uint8_t));
+//
+//    createDataTmh7(startChannel, data, dmxData);
+//
+//    dmx_send(startChannel, &dmxData, arraySize);
+//}
 
-    createDataTmh7(startChannel, data, dmxData);
-
-    dmx_send(startChannel, &dmxData, arraySize);
-}
-
-static void createDataTmh7(uint16_t startChannel,
+void dmx_createTmh7Packet(uint16_t startChannel,
                                const DmxDataTMH7_t * data, uint8_t * result)
 {
-    result[0] = data->startCode;
     dmx_writeToChannel(result, startChannel, data->pan);
     dmx_writeToChannel(result, startChannel + 1, data->tilt);
     dmx_writeToChannel(result, startChannel + 2, data->speed);

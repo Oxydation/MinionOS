@@ -68,7 +68,7 @@ void dmx_init()
     gpio_pinMode(146, OUTPUT);
 }
 
-void dmx_send(uint16_t startChannel, const uint8_t * data, uint8_t size)
+void dmx_send(const uint8_t * data, uint16_t size)
 {
     // Reset
     pad_setMode(GPIO);

@@ -1,4 +1,5 @@
-#include <drivers/dmx/mhx25/dmxMx25.h>
+#include <drivers/dmx/mhx25/dmxMhx25.h>
+#include <drivers/dmx/mhx25/dmxMhx25.h>
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -13,6 +14,8 @@
 #include "kernel/systemModules/processManagement/processManager.h"
 #include "kernel/hal/dmx/dmx.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
+#include "drivers/dmx/mhx25/dmxMhx25.h"
+#include <string.h>
 #include "global/delay/delay.h"
 
 void process1(void);
@@ -45,41 +48,44 @@ int main(void)
 
     modeSwitch_switchToUserMode();
 
-
     while (1)
     {
 
     }
-    return 0;
 }
+
 
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
-    DmxDataTMH7_t data = {
-                                 .pan = 0,
-                                 .tilt = 100,
-                                 .green = 10,
-                                 .blue = 128,
-                                 .red = 10,
-                                 .dimmingIntensity = 20,
-                                 .colorMacro = 0,
-                                 .ledCircuit = 255,
-                                 .speed = 50,
+    DmxDataTMH7_t data = { .pan = 0, .tilt = 100, .green = 10, .blue = 128,
+                           .red = 10, .dimmingIntensity = 20, .colorMacro = 0,
+                           .ledCircuit = 255, .speed = 50,
 
-           };
-
-//    DmxDataMx25_t data = {
-//                                    .pan = 0,
-//                                    .tilt = 100,
+    };
+    DmxDataMhX25_t dataMhx25 = { .pan = 255, .tilt = 100, .speed = 190, .dimmer =
+                                             100,
+                                     .colour = YellowGreen, .gobo = Gobo5, .goboRotation =
+                                            150, .shutter = 5 };
+    while (1)
+    {
+        delay(100000);
+//        //dataMhx25.pan += 3;
+        data.pan += 3;
 //
-//              };
-    while(1){
-        delay(900000);
-        data.pan+=1;
+        uint16_t packetSize = 26;
+        uint8_t packet[26];
+        memset(packet, 0, packetSize * sizeof(uint8_t));
 
-        //dmx_sendMx25(1, &data);
-        dmx_sendTMH7(1, &data);
+        packet[0] = 0x00;
+
+        dmx_createMhX25Packet(1, &dataMhx25, &packet);
+        dmx_createTmh7Packet(13, &data, &packet);
+
+        dmx_send(&packet, packetSize);
+
+        //dmx_sendMhX25(1, &dataMhx25);
+        //dmx_sendTMH7(1, &data);
     }
 }
 
