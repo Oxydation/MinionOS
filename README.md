@@ -2,7 +2,7 @@
 
 Development of a simple OS for a BeagleBoard C4 with a ARMv7 Cortex A8-Processor (OMAP 3530). 
 
-## The system should consist of following modules and/or parts:
+## The system consists of following modules and/or parts:
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) GPIO 
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Interrupts 
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Timers/System Timer 
@@ -13,6 +13,7 @@ Development of a simple OS for a BeagleBoard C4 with a ARMv7 Cortex A8-Processor
 * ![#FFA500](https://placehold.it/15/FFA500/000000?text=+) Process Management
 * ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Inter Process Communication
 * ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) Basic User Apps 
+* ![#FFA500](https://placehold.it/15/FFA500/000000?text=+) Shell
 
 ## Drivers
 ### Low-Level
