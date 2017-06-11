@@ -12,7 +12,7 @@ int cat_main(int argc, char* argv[]) {
             do {
                  bytesRead = sysCalls_readFile(file, buffer, sizeof(buffer));
                  minionIO_writeBytes(buffer, bytesRead);
-            } while (bytesRead > sizeof(buffer));
+            } while (!(bytesRead < sizeof(buffer)));
             sysCalls_closeFile(file);
             minionIO_writeln("");
             return 0;

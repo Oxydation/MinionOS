@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 int sdFs_open(const char* fileName) {
-    return fileSystem_openFile(fileName);
+    return fileSystem_openFile((uint8_t*) fileName);
 }
 
 void sdFs_close(int fileDescriptor) {
@@ -11,7 +11,8 @@ void sdFs_close(int fileDescriptor) {
 }
 
 int sdFs_read(int fileDescriptor, uint8_t* buffer, unsigned int bufferSize) {
-    return fileSystem_readBytes(fileDescriptor, buffer, bufferSize);
+    int readBytes = fileSystem_readBytes(fileDescriptor, buffer, bufferSize);
+    return readBytes;
 }
 
 void sdFs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSize) {
