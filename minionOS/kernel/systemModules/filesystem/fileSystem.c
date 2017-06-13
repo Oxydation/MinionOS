@@ -376,13 +376,16 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
                 currentCluster = getNextClusterToRead(currentCluster);
                 clustersRead++;
             }
+
             // Read a sector
-            readSector(localBuffer, getClusterAdressInBytes(currentCluster)+(i%clusterSizeInBytes));
+            if(readSector(localBuffer, getClusterAdressInBytes(currentCluster)+(i%clusterSizeInBytes)) != STORAGE_SECTOR_SIZE){
+                return i;
+            }
         }
 
         // Local buffer is only 512 bytes, so cycle through it using %.
         buffer[i] = localBuffer[i%STORAGE_SECTOR_SIZE];
     }
 
-    return 0;
+    return bufferSize;
 }
