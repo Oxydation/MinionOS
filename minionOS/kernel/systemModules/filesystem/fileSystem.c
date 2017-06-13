@@ -12,6 +12,10 @@
 
 #define PATH_DELIMITER '/'
 
+// FAT16 constraints
+#define MAX_CHAR_FILE_NAME 8
+#define MAX_CHAR_EXTENSION 3
+
 // File types
 #define FAT16_DIRECTORY_ENTRY 0x10
 
@@ -27,8 +31,10 @@
 #define MAX_NUMBER_FILE_DESCRIPTORS 16
 
 typedef struct{
-    uint32_t bytesAlreadyRead;
+    uint32_t bytesRemainingInFile;
     uint32_t beginningOfFileAsClusterNumber;
+
+    uint32_t fileSize;
 
     // Use uint16 instead of uint8 because of memory alignment issues
     uint16_t isSlotTaken;
@@ -85,12 +91,12 @@ int16_t getNextFreeFileDescriptorSlot(void){
  */
 uint8_t compareFileNames(uint8_t* file1, uint8_t* ext1, uint8_t* file2, uint8_t* ext2){
     volatile uint8_t i = 0;
-    for(i = 0; i < 8; i++){
+    for(i = 0; i < MAX_CHAR_FILE_NAME; i++){
         if(file1[i]!=file2[i]){
             return 0;
         }
     }
-    for(i = 0; i < 3; i++){
+    for(i = 0; i < MAX_CHAR_EXTENSION; i++){
         if(ext1[i]!=ext2[i]){
             return 0;
         }
@@ -272,7 +278,8 @@ int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOf
             }
 
             fileSystemState.fileDescriptors[fileDescriptor].beginningOfFileAsClusterNumber = currentEntry.starting_cluster;
-            fileSystemState.fileDescriptors[fileDescriptor].bytesAlreadyRead = 0;
+            fileSystemState.fileDescriptors[fileDescriptor].bytesRemainingInFile = currentEntry.file_size;
+            fileSystemState.fileDescriptors[fileDescriptor].fileSize = currentEntry.file_size;
             // Slot taken
             fileSystemState.fileDescriptors[fileDescriptor].isSlotTaken = 1;
 
@@ -356,22 +363,44 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
         return 0;
     }
 
+    uint32_t bytesRemainingInFile = fileSystemState.fileDescriptors[fileDescriptor].bytesRemainingInFile;
+
+    uint32_t fileSize = fileSystemState.fileDescriptors[fileDescriptor].fileSize;
+
+    if(bytesRemainingInFile==0){
+        return 0;
+    }
+
     // Get current cluster
     uint16_t currentCluster = fileSystemState.fileDescriptors[fileDescriptor].beginningOfFileAsClusterNumber;
-
-    // Tracks how many clusters have been read
-    uint16_t clustersRead = 0;
 
     uint32_t clusterSizeInBytes = fileSystemState.sectorsPerCluster*STORAGE_SECTOR_SIZE;
 
     // Local buffer in which each sector is stored
     uint8_t localBuffer[STORAGE_SECTOR_SIZE];
 
+    // Position where file read was left off
+    uint32_t resumePosition = fileSystemState.fileDescriptors[fileDescriptor].fileSize - bytesRemainingInFile;
+
+    // Tracks how many clusters have been read
+    uint16_t clustersRead = resumePosition/STORAGE_SECTOR_SIZE;
+
+    if(resumePosition%STORAGE_SECTOR_SIZE!=0){
+        // Read first sector
+        if(readSector(localBuffer, getClusterAdressInBytes(currentCluster)+((resumePosition/STORAGE_SECTOR_SIZE)*STORAGE_SECTOR_SIZE)) != STORAGE_SECTOR_SIZE){
+            // Some unexpected error occurred.
+            return 0;
+        }
+    }
+
+    // Keep track of the passed buffer position
+    volatile uint32_t bufferPosition = 0;
+
     volatile uint32_t i = 0;
-    for(i = 0; i < bufferSize; i++){
+    for(i = resumePosition; i < bufferSize+resumePosition; i++){
         // if sector beginning, read sector
         if(i%STORAGE_SECTOR_SIZE==0){
-            // Check if next cluster needs to be read
+            // Check if next cluster needs to be read. A cluster is made up of multiple sectors
             if(i/(clusterSizeInBytes + (clusterSizeInBytes*clustersRead))>=1){
                 currentCluster = getNextClusterToRead(currentCluster);
                 clustersRead++;
@@ -383,9 +412,19 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
             }
         }
 
+        if(i>=fileSize){
+            fileSystemState.fileDescriptors[fileDescriptor].bytesRemainingInFile = 0;
+            // EOF reached
+            return i;
+        }
+
         // Local buffer is only 512 bytes, so cycle through it using %.
-        buffer[i] = localBuffer[i%STORAGE_SECTOR_SIZE];
+        buffer[bufferPosition] = localBuffer[i%STORAGE_SECTOR_SIZE];
+        bufferPosition++;
     }
+
+    // Update how many bytes have been read
+    fileSystemState.fileDescriptors[fileDescriptor].bytesRemainingInFile -= bufferSize;
 
     return bufferSize;
 }
