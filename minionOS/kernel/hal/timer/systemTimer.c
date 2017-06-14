@@ -15,8 +15,6 @@
 
 static void systemtimer_handler(PCB_t * currentPcb);
 
-uint32_t counter = 0;
-
 typedef struct
 {
     uint32_t lastCallbackTime;
@@ -88,12 +86,6 @@ static void systemtimer_handler(PCB_t * currentPcb)
         {
             g_registeredCallbacks[i].lastCallbackTime = g_current_ms;
             g_registeredCallbacks[i].callback(currentPcb);
-            counter++;
-            if (counter == 202) {
-                mmu_killProcess(1);
-            } else if (counter == 401) {
-                mmu_initProcess(0x80600000, 1);
-            }
         }
     }
 
