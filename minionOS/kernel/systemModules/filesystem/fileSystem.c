@@ -18,6 +18,7 @@
 
 // File types
 #define FAT16_DIRECTORY_ENTRY 0x10
+#define FAT16_ARCHIVE_ENTRY   0x20
 
 // Cluster defines
 #define INVALID_CLUSTER 0 // Cluster 0 and 1 are invalid
@@ -69,6 +70,7 @@ static uint32_t readPartitionTable(PartitionTable_t * partitionTable);
 static int16_t getNextFreeFileDescriptorSlot(void);
 static uint32_t getNextDirectory(uint8_t * dirName, uint32_t currentDirectory);
 static int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOfCurrentDir);
+static uint8_t* removeWhiteSpacesFromUint8Array(uint8_t* input);
 
 /*
  * Returns next free FD slot, or -1 if no free FD slot
@@ -439,4 +441,116 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
     fileSystemState.fileDescriptors[fileDescriptor].bytesRemainingInFile -= bufferSize;
 
     return bufferSize;
+}
+
+uint8_t* removeWhiteSpacesFromUint8Array(uint8_t* input)
+{
+    uint32_t i,j;
+    uint8_t *output=input;
+    for (i = 0, j = 0; i<strlen((char*)input); i++,j++)
+    {
+        if (input[i]!=' ')
+            output[j]=input[i];
+        else
+            j--;
+    }
+    output[j]=0;
+    return output;
+}
+
+uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName){
+    if(dirName==NULL){
+        return 0;
+    }
+
+    // Skip leading slash
+    if (*dirName != '/') {
+        return 0;
+    } else {
+        dirName += 1;
+    }
+
+    static const uint8_t * lastDirName;
+    static uint32_t indexOfLastReadEntry = 0;
+
+    if (lastDirName == NULL || lastDirName != dirName || strcmp((char*)lastDirName, (char*)dirName) != 0) {
+        lastDirName = dirName;
+        // Directory has changed, reset index of last entry
+        indexOfLastReadEntry = 0;
+    }
+
+    // Split fileName according to delimiter. Use strnchr in order not to change the original string
+    uint8_t * currentName = (uint8_t*) strchr((char*)dirName, PATH_DELIMITER);
+
+    // Initialize dir name with spaces
+    uint8_t currentDirName[8];
+    memset(currentDirName,' ', 8);
+
+    uint32_t addressOfNextDirectoryToOpen = fileSystemState.rootDirectoryAddress;
+    uint32_t lastPosition = 0;
+
+    // As long as currentPath is not null, navigate through directories
+    while(currentName!=0){
+        // Copy current directory name to local buffer
+        strncpy((char*)currentDirName, (char*)(dirName + lastPosition), currentName - dirName - lastPosition);
+
+        // currentDirName now contains the name of the directory to open
+        addressOfNextDirectoryToOpen = getNextDirectory(currentDirName, addressOfNextDirectoryToOpen);
+
+        if(addressOfNextDirectoryToOpen==0){
+            // Not a directory, or does not exist
+            return 0;
+        }
+
+        // Update last position
+        lastPosition = currentName - dirName + 1;
+
+        currentName = (uint8_t*)strchr((char*)(currentName+1), PATH_DELIMITER);
+
+        // Reinitialize current name with spaces
+        memset(currentDirName,' ', MAX_CHAR_FILE_NAME);
+    }
+
+    // Current dir name is available. Read current dir.
+    // Create local buffer
+    uint8_t buf[STORAGE_SECTOR_SIZE];
+
+    uint32_t fileEntriesToSkip = indexOfLastReadEntry;
+
+    Fat16Entry_t currentEntry;
+
+    // Max size is: size of filename + size of dot + size of extension + size of null termination + 3 chars for special filenames (starting with / and ending with ~X)
+    static uint8_t fileNameToReturn[MAX_CHAR_FILE_NAME + MAX_CHAR_EXTENSION + 5];
+
+    uint32_t i = 0;
+    for(i = 0; i < fileSystemState.maximumNumberOfEntriesInRoot; i+=sizeof(Fat16Entry_t)){
+        if(i%STORAGE_SECTOR_SIZE == 0){
+            readSector(buf, addressOfNextDirectoryToOpen);
+        }
+
+        // Copy current position to a FAT16 entry
+        memcpy((void*)&currentEntry, buf+i, sizeof(currentEntry));
+
+        if((currentEntry.attributes == FAT16_DIRECTORY_ENTRY) || (currentEntry.attributes == FAT16_ARCHIVE_ENTRY)){
+            if(fileEntriesToSkip == 0){
+                // File name to be returned must be reinitialized, in case there are some leftover chars
+                memset(fileNameToReturn, ' ', MAX_CHAR_FILE_NAME + MAX_CHAR_EXTENSION + 5);
+
+                strncpy((char*)fileNameToReturn, (char*)currentEntry.filename, MAX_CHAR_FILE_NAME);
+                if(currentEntry.attributes == FAT16_ARCHIVE_ENTRY){
+                    // Add '.' and extension
+                    fileNameToReturn[MAX_CHAR_FILE_NAME] = '.';
+                    strncpy((char*)(fileNameToReturn+MAX_CHAR_FILE_NAME+1), (char*)currentEntry.ext, MAX_CHAR_EXTENSION);
+                }
+                indexOfLastReadEntry++;
+                fileNameToReturn[MAX_CHAR_FILE_NAME + MAX_CHAR_EXTENSION + 4] = 0;
+                return removeWhiteSpacesFromUint8Array(fileNameToReturn);
+            } else {
+                fileEntriesToSkip--;
+            }
+        }
+    }
+
+    // Nothing found
+    return 0;
 }
