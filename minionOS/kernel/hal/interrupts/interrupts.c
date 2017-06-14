@@ -11,7 +11,7 @@
 #include "kernel/devices/omap3530/includes/interrupts.h"
 #include "kernel/hal/interrupts/interrupts.h"
 #include "kernel/systemModules/systemCalls/dispatcher.h"
-#include "kernel/systemModules/systemCalls/systemCallArguments.h"
+#include "systemCallArguments.h"
 #include "kernel/systemModules/processManagement/contextSwitch.h"
 #include "global/types.h"
 #include <stdio.h>
