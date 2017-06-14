@@ -293,6 +293,11 @@ int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOf
 
 
 int16_t fileSystem_openFile(uint8_t * fileName){
+    if (*fileName != '/') {
+        return -4;
+    } else {
+        fileName += 1;
+    }
 
     // Split fileName according to delimiter. Use strnchr in order not to change the original string
     uint8_t * currentName = (uint8_t*) strchr((char*)fileName, PATH_DELIMITER);
