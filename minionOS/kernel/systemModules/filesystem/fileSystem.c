@@ -20,6 +20,9 @@
 #define FAT16_DIRECTORY_ENTRY 0x10
 #define FAT16_ARCHIVE_ENTRY   0x20
 
+// This is used to filter filenames which start with that weird character
+#define FAT16_UNDEFINED_FILENAME_START_CHAR 0xE5
+
 // Cluster defines
 #define INVALID_CLUSTER 0 // Cluster 0 and 1 are invalid
 
@@ -531,7 +534,7 @@ uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName){
         // Copy current position to a FAT16 entry
         memcpy((void*)&currentEntry, buf+i, sizeof(currentEntry));
 
-        if((currentEntry.attributes == FAT16_DIRECTORY_ENTRY) || (currentEntry.attributes == FAT16_ARCHIVE_ENTRY)){
+        if((currentEntry.filename[0]!=FAT16_UNDEFINED_FILENAME_START_CHAR) && ((currentEntry.attributes == FAT16_DIRECTORY_ENTRY) || (currentEntry.attributes == FAT16_ARCHIVE_ENTRY))){
             if(fileEntriesToSkip == 0){
                 // File name to be returned must be reinitialized, in case there are some leftover chars
                 memset(fileNameToReturn, ' ', MAX_CHAR_FILE_NAME + MAX_CHAR_EXTENSION + 5);
