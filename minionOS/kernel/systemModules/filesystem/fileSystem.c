@@ -260,7 +260,7 @@ int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOf
     // Local variable to store the currently read entry
     Fat16Entry_t currentEntry;
     volatile uint32_t i = 0;
-    for(i=0; i < fileSystemState.maximumNumberOfEntriesInRoot; i+=sizeOfFatEntry){
+    for(i=0; i < fileSystemState.maximumNumberOfEntriesInRoot*4; i+=sizeOfFatEntry){
 
         if(i%STORAGE_SECTOR_SIZE==0){
             readSector(buffer, addressOfCurrentDir+i);
@@ -526,13 +526,13 @@ uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName){
     static uint8_t fileNameToReturn[MAX_CHAR_FILE_NAME + MAX_CHAR_EXTENSION + 5];
 
     uint32_t i = 0;
-    for(i = 0; i < fileSystemState.maximumNumberOfEntriesInRoot; i+=sizeof(Fat16Entry_t)){
+    for(i = 0; i < (fileSystemState.maximumNumberOfEntriesInRoot*4); i+=sizeof(Fat16Entry_t)){
         if(i%STORAGE_SECTOR_SIZE == 0){
-            readSector(buf, addressOfNextDirectoryToOpen);
+            readSector(buf, addressOfNextDirectoryToOpen+i);
         }
 
         // Copy current position to a FAT16 entry
-        memcpy((void*)&currentEntry, buf+i, sizeof(currentEntry));
+        memcpy((void*)&currentEntry, buf+(i%STORAGE_SECTOR_SIZE), sizeof(currentEntry));
 
         if((currentEntry.filename[0]!=FAT16_UNDEFINED_FILENAME_START_CHAR) && ((currentEntry.attributes == FAT16_DIRECTORY_ENTRY) || (currentEntry.attributes == FAT16_ARCHIVE_ENTRY))){
             if(fileEntriesToSkip == 0){
