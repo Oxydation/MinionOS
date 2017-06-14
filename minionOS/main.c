@@ -17,6 +17,10 @@
 #include "drivers/dmx/mhx25/dmxMhx25.h"
 #include <string.h>
 #include "global/delay/delay.h"
+#include "applications/systemCallApi.h"
+#include "kernel/systemModules/filesystem/vfs.h"
+#include "applications/shell/shell.h"
+#include "kernel/hal/mmc_sd/sdCard.h"
 
 void process1(void);
 void process2(void);
@@ -32,6 +36,8 @@ int main(void)
 
     // Initialization
     dmx_init();
+    sdCard_initialize_Ch1();
+    vfs_init();
     systemTimer_init(1000);
     scheduler_init();
 
@@ -54,6 +60,14 @@ int main(void)
     }
 }
 
+typedef struct
+{
+    uint8_t * question;
+    uint8_t * answer1;
+    uint8_t * answer2;
+    uint8_t * answer3;
+    uint8_t correctAnswerNumber;
+} QuizQuestion_t;
 
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
@@ -63,10 +77,59 @@ void process1(void)
                            .ledCircuit = 255, .speed = 50,
 
     };
-    DmxDataMhX25_t dataMhx25 = { .pan = 255, .tilt = 100, .speed = 190, .dimmer =
-                                             100,
-                                     .colour = YellowGreen, .gobo = Gobo5, .goboRotation =
-                                            150, .shutter = 5 };
+    DmxDataMhX25_t dataMhx25 = { .pan = 255, .tilt = 100, .speed = 190,
+                                 .dimmer = 100, .colour = YellowGreen, .gobo =
+                                         Gobo5,
+                                 .goboRotation = 150, .shutter = 5 };
+
+    int quizHandle = sysCalls_openFile("QUIZ.TXT");
+    uint8_t quizFile[4096] = { 0 };
+  sysCalls_readFile(quizHandle, &quizFile, 4096);
+  int amountChars = 1390;
+    QuizQuestion_t questions[20];
+
+    int currPos = 0;
+    int currentQuizQuestion = 0;
+    while (amountChars > currPos)
+    {
+        // Rows
+        while (amountChars > currPos && quizFile[currPos] != 10)
+        {
+            uint8_t currentColumnText[60] = { 0 };
+            int pos = 0;
+            int column = 0;
+            while (amountChars > currPos && quizFile[currPos] != '\t')
+            {
+                currentColumnText[pos++] = quizFile[currPos++];
+            }
+            currPos++;
+            column++;
+
+            switch (column)
+            {
+            case 0:
+                questions[currentQuizQuestion].question = currentColumnText;
+                break;
+            case 1:
+                questions[currentQuizQuestion].answer1 = currentColumnText;
+                break;
+            case 2:
+                questions[currentQuizQuestion].answer2 = currentColumnText;
+                break;
+            case 3:
+                questions[currentQuizQuestion].answer3 = currentColumnText;
+                break;
+            case 4:
+                questions[currentQuizQuestion].correctAnswerNumber =
+                        currentColumnText;
+
+                currentQuizQuestion++;
+                break;
+            }
+
+        }
+    }
+
     while (1)
     {
         delay(100000);
@@ -82,7 +145,8 @@ void process1(void)
         dmx_createMhX25Packet(1, &dataMhx25, &packet);
         dmx_createTmh7Packet(13, &data, &packet);
 
-        dmx_send(&packet, packetSize);
+        //dmx_send(&packet, packetSize);
+        sysCalls_ctrlDmx(&packet, packetSize);
     }
 }
 

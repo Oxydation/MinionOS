@@ -2,9 +2,15 @@
 #include "kernel/systemModules/systemCalls/dispatcher.h"
 #include "drivers/led/ledControl.h"
 #include "kernel/systemModules/filesystem/vfs.h"
+#include "kernel/hal/dmx/dmx.h"
+#include "drivers/dmx/tmh7/dmxTmh7.h"
+#include "drivers/dmx/mhx25/dmxMhx25.h"
 
 int dispatcher_dispatch(SysCallArgs_t args) {
     switch (args.systemCallNumber) {
+    case SYSCALL_DMX_SEND:
+        dmx_send((uint8_t*) args.a, args.b);
+        break;
     case SYSCALL_LED:
         ledControl_activateLed((bool) args.a, args.b);
         break;
