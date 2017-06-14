@@ -3,9 +3,9 @@
 #include "vfs.h"
 #include "stdio.h"
 
-#define UART1_CONF  "/etc/uart/uart1.conf"
-#define UART2_CONF  "/etc/uart/uart2.conf"
-#define UART3_CONF  "/etc/uart/uart3.conf"
+#define UART1_CONF  "/ETC/UART/UART1.CFG"
+#define UART2_CONF  "/ETC/UART/UART2.CFG"
+#define UART3_CONF  "/ETC/UART/UART3.CFG"
 
 static void open(UartModule_t module, const char* configFile) {
     int file = vfs_open(configFile);
@@ -28,7 +28,7 @@ static void open(UartModule_t module, const char* configFile) {
 }
 
 static void open1() {
-    open(UART1, "/etc/uart/uart1.conf");
+    open(UART1, UART1_CONF);
 }
 static int read1(uint8_t* buffer, unsigned int bufferSize) {
     uart_receive(UART1, buffer, bufferSize);
