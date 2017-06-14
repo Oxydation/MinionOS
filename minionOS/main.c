@@ -18,11 +18,13 @@
 
 void process1(void);
 void process2(void);
+void process3(void);
 
 int main(void)
 {
     _disable_interrupts();
 
+    process3();
     process2();
     process1();
 
@@ -40,7 +42,7 @@ int main(void)
     /* vAddress, pAddress, ptAddress */
     mmu_initProcess(0x80600000, 1);
     mmu_initProcess(0x80700000, 1);
-    //mmu_initProcess(0x80800000, 1);
+    mmu_initProcess(0x80800000, 1);
 
     _enable_interrupts();
     _enable_IRQ();
@@ -80,7 +82,7 @@ void process2(void)
     //}
 }
 
-#pragma CODE_SECTION(process2,".process3") //  DDR0_PROC2: o = 0x80700000
+#pragma CODE_SECTION(process3,".process3") //  DDR0_PROC2: o = 0x80700000
 void process3(void)
 {
     volatile unsigned long i = 0;

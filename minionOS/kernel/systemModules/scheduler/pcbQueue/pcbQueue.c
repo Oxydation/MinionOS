@@ -19,15 +19,23 @@ PcbNode_t* pcbQueue_createPcbNode(PCB_t * pcb){
 
 void pcbQueue_removePcbNode(Queue_t* queue, PCB_t* pcb) {
 
-    PcbNode_t* previousNode;
+    PcbNode_t* previousNode = NULL;
     PcbNode_t* currNode = (PcbNode_t*)queue->pFront;
 
     while (currNode != NULL) {
         if (currNode->data->processId == pcb->processId) {
             if (previousNode != NULL) {
                 previousNode->pNext = currNode->pNext;
+                if (currNode->pNext == NULL) {
+                    queue->pRear = previousNode;
+                }
+                queue->size--;
             } else {
                 queue->pFront = currNode->pNext;
+                if (currNode->pNext == NULL) {
+                    queue->pRear = NULL;
+                }
+                queue->size--;
             }
             break;
         }
@@ -37,5 +45,4 @@ void pcbQueue_removePcbNode(Queue_t* queue, PCB_t* pcb) {
             currNode = currNode->pNext;
         }
     }
-    queue->size--;
 }
