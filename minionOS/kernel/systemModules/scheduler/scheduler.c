@@ -67,11 +67,13 @@ void scheduler_stopProcess(ProcessId_t processId) {
 
     if (g_currentProcess->processId == processId)
     {
-        // Load new process
-        g_currentProcess = getNextProcess();
-        //copyPcb(g_currentProcess, currentPcb);
-        //currentPcb->processId = g_currentProcess->processId;
-        mmu_switchProcess(g_currentProcess);
+        // Load other process
+        //if (g_currentProcess->processId != 0) {
+        if (g_queueReady.size != 0) {
+            g_currentProcess = getNextProcess();
+            mmu_switchProcess(g_currentProcess);
+            asm_loadContext(g_currentProcess);
+        }
     }
     else
     {

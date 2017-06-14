@@ -91,8 +91,9 @@ static void systemtimer_handler(PCB_t * currentPcb)
             counter++;
             if (counter == 200) {
                 mmu_killProcess(1);
-            } else if (counter == 400) {
+            } else if (counter == 401) {
                 mmu_initProcess(0x80600000, 1);
+                //mmu_initProcess(0x80700000, 1);
             }
         }
     }

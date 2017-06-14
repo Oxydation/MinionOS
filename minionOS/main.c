@@ -40,6 +40,7 @@ int main(void)
     /* vAddress, pAddress, ptAddress */
     mmu_initProcess(0x80600000, 1);
     mmu_initProcess(0x80700000, 1);
+    //mmu_initProcess(0x80800000, 1);
 
     _enable_interrupts();
     _enable_IRQ();
@@ -69,6 +70,18 @@ void process1(void)
 
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80700000
 void process2(void)
+{
+    volatile unsigned long i = 0;
+    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
+
+    //while (1)
+    //{
+        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    //}
+}
+
+#pragma CODE_SECTION(process2,".process3") //  DDR0_PROC2: o = 0x80700000
+void process3(void)
 {
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);

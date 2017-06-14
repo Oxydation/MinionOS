@@ -31,6 +31,11 @@ void pcbQueue_removePcbNode(Queue_t* queue, PCB_t* pcb) {
             }
             break;
         }
+        else
+        {
+            previousNode = currNode;
+            currNode = currNode->pNext;
+        }
     }
     queue->size--;
 }
