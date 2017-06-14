@@ -18,5 +18,6 @@ typedef struct PcbNode
 } PcbNode_t;
 
 PcbNode_t* pcbQueue_createPcbNode(PCB_t * pcb);
+void pcbQueue_removePcbNode(Queue_t* queue, PCB_t* pcb);
 
 #endif /* KERNEL_SYSTEMMODULES_SCHEDULER_PCBQUEUE_PCBQUEUE_H_ */

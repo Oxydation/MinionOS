@@ -251,12 +251,14 @@ uint32_t mmu_getInstructionFaultAddress(void);
 /* functions for process management */
 void mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages);
 void mmu_switchProcess(PCB_t* pcb);
-void mmu_killProcess(void);
+void mmu_killProcess(ProcessId_t processId);
 uint32_t* mmu_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes);
 
 int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages);
 uint16_t mmu_getPageIndexInRegion(Region_t* region, uint32_t pAddress);
 void mmu_reservePagesForProcess(Process_t* process);
+void mmu_freePagesForProcess(Process_t* process);
+void mmu_freePTOfProcess(Process_t* process);
 
 void mmu_handleSectionTranslationFault(uint32_t faultAddress);
 

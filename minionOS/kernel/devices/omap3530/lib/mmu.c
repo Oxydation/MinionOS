@@ -332,6 +332,8 @@ void mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages) {
             Region_t taskPTRegion = {(uint32_t)ptPtr, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)ptPtr, &pageTablePT, ptStatus};
             pageTableRegion.reservedPages += nrOfNeededPagesForPT;
 
+            // TODO: numPages in taskRegion bei Taskabbruch stimmt nicht! status von taskRegion evtl. eigenes Array, nicht Teil von
+            // processMemoryStatus
             uint8_t processId = processManager_getNextProcessId();
             PageStatus_t* taskRegionStatus = (PageStatus_t*)(processMemoryRegionStatus + pageIndexOfProcess);
             Region_t taskRegion = {VIRTUAL_START_ADDRESS, SECTION, nrOfNeededPages, RWRW, WT, 0, pAddress, &taskPT, taskRegionStatus};
@@ -359,8 +361,12 @@ void mmu_switchProcess(PCB_t* pcb) {
     mmu_flushCache();
 }
 
-void mmu_killProcess(void) {
+void mmu_killProcess(ProcessId_t processId) {
 
+    Process_t* process = &processes[processId];
+    mmu_freePagesForProcess(process);
+    mmu_freePTOfProcess(process);
+    processManager_killProcess(processId);
 }
 
 int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages) {
@@ -420,7 +426,7 @@ void mmu_handleSectionTranslationFault(uint32_t faultAddress) {
 
     vAddress = (uint32_t)g_currentMMUProcess->region.vAddress + index * SECTION_SIZE;
     pAddress = (uint32_t)g_currentMMUProcess->region.pAddress + index * SECTION_SIZE;
-    g_currentMMUProcess->region.numPages++;
+    //g_currentMMUProcess->region.numPages++;
 
     uint8_t AP = g_currentMMUProcess->region.AP;
     uint8_t CB = g_currentMMUProcess->region.CB;
@@ -429,6 +435,7 @@ void mmu_handleSectionTranslationFault(uint32_t faultAddress) {
     Region_t taskRegion = {vAddress, SECTION, 1, AP, CB, 0, pAddress, pt, status};
 
     mmu_mapRegion(&taskRegion, taskRegion.numPages, g_currentMMUProcess->pcb->processId);
+    g_currentMMUProcess->region.reservedPages += taskRegion.reservedPages;
 }
 
 uint32_t* mmu_getPhysicalMemoryForProcess(uint32_t nrOfNeededPages) {
@@ -455,6 +462,31 @@ void mmu_reservePagesForProcess(Process_t* process) {
     for (i = 0; i < process->region.numPages; i++) {
         status->reserved = 1;
         status->processId = process->pcb->processId;
+        status++;
+    }
+}
+
+void mmu_freePagesForProcess(Process_t* process) {
+
+    int i;
+    PageStatus_t* status = process->region.pageStatus;
+    for (i = 0; i < process->region.numPages; i++) {
+        status->reserved = 0;
+        status->processId = 0;
+        status++;
+    }
+}
+
+void mmu_freePTOfProcess(Process_t* process) {
+
+    mmu_initPT(&process->pageTable);
+    int i;
+    PageStatus_t* status = pageTableRegion.pageStatus;
+    for (i = 0; i < pageTableRegion.numPages; i++) {
+        if (status->processId == process->pcb->processId) {
+            status->reserved = 0;
+            status->processId = 0;
+        }
         status++;
     }
 }

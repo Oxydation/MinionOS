@@ -9,10 +9,13 @@
 #include <stdio.h>
 #include <math.h>
 #include "global/types.h"
+#include "kernel/devices/omap3530/includes/mmu.h"
 
 #define MAX_CALLBACKS 30
 
 static void systemtimer_handler(PCB_t * currentPcb);
+
+uint32_t counter = 0;
 
 typedef struct
 {
@@ -85,6 +88,12 @@ static void systemtimer_handler(PCB_t * currentPcb)
         {
             g_registeredCallbacks[i].lastCallbackTime = g_current_ms;
             g_registeredCallbacks[i].callback(currentPcb);
+            counter++;
+            if (counter == 200) {
+                mmu_killProcess(1);
+            } else if (counter == 400) {
+                mmu_initProcess(0x80600000, 1);
+            }
         }
     }
 

@@ -9,7 +9,7 @@
 
 #define SCHEDULER_INTERVAL_MS 50       //50
 
-PCB_t g_processes[MAX_ALLOWED_PROCESSES];
+PCB_t g_processes[MAX_ALLOWED_PROCESSES + 1];
 ProcessId_t nextProcessId = 1;
 PCB_t * g_currentProcess;
 Queue_t g_queueBlocked;
@@ -44,17 +44,42 @@ void scheduler_stop(void)
 
 PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint32_t cpsr)
 {
+    ProcessId_t processId = scheduler_getNextProcessId();
+
     // 1. Step: Create PCB
-    PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = nextProcessId,
+    PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = processId,
                             .registers.R13 = stackPointer, .registers.R14 = startAddress,
                             .cpsr = cpsr };
     // 2. Step store into pcb array
-    g_processes[nextProcessId] = newProcessPcb;
+    g_processes[processId] = newProcessPcb;
 
     // 3. Load process into ready queue
-    addReadyProcess(&g_processes[nextProcessId++]);
+    addReadyProcess(&g_processes[processId]);
 
-    return &g_processes[nextProcessId - 1];
+    return &g_processes[processId];
+}
+
+void scheduler_stopProcess(ProcessId_t processId) {
+
+    // TODO: what if the current process is the process to kill?
+
+    PCB_t* process = &g_processes[processId];
+
+    if (g_currentProcess->processId == processId)
+    {
+        // Load new process
+        g_currentProcess = getNextProcess();
+        //copyPcb(g_currentProcess, currentPcb);
+        //currentPcb->processId = g_currentProcess->processId;
+        mmu_switchProcess(g_currentProcess);
+    }
+    else
+    {
+        pcbQueue_removePcbNode(&g_queueReady, process);
+        pcbQueue_removePcbNode(&g_queueBlocked, process);
+    }
+
+    g_processes[processId].processId = 0;
 }
 
 static void handleSchedulerTick(PCB_t * currentPcb)
@@ -102,7 +127,7 @@ static void addReadyProcess(PCB_t * process)
     queue_insert(&g_queueReady, pcbQueue_createPcbNode(process));
 }
 
-static PCB_t * removeReadyProcess()
+static PCB_t * removeReadyProcess(void)
 {
     PCB_t * removedProcess = ((PcbNode_t*) queue_front(&g_queueReady))->data;
     queue_remove(&g_queueReady);
@@ -114,13 +139,19 @@ static void addBlockedProcess(PCB_t * process)
     queue_insert(&g_queueBlocked, pcbQueue_createPcbNode(process));
 }
 
-static PCB_t * removeBlockedProcess()
+static PCB_t * removeBlockedProcess(void)
 {
     PCB_t * result = ((PcbNode_t*) queue_front(&g_queueBlocked))->data;
     queue_remove(&g_queueBlocked);
     return result;
 }
 
-ProcessId_t scheduler_getNexProcessId(void) {
-    return nextProcessId;
+ProcessId_t scheduler_getNextProcessId(void) {
+    int i;
+    for (i = 1; i <= MAX_ALLOWED_PROCESSES; i++) {
+       if (g_processes[i].processId == 0) {
+           return i;
+       }
+    }
+    return -1;
 }
