@@ -293,6 +293,10 @@ int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOf
 
 
 int16_t fileSystem_openFile(uint8_t * fileName){
+    if(fileName==NULL){
+        return -3;
+    }
+
     if (*fileName != '/') {
         return -4;
     } else {
@@ -357,6 +361,9 @@ void fileSystem_closeFile(uint8_t fileDescriptor){
 }
 
 uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t bufferSize){
+    if(buffer==NULL){
+        return 0;
+    }
 
     if(fileDescriptor>=MAX_NUMBER_FILE_DESCRIPTORS){
         // Invalid file descriptor
