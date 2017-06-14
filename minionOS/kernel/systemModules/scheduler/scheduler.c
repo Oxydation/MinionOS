@@ -61,14 +61,11 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
 
 void scheduler_stopProcess(ProcessId_t processId) {
 
-    // TODO: what if the current process is the process to kill?
-
     PCB_t* process = &g_processes[processId];
 
     if (g_currentProcess->processId == processId)
     {
         // Load other process
-        //if (g_currentProcess->processId != 0) {
         if (g_queueReady.size != 0) {
             g_currentProcess = getNextProcess();
             mmu_switchProcess(g_currentProcess);
