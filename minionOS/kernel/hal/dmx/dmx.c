@@ -85,11 +85,5 @@ void dmx_send(const uint8_t * data, uint16_t size)
     uart_updateConfig(UART2, config);
     uart_transmit(UART2, data, size);
 
-    // Mark between two packets
-    pad_setMode(GPIO);
-    gpio_digitalWrite(146, HIGH);
-    delay(500);
-    gpio_digitalWrite(146, LOW);
-
-    delay(100);
+    delay(200);
 }

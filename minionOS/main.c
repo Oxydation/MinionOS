@@ -59,7 +59,7 @@ int main(void)
 void process1(void)
 {
     DmxDataTMH7_t data = { .pan = 0, .tilt = 100, .green = 10, .blue = 128,
-                           .red = 10, .dimmingIntensity = 20, .colorMacro = 0,
+                           .red = 10, .dimmingIntensity = 50, .colorMacro = 0,
                            .ledCircuit = 255, .speed = 50,
 
     };
@@ -70,7 +70,7 @@ void process1(void)
     while (1)
     {
         delay(100000);
-//        //dataMhx25.pan += 3;
+        //dataMhx25.pan += 3;
         data.pan += 3;
 //
         uint16_t packetSize = 26;
@@ -83,9 +83,6 @@ void process1(void)
         dmx_createTmh7Packet(13, &data, &packet);
 
         dmx_send(&packet, packetSize);
-
-        //dmx_sendMhX25(1, &dataMhx25);
-        //dmx_sendTMH7(1, &data);
     }
 }
 

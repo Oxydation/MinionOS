@@ -260,7 +260,6 @@ static bool isReadyToTransmit(Uart_t uartModule) {
 }
 
 void uart_transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
-    // TODO buffer overflow?
     Uart_t uartModule = modules[module];
     int i;
     for (i = 0; i < bufferSize; i++) {
