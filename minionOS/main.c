@@ -12,7 +12,6 @@
 #include "global/types.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/systemModules/processManagement/processManager.h"
-#include "applications/syscallApi.h"
 
 #define USE_SYSTEMTMR   1
 
