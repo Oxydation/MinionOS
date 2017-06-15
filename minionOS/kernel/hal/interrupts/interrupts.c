@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include "global/types.h"
 #include "kernel/systemModules/processManagement/contextSwitch.h"
-#include "kernel/devices/omap3530/includes/mmu.h"
+#include "kernel/systemModules/mmu/mmu.h"
 
 // Keep book of all interrupt handlers
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };

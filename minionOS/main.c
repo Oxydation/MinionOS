@@ -8,7 +8,7 @@
 #include <kernel/hal/interrupts/interrupts.h>
 #include <kernel/hal/timer/systemTimer.h>
 #include <kernel/hal/timer/timer.h>
-#include <kernel/devices/omap3530/includes/mmu.h>
+#include <kernel/systemModules/mmu/mmu.h>
 #include "global/types.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/systemModules/processManagement/processManager.h"
@@ -64,10 +64,7 @@ void process1(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    //while (1)
-    //{
-        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    //}
+    bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
 }
 
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80700000
@@ -76,20 +73,14 @@ void process2(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    //while (1)
-    //{
-        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    //}
+    bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
 }
 
-#pragma CODE_SECTION(process3,".process3") //  DDR0_PROC2: o = 0x80700000
+#pragma CODE_SECTION(process3,".process3") //  DDR0_PROC3: o = 0x80800000
 void process3(void)
 {
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    //while (1)
-    //{
-        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    //}
+    bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
 }
