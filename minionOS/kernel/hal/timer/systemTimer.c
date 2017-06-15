@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "global/types.h"
-#include "kernel/devices/omap3530/includes/mmu.h"
 
 #define MAX_CALLBACKS 30
 
@@ -28,7 +27,6 @@ static TimerCallbackSubscription_t g_registeredCallbacks[MAX_CALLBACKS] = { 0 };
 static Timer_t * g_systemTimer;
 
 uint32_t g_current_ms = 0;
-
 
 void systemTimer_init(uint32_t interval_us)
 {
