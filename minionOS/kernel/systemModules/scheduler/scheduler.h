@@ -15,7 +15,7 @@
 #include "kernel/hal/timer/systemTimer.h"
 #include "global/queue/queue.h"
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
-//#include "../../devices/omap3530/includes/mmu.h"
+#include "kernel/systemModules/mmu/mmu.h"
 
 void scheduler_init(void);
 void scheduler_start(void);
