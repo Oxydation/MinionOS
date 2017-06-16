@@ -11,7 +11,7 @@
 #include "../scheduler/scheduler.h"
 #include "../mmu/mmu.h"
 
-PCB_t* processManager_loadProcess(uint32_t startAddress, uint32_t stackPointer);
+int8_t processManager_loadProcess(uint32_t physicalStartAddress, uint32_t nrOfNeededBytes);
 void processManager_killProcess(ProcessId_t processId);
 uint8_t processManager_getNextProcessId(void);
 

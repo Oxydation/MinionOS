@@ -103,9 +103,10 @@ void mmu_initMMU(void) {
     mmu_setMMUControl(enable, changeMask);
 }
 
-int8_t mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages) {
+int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeededBytes, PCB_t* pPcb) {
 
     uint16_t nrOfNeededPagesForPT = 4;
+    uint16_t nrOfNeededPagesForProcess = mmu_getNrOfNeededPagesForProcess(nrOfNeededBytes);
 
     int16_t freePageIndexForPT = mmu_findFreePagesInRegion(&g_pageTableRegion, nrOfNeededPagesForPT);
     int16_t pageIndexOfProcess = mmu_getPageIndexInRegion(&g_processMemoryRegion, pAddress);
@@ -117,7 +118,7 @@ int8_t mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages) {
 
             pPT = (uint32_t*)((uint32_t)g_pageTableRegion.pAddress + freePageIndexForPT * SMALL_PAGE_SIZE);
 
-            PageTable_t taskPT = {VIRTUAL_PROCESS_START_ADDRESS, (uint32_t)pPT, (uint32_t)pPT, MASTER, 0};
+            PageTable_t taskPT = {vAddress, (uint32_t)pPT, (uint32_t)pPT, MASTER, 0};
 
             PageStatus_t* pPTStatus = (PageStatus_t*)(g_pageTableRegionStatus + freePageIndexForPT);
             Region_t taskPTRegion = {(uint32_t)pPT, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)pPT, &g_pageTablePT, pPTStatus};
@@ -125,14 +126,13 @@ int8_t mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages) {
 
             uint8_t processId = processManager_getNextProcessId();
             PageStatus_t* pTaskRegionStatus = (PageStatus_t*)(g_processMemoryRegionStatus + pageIndexOfProcess);
-            Region_t taskRegion = {VIRTUAL_PROCESS_START_ADDRESS, SECTION, nrOfNeededPages, RWRW, WT, 0, pAddress, &taskPT, pTaskRegionStatus};
-            g_processMemoryRegion.reservedPages += nrOfNeededPages;
+            Region_t taskRegion = {vAddress, SECTION, nrOfNeededPagesForProcess, RWRW, WT, 0, pAddress, &taskPT, pTaskRegionStatus};
+            g_processMemoryRegion.reservedPages += nrOfNeededPagesForProcess;
 
             mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
             mmu_setProcessPT(taskPT);
             mmu_initPT(&taskPT);
 
-            PCB_t* pPcb = processManager_loadProcess(taskRegion.vAddress, (uint32_t)taskRegion.vAddress + 0x10000);
             Process_t process = {.pcb = pPcb, .pageTable = taskPT, .region = taskRegion};
             g_processes[pPcb->processId] = process;
             mmu_reservePagesForProcess(&process);

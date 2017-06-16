@@ -7,8 +7,9 @@
 
 #include "processManager.h"
 
-PCB_t* processManager_loadProcess(uint32_t startAddress, uint32_t stackPointer){
-    return scheduler_startProcess(startAddress, stackPointer, 0x60000110);
+int8_t processManager_loadProcess(uint32_t physicalStartAddress, uint32_t nrOfNeededBytes){
+    PCB_t* pPcb = scheduler_startProcess(VIRTUAL_PROCESS_START_ADDRESS, VIRTUAL_PROCESS_START_ADDRESS + 0x10000, 0x60000110);
+    return mmu_initProcess(physicalStartAddress, VIRTUAL_PROCESS_START_ADDRESS, nrOfNeededBytes, pPcb);
 }
 
 void processManager_killProcess(ProcessId_t processId) {

@@ -38,10 +38,10 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    /* vAddress, pAddress, ptAddress */
-    mmu_initProcess(0x80600000, 1);
-    mmu_initProcess(0x80700000, 1);
-    mmu_initProcess(0x80800000, 1);
+    /* physicalStartAddress, nrOfNeededBytes */
+    processManager_loadProcess(0x80600000, 1000);
+    processManager_loadProcess(0x80700000, 1000);
+    processManager_loadProcess(0x80800000, 1000);
 
     _enable_interrupts();
     _enable_IRQ();

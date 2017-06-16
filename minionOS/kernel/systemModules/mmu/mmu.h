@@ -11,7 +11,6 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include "kernel/systemModules/processManagement/processManager.h"
-#include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/devices/omap3530/includes/mmu.h"
 #include "kernel/hal/mmu/mmu.h"
 
@@ -92,7 +91,7 @@ typedef struct {
 void mmu_initMMU(void);
 
 /* functions for process management */
-int8_t mmu_initProcess(uint32_t pAddress, uint16_t nrOfNeededPages);
+int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeededBytes, PCB_t* pcb);
 void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(ProcessId_t processId);
 uint32_t* mmu_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes);
