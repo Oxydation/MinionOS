@@ -12,6 +12,7 @@ PCB_t* processManager_loadProcess(uint32_t startAddress, uint32_t stackPointer){
 }
 
 void processManager_killProcess(ProcessId_t processId) {
+    mmu_killProcess(processId);
     scheduler_stopProcess(processId);
 }
 

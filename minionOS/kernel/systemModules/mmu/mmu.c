@@ -157,7 +157,6 @@ void mmu_killProcess(ProcessId_t processId) {
     Process_t* pProcess = &g_processes[processId];
     mmu_freePagesForProcess(pProcess);
     mmu_freePTOfProcess(pProcess);
-    processManager_killProcess(processId);
 }
 
 void mmu_handleSectionTranslationFault(uint32_t faultAddress) {
