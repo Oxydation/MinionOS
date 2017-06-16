@@ -21,6 +21,8 @@
 #include "kernel/systemModules/filesystem/vfs.h"
 #include "applications/shell/shell.h"
 #include "kernel/hal/mmc_sd/sdCard.h"
+#include <stdlib.h>
+#include "kernel/hal/uart/uart.h"
 
 void process1(void);
 void process2(void);
@@ -34,8 +36,13 @@ int main(void)
     gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
 
+    UartConfig_t uartConfig = { .baudMultiple = x16, .baudRate = 115200,
+                                .stopMode = STOP_1, .parityMode = NO_PARITY,
+                                .wordLength = LENGTH_8 };
+
     // Initialization
     dmx_init();
+    uart_initModule(UART3, uartConfig);
     sdCard_initialize_Ch1();
     vfs_init();
     systemTimer_init(1000);
@@ -43,8 +50,6 @@ int main(void)
 
     processManager_loadProcess(&process1 + 0x4, 0x80607500);
     //processManager_loadProcess(&process2 + 0x4, 0x8060FF00);
-
-    //processManager_startFirstProcess();
 
     _enable_interrupts();
     _enable_IRQ();
@@ -83,50 +88,67 @@ void process1(void)
                                  .goboRotation = 150, .shutter = 5 };
 
     int quizHandle = sysCalls_openFile("QUIZ.TXT");
-    uint8_t quizFile[4096] = { 0 };
-  sysCalls_readFile(quizHandle, &quizFile, 4096);
-  int amountChars = 1390;
+
+    if (quizHandle < 0)
+    {
+        // not able to open file
+        return;
+    }
+    uint8_t quizFile[1400] = { 0 };
+    sysCalls_readFile(quizHandle, &quizFile, 1400);
+    uint16_t amountChars = 1390;
     QuizQuestion_t questions[20];
 
     int currPos = 0;
     int currentQuizQuestion = 0;
     while (amountChars > currPos)
     {
+        int column = 0;
+
         // Rows
-        while (amountChars > currPos && quizFile[currPos] != 10)
+        while (amountChars > currPos && quizFile[currPos] != 10 && column < 5)
         {
-            uint8_t currentColumnText[60] = { 0 };
+            uint8_t * currentColumnContent;
+            currentColumnContent = (uint8_t*) malloc(60 * sizeof(uint8_t));
+
+            // seems to have no more memory available :SS
+            if(currentColumnContent == 0x00){
+                uart_transmit(UART3, "no memory available\n", 20);
+                return;
+            }
             int pos = 0;
-            int column = 0;
-            while (amountChars > currPos && quizFile[currPos] != '\t')
+
+            while (amountChars > currPos && quizFile[currPos] != '\t' && quizFile[currPos] != 10)
             {
-                currentColumnText[pos++] = quizFile[currPos++];
+                currentColumnContent[pos++] = quizFile[currPos++];
             }
             currPos++;
-            column++;
+
+            uart_transmit(UART3, currentColumnContent, pos);
 
             switch (column)
             {
             case 0:
-                questions[currentQuizQuestion].question = currentColumnText;
+                questions[currentQuizQuestion].question = currentColumnContent;
                 break;
             case 1:
-                questions[currentQuizQuestion].answer1 = currentColumnText;
+                questions[currentQuizQuestion].answer1 = currentColumnContent;
                 break;
             case 2:
-                questions[currentQuizQuestion].answer2 = currentColumnText;
+                questions[currentQuizQuestion].answer2 = currentColumnContent;
                 break;
             case 3:
-                questions[currentQuizQuestion].answer3 = currentColumnText;
+                questions[currentQuizQuestion].answer3 = currentColumnContent;
                 break;
             case 4:
                 questions[currentQuizQuestion].correctAnswerNumber =
-                        currentColumnText;
+                        *currentColumnContent;
 
                 currentQuizQuestion++;
                 break;
             }
 
+            column++;
         }
     }
 
