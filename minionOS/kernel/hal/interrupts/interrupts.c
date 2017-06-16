@@ -13,6 +13,7 @@
 #include "kernel/systemModules/systemCalls/dispatcher.h"
 #include "kernel/systemModules/systemCalls/systemCallArguments.h"
 #include "kernel/systemModules/processManagement/contextSwitch.h"
+#include "kernel/systemModules/mmu/mmu.h"
 #include "global/types.h"
 #include <stdio.h>
 
@@ -90,9 +91,25 @@ void isr_undef(void) {
 #pragma INTERRUPT (isr_undef, DABT)
 void isr_dabt(void) {
 
+    uint8_t faultStatus = mmu_getDataFaultStatus();
+    uint32_t faultAddress = mmu_getDataFaultAddress();
+
+    if (faultStatus == TRANSLATION_FAULT_SECTION) {
+        mmu_handleSectionTranslationFault(faultAddress);
+    }
+
+    asm_loadContext(&g_pcb);
 }
 
 #pragma INTERRUPT (isr_undef, PABT)
 void isr_pabt(void) {
 
+    uint8_t faultStatus = mmu_getInstructionFaultStatus();
+    uint32_t faultAddress = mmu_getInstructionFaultAddress();
+
+    if (faultStatus == TRANSLATION_FAULT_SECTION) {
+        mmu_handleSectionTranslationFault(faultAddress);
+    }
+
+    asm_loadContext(&g_pcb);
 }
