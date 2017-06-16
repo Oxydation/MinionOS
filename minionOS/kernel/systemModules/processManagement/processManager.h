@@ -11,8 +11,9 @@
 #include "../scheduler/scheduler.h"
 #include "../mmu/mmu.h"
 
+#define STACK_SIZE  0x40000     /* 256 KB */
+
 int8_t processManager_loadProcess(uint32_t physicalStartAddress, uint32_t nrOfNeededBytes);
 void processManager_killProcess(ProcessId_t processId);
-uint8_t processManager_getNextProcessId(void);
 
 #endif /* KERNEL_SYSTEMMODULES_PROCESSMANAGEMENT_PROCESSMANAGER_H_ */

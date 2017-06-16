@@ -124,12 +124,11 @@ int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeeded
             Region_t taskPTRegion = {(uint32_t)pPT, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)pPT, &g_pageTablePT, pPTStatus};
             g_pageTableRegion.reservedPages += nrOfNeededPagesForPT;
 
-            uint8_t processId = processManager_getNextProcessId();
             PageStatus_t* pTaskRegionStatus = (PageStatus_t*)(g_processMemoryRegionStatus + pageIndexOfProcess);
             Region_t taskRegion = {vAddress, SECTION, nrOfNeededPagesForProcess, RWRW, WT, 0, pAddress, &taskPT, pTaskRegionStatus};
             g_processMemoryRegion.reservedPages += nrOfNeededPagesForProcess;
 
-            mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, processId);
+            mmu_mapRegion(&taskPTRegion, taskPTRegion.numPages, pPcb->processId);
             mmu_setProcessPT(taskPT);
             mmu_initPT(&taskPT);
 

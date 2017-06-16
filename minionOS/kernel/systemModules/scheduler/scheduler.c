@@ -24,6 +24,7 @@ static PCB_t * removeReadyProcess();
 static void addBlockedProcess(PCB_t * process);
 static PCB_t * removeBlockedProcess();
 static PCB_t * getNextProcess(void);
+static ProcessId_t scheduler_getNextProcessId(void);
 
 void scheduler_init(void)
 {
