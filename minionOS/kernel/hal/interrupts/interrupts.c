@@ -21,7 +21,6 @@
 static InterruptHandler_t g_interruptHandlers[NROF_IR_VECTORS] = { 0 };
 static PCB_t g_pcb;
 static volatile uint32_t g_lrError = 0;
-PCB_t interruptPcb;
 
 /*
  * Registers a new interrupt handler at a given IRQ-Position.
