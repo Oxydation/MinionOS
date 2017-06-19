@@ -1,6 +1,6 @@
+#include "systemCallApi.h"
 #include "systemCallArguments.h"
 #include "systemCallNumber.h"
-#include "applications/systemCallApi.h"
 
 #define UNUSED_SWI_NUMBER 0
 

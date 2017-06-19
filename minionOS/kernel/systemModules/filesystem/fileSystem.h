@@ -103,5 +103,10 @@ void fileSystem_closeFile(uint8_t fileDescriptor);
  */
 uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t bufferSize);
 
+/*
+ * Returns the next entry in the directory. If no entries are available, 0 is returned.
+ */
+uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName);
+
 
 #endif

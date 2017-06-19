@@ -20,7 +20,7 @@ void sdFs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSi
 }
 
 const char* sdFs_readdir(const char* dirName) {
-    return NULL;
+    return fileSystem_getNextEntryInDirectory(dirName);
 }
 
 
