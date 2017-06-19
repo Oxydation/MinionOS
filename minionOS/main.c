@@ -12,6 +12,9 @@
 #include "global/types.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/systemModules/processManagement/processManager.h"
+#include "kernel/systemModules/filesystem/vfs.h"
+#include "kernel/hal/mmc_sd/sdCard.h"
+#include "kernel/hal/uart/uart.h"
 
 #define USE_SYSTEMTMR   1
 
@@ -35,13 +38,21 @@ int main(void)
     gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
 
+    UartConfig_t uartConfig = { .baudMultiple = x16, .baudRate = 115200,
+                                .stopMode = STOP_1, .parityMode = NO_PARITY,
+                                .wordLength = LENGTH_8 };
+
+    uart_initModule(UART3, uartConfig);
+    sdCard_initialize_Ch1();
+    vfs_init();
     systemTimer_init(1000);
     scheduler_init();
 
+    loader_loadProcess("LEDON.OUT");
     /* physicalStartAddress, nrOfNeededBytes */
-    processManager_loadProcess(0x80600000, 1000);
-    processManager_loadProcess(0x80700000, 1000);
-    processManager_loadProcess(0x80800000, 1000);
+    //processManager_loadProcess(0x80600000, 1000);
+    //processManager_loadProcess(0x80700000, 1000);
+    //processManager_loadProcess(0x80800000, 1000);
 
     _enable_interrupts();
     _enable_IRQ();
