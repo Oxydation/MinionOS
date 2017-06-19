@@ -25,6 +25,9 @@ static void addBlockedProcess(PCB_t * process);
 static PCB_t * removeBlockedProcess();
 static PCB_t * getNextProcess(void);
 static ProcessId_t scheduler_getNextProcessId(void);
+static void scheduler_terminateCurrentProcess(void);
+
+void (*fPointer) (void);
 
 void scheduler_init(void)
 {
@@ -47,9 +50,11 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
 {
     ProcessId_t processId = scheduler_getNextProcessId();
 
+    fPointer = &scheduler_terminateCurrentProcess;
+
     // 1. Step: Create PCB
     PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = processId,
-                            .registers.R13 = stackPointer, .registers.R14 = startAddress,
+                            .registers.R13 = stackPointer, .registers.R14 = startAddress, //registers.R14 = (uint32_t*)fPointer,
                             .cpsr = cpsr };
     // 2. Step store into pcb array
     g_processes[processId] = newProcessPcb;
@@ -58,6 +63,10 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
     addReadyProcess(&g_processes[processId]);
 
     return &g_processes[processId];
+}
+
+static void scheduler_terminateCurrentProcess(void) {
+    scheduler_stopProcess(g_currentProcess->processId);
 }
 
 void scheduler_stopProcess(ProcessId_t processId) {
@@ -84,6 +93,8 @@ void scheduler_stopProcess(ProcessId_t processId) {
 
 static void handleSchedulerTick(PCB_t * currentPcb)
 {
+    fPointer = &scheduler_terminateCurrentProcess;
+
     if (g_queueReady.size > 0 && g_currentProcess == NULL)
     {
         g_currentProcess = getNextProcess();
