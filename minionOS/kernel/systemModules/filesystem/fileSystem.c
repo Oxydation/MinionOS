@@ -473,11 +473,11 @@ uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName){
         dirName += 1;
     }
 
-    static const uint8_t * lastDirName;
+    static uint8_t lastDirName[100];
     static uint32_t indexOfLastReadEntry = 0;
 
-    if (lastDirName == NULL || lastDirName != dirName || strcmp((char*)lastDirName, (char*)dirName) != 0) {
-        lastDirName = dirName;
+    if (strcmp((char*)lastDirName, (char*)dirName) != 0) {
+        strncpy((char*) lastDirName, (char*) dirName, sizeof(lastDirName) - 1);
         // Directory has changed, reset index of last entry
         indexOfLastReadEntry = 0;
     }
@@ -555,5 +555,7 @@ uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName){
     }
 
     // Nothing found
+    // reset lastDirName to allow query of same directory from the beginning
+    lastDirName[0] = '\0';
     return 0;
 }
