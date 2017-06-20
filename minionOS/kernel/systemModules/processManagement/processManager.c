@@ -16,6 +16,14 @@ int8_t processManager_loadProcess(uint32_t physicalStartAddress, uint32_t nrOfNe
     return mmu_initProcess(physicalStartAddress, VIRTUAL_PROCESS_START_ADDRESS, nrOfNeededBytesWithStack, pPcb);
 }
 
+uint32_t* processManager_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes) {
+    uint32_t stackPointer = calcStackPointer(VIRTUAL_PROCESS_START_ADDRESS, nrOfNeededBytes);
+    uint32_t nrOfNeededBytesWithStack = stackPointer - VIRTUAL_PROCESS_START_ADDRESS;
+    uint32_t* pAddress = mmu_getPhysicalMemoryForProcess(nrOfNeededBytesWithStack);
+    mmu_mapRegionDirectly((uint32_t)pAddress, nrOfNeededBytesWithStack, SECTION);
+    return pAddress;
+}
+
 void processManager_killProcess(ProcessId_t processId) {
     mmu_killProcess(processId);
     scheduler_stopProcess(processId);

@@ -49,6 +49,12 @@ int8_t loader_loadProcess(const char* fileName) {
         pBuffer = (uint32_t*)((uint32_t)pBuffer + i*1024);
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
 
+    // get physical memory for executable and copy it there
+    uint32_t* pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesInFile);
+    memcpy(pAddress, buffer, nrOfBytesInFile);
+
+    processManager_loadProcess((uint32_t)pAddress, nrOfBytesInFile);
+
     return LOAD_PROCESS_OK;
 }
 

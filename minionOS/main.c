@@ -19,9 +19,11 @@
 
 #define USE_SYSTEMTMR   1
 
+/*
 void process1(void);
 void process2(void);
 void process3(void);
+*/
 
 int main(void)
 {
@@ -50,6 +52,7 @@ int main(void)
     scheduler_init();
 
     loader_loadProcess("/LEDON.OUT");
+    loader_loadProcess("/LEDOFF.OUT");
     /* physicalStartAddress, nrOfNeededBytes */
     //processManager_loadProcess(0x80600000, 1000);
     //processManager_loadProcess(0x80700000, 1000);
@@ -69,6 +72,7 @@ int main(void)
     }
 }
 
+/*
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
@@ -95,3 +99,4 @@ void process3(void)
 
     bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
 }
+*/

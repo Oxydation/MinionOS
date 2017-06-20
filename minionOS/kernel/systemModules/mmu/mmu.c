@@ -56,15 +56,16 @@ static void mmu_setAllDomainAccesses(void);
 static void mmu_initAllPT(void);
 static int8_t mmu_initPT(PageTable_t* pt);
 static void mmu_mapAllRegions(void);
-static int8_t mmu_mapRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId);
-static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId);
-static int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId);
+static int8_t mmu_mapRegion(Region_t* region, uint16_t nrOfPages, int16_t processId);
+static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, int16_t processId);
+static int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages, int16_t processId);
 static void mmu_attachPT(PageTable_t* pt, PageTable_t* masterPT);
 static void mmu_setProcessPT(PageTable_t pt);
 static int16_t mmu_findFreePagesInRegion(Region_t* region, uint16_t nrOfPages);
 static uint16_t mmu_getPageIndexInRegion(Region_t* region, uint32_t pAddress);
 static void mmu_reservePagesForProcess(Process_t* process);
-static uint16_t mmu_getNrOfNeededPagesForProcess(uint32_t nrOfNeededBytes);
+static int32_t mmu_getNrOfNeededPagesForProcess(uint32_t nrOfNeededBytes);
+static int32_t mmu_getNumberOfNeededPages(uint32_t nrOfNeededBytes, uint16_t pageSize);
 static void mmu_freePagesForProcess(Process_t* process);
 static void mmu_freePTOfProcess(Process_t* process);
 
@@ -99,7 +100,8 @@ void mmu_initMMU(void) {
     mmu_flushTLB();
 
     /* enable MMU */
-    enable = ENABLE_MMU | ENABLE_ALIGNMENT | ENABLE_I_CACHE;
+    //enable = ENABLE_MMU | ENABLE_ALIGNMENT | ENABLE_I_CACHE;
+    enable = ENABLE_MMU | ENABLE_I_CACHE;
     mmu_setMMUControl(enable, changeMask);
 }
 
@@ -139,6 +141,14 @@ int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeeded
         }
     }
     return PROCESS_INIT_NOT_OK;
+}
+
+int8_t mmu_mapRegionDirectly(uint32_t pAddress, uint32_t nrOfNeededBytes, uint16_t pageSize) {
+
+    uint16_t nrOfNeededPages = mmu_getNumberOfNeededPages(nrOfNeededBytes, pageSize);
+    Region_t directlyMappedRegion = { .vAddress = pAddress, .pageSize = pageSize,  .numPages = nrOfNeededPages, .AP = RWRW, .CB = WT,
+                                        .reservedPages = 0, .pAddress = pAddress, .PT = &g_masterPTOS};
+    return mmu_mapRegion(&directlyMappedRegion, nrOfNeededPages, -1);
 }
 
 void mmu_switchProcess(PCB_t* pcb) {
@@ -239,7 +249,7 @@ static void mmu_mapAllRegions(void) {
     mmu_mapRegion(&g_pageTableRegion, 12, 0);
 }
 
-static int8_t mmu_mapRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId) {
+static int8_t mmu_mapRegion(Region_t* region, uint16_t nrOfPages, int16_t processId) {
 
     switch(region->PT->type) {
         case MASTER: {
@@ -255,7 +265,7 @@ static int8_t mmu_mapRegion(Region_t* region, uint16_t nrOfPages, uint8_t proces
     }
 }
 
-static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId) {
+static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, int16_t processId) {
 
     int16_t i;
     uint32_t* pPTE;                                       /* pointer to page table entry */
@@ -279,16 +289,18 @@ static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, ui
         descriptor &= ~0xFFF00000;
         descriptor |= pAddress;
         *pPTE++ = descriptor;
-        pStatus->reserved = 1;
-        pStatus->processId = processId;
-        pStatus++;
+        if (processId >= 0) {
+            pStatus->reserved = 1;
+            pStatus->processId = processId;
+            pStatus++;
+        }
         pAddress += (1 << 20);                              /* jump to start of next 1 MB section */
     }
     region->reservedPages = region->reservedPages + nrOfPages;
     return MAP_REGION_OK;
 }
 
-static int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages, uint8_t processId) {
+static int8_t mmu_mapCoarseTableRegion(Region_t* region, uint16_t nrOfPages, int16_t processId) {
 
     int16_t i;
     uint32_t* pPTE;                                       /* pointer to page table entry */
@@ -409,14 +421,37 @@ static uint16_t mmu_getPageIndexInRegion(Region_t* region, uint32_t pAddress) {
     return diff / pageSize;
 }
 
-static uint16_t mmu_getNrOfNeededPagesForProcess(uint32_t nrOfNeededBytes) {
+static int32_t mmu_getNrOfNeededPagesForProcess(uint32_t nrOfNeededBytes) {
 
-    uint16_t nrOfNeededPages = nrOfNeededBytes / NR_OF_BYTES_IN_SECTION;
-    uint16_t remainder = nrOfNeededBytes % NR_OF_BYTES_IN_SECTION;
+    return mmu_getNumberOfNeededPages(nrOfNeededBytes, SECTION);
+}
+
+static int32_t mmu_getNumberOfNeededPages(uint32_t nrOfNeededBytes, uint16_t pageSize) {
+
+    uint32_t nrOfBytesInPage;
+
+    switch (pageSize) {
+        case SMALL_PAGE:
+            nrOfBytesInPage = NR_OF_BYTES_IN_SMALL_PAGE;
+            break;
+        case LARGE_PAGE:
+            nrOfBytesInPage = NR_OF_BYTES_IN_LARGE_PAGE;
+            break;
+        case SECTION:
+            nrOfBytesInPage = NR_OF_BYTES_IN_SECTION;
+            break;
+        default:
+            printf("UNKNOWN page size \n");
+            return -1;
+    }
+
+    uint32_t nrOfNeededPages = nrOfNeededBytes / nrOfBytesInPage;
+    uint32_t remainder = nrOfNeededBytes % nrOfBytesInPage;
 
     if (remainder > 0) {
         nrOfNeededPages++;
     }
+
     return nrOfNeededPages;
 }
 

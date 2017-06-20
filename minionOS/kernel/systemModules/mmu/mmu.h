@@ -95,6 +95,7 @@ int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeeded
 void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(ProcessId_t processId);
 uint32_t* mmu_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes);
+int8_t mmu_mapRegionDirectly(uint32_t pAddress, uint32_t nrOfNeededBytes, uint16_t pageSize);
 
 /* functions for handling faults */
 void mmu_handleSectionTranslationFault(uint32_t faultAddress);
