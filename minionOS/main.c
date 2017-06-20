@@ -15,6 +15,7 @@
 #include "kernel/systemModules/filesystem/vfs.h"
 #include "kernel/hal/mmc_sd/sdCard.h"
 #include "kernel/hal/uart/uart.h"
+#include "kernel/systemModules/loader/loader.h"
 
 #define USE_SYSTEMTMR   1
 
@@ -25,11 +26,11 @@ void process3(void);
 int main(void)
 {
     _disable_interrupts();
-
+/*
     process3();
     process2();
     process1();
-
+*/
     mmu_initMMU();
 
     interrupts_initIrq();
@@ -48,7 +49,7 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    loader_loadProcess("LEDON.OUT");
+    loader_loadProcess("/LEDON.OUT");
     /* physicalStartAddress, nrOfNeededBytes */
     //processManager_loadProcess(0x80600000, 1000);
     //processManager_loadProcess(0x80700000, 1000);
