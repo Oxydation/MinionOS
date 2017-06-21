@@ -555,7 +555,8 @@ uint8_t * fileSystem_getNextEntryInDirectory(uint8_t * dirName){
     }
 
     // Nothing found
-    // reset lastDirName to allow query of same directory from the beginning
+    // reset lastDirName and indexOfLastReadEntry to allow query of same directory from the beginning
     lastDirName[0] = '\0';
+    indexOfLastReadEntry = 0;
     return 0;
 }
