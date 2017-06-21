@@ -266,7 +266,7 @@ int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOf
             readSector(buffer, addressOfCurrentDir+i);
         }
 
-        memcpy((void*)&currentEntry, buffer+i, sizeof(currentEntry));
+        memcpy((void*)&currentEntry, buffer+(i%STORAGE_SECTOR_SIZE), sizeof(currentEntry));
         if(compareFileNames(currentEntry.filename, currentEntry.ext, fileName, extension)){
             // File found. Check if it is a directory. If yes, change the current directory global variable.
             if(currentEntry.attributes == FAT16_DIRECTORY_ENTRY){
@@ -432,7 +432,7 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
         if(i>=fileSize){
             fileSystemState.fileDescriptors[fileDescriptor].bytesRemainingInFile = 0;
             // EOF reached
-            return i;
+            return i-resumePosition;
         }
 
         // Local buffer is only 512 bytes, so cycle through it using %.
