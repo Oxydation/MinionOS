@@ -19,6 +19,7 @@ SubscriptionId_t g_systemTimerId;
 
 static void handleSchedulerTick(PCB_t * currentPcb);
 static void initSchedulerTimer(uint32_t interval_ms);
+static void initIdleProcess(void);
 static void addReadyProcess(PCB_t * process);
 static PCB_t * removeReadyProcess();
 static void addBlockedProcess(PCB_t * process);
@@ -26,14 +27,19 @@ static PCB_t * removeBlockedProcess();
 static PCB_t * getNextProcess(void);
 static ProcessId_t scheduler_getNextProcessId(void);
 static void scheduler_terminateCurrentProcess(void);
+static PCB_t* getIdleProcess(void);
+static void idleProcess(void);
 
 void (*fPointer) (void);
+
+uint32_t counter = 0;
 
 void scheduler_init(void)
 {
     initSchedulerTimer(SCHEDULER_INTERVAL_MS);
     g_queueBlocked = queue_create();
     g_queueReady = queue_create();
+    initIdleProcess();
 }
 
 void scheduler_start(void)
@@ -44,6 +50,14 @@ void scheduler_start(void)
 void scheduler_stop(void)
 {
     systemTimer_disableSubscription(g_systemTimerId);
+}
+
+static void initIdleProcess(void) {
+
+    PCB_t idleProcessPcb = { .lr = ((uint32_t)(&idleProcess) + 0x4), .processId = 0,
+                             .registers.R14 = (uint32_t)&idleProcess, .status = WAITING };
+
+    g_processes[0] = idleProcessPcb;
 }
 
 PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint32_t cpsr)
@@ -109,7 +123,7 @@ static void handleSchedulerTick(PCB_t * currentPcb)
     }
     else if (g_queueReady.size > 0 && g_currentProcess != NULL)
     {
-        if (g_currentProcess->status != DEAD) {
+        if (g_currentProcess->status != DEAD && g_currentProcess->processId > 0) {
             // Save old process and add to ready queue
             g_currentProcess->status = WAITING;
             copyPcb(currentPcb, g_currentProcess);
@@ -125,7 +139,18 @@ static void handleSchedulerTick(PCB_t * currentPcb)
         currentPcb->processId = g_currentProcess->processId;
         mmu_switchProcess(currentPcb);
     }
-    else if (g_queueReady.size == 0)
+    else if (g_currentProcess == NULL || g_currentProcess->status == DEAD)
+    {
+        if (g_currentProcess != NULL) {
+            g_currentProcess->processId = 0;
+        }
+
+        g_currentProcess = getIdleProcess();
+        g_currentProcess->status = RUNNING;
+        copyPcb(g_currentProcess, currentPcb);
+        currentPcb->processId = g_currentProcess->processId;
+    }
+    else
     {
         // do nothing
     }
@@ -168,12 +193,22 @@ static PCB_t * removeBlockedProcess(void)
     return result;
 }
 
-ProcessId_t scheduler_getNextProcessId(void) {
+static ProcessId_t scheduler_getNextProcessId(void) {
     int i;
     for (i = 1; i <= MAX_ALLOWED_PROCESSES; i++) {
        if (g_processes[i].processId == 0) {
            return i;
        }
     }
-    return -1;
+    return 0;
+}
+
+static PCB_t* getIdleProcess(void) {
+    return &g_processes[0];
+}
+
+static void idleProcess(void) {
+    while (1) {
+
+    }
 }

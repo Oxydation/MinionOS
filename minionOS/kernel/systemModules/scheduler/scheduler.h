@@ -17,6 +17,8 @@
 #include "kernel/systemModules/scheduler/pcbQueue/pcbQueue.h"
 #include "kernel/systemModules/mmu/mmu.h"
 
+void (*idleProcessPointer) (void);
+
 void scheduler_init(void);
 void scheduler_start(void);
 void scheduler_stop(void);

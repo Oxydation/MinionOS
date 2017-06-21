@@ -18,6 +18,7 @@
 void process1(void);
 void process2(void);
 void process3(void);
+static int useLoopInProcesses = 0;
 
 int main(void)
 {
@@ -26,6 +27,8 @@ int main(void)
     process3();
     process2();
     process1();
+
+    useLoopInProcesses = 0;
 
     mmu_initMMU();
 
@@ -63,7 +66,16 @@ void process1(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    if (useLoopInProcesses == 1) {
+        while (1) {
+            bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+        }
+    }
+    else
+    {
+        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    }
+
 }
 
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80700000
@@ -72,7 +84,15 @@ void process2(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    if (useLoopInProcesses == 1) {
+        while (1) {
+            bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+        }
+    }
+    else
+    {
+        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    }
 }
 
 #pragma CODE_SECTION(process3,".process3") //  DDR0_PROC3: o = 0x80800000
@@ -81,5 +101,13 @@ void process3(void)
     volatile unsigned long i = 0;
     uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
 
-    bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    if (useLoopInProcesses == 1) {
+        while (1) {
+            bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+        }
+    }
+    else
+    {
+        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
+    }
 }

@@ -33,7 +33,7 @@ struct Register
 
 typedef enum {
 
-    RUNNING, WAITING, BLOCKED, DEAD
+    UNINITIALIZED, RUNNING, WAITING, BLOCKED, DEAD
 
 } ProcessStatus_t;
 
