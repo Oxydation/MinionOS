@@ -15,5 +15,6 @@
 
 int8_t processManager_loadProcess(uint32_t physicalStartAddress, uint32_t nrOfNeededBytes);
 void processManager_killProcess(ProcessId_t processId);
+void processManager_terminateCurrentProcess(PCB_t* pcb);
 
 #endif /* KERNEL_SYSTEMMODULES_PROCESSMANAGEMENT_PROCESSMANAGER_H_ */

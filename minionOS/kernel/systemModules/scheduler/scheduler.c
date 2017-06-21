@@ -26,11 +26,8 @@ static void addBlockedProcess(PCB_t * process);
 static PCB_t * removeBlockedProcess();
 static PCB_t * getNextProcess(void);
 static ProcessId_t scheduler_getNextProcessId(void);
-static void scheduler_terminateCurrentProcess(void);
 static PCB_t* getIdleProcess(void);
 static void idleProcess(void);
-
-void (*fPointer) (void);
 
 uint32_t counter = 0;
 
@@ -64,11 +61,9 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
 {
     ProcessId_t processId = scheduler_getNextProcessId();
 
-    fPointer = &scheduler_terminateCurrentProcess;
-
     // 1. Step: Create PCB
     PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = processId,
-                            .registers.R13 = stackPointer, .registers.R14 = (uint32_t)fPointer, //.registers.R14 = startAddress, //registers.R14 = (uint32_t*)fPointer,
+                            .registers.R13 = stackPointer, .registers.R14 = NULLPOINTER,
                             .cpsr = cpsr, .status = WAITING };
     // 2. Step store into pcb array
     g_processes[processId] = newProcessPcb;
@@ -79,13 +74,18 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
     return &g_processes[processId];
 }
 
-static void scheduler_terminateCurrentProcess(void) {
+void scheduler_terminateCurrentProcess(PCB_t* pcb) {
     g_currentProcess->status = DEAD;
     mmu_killProcess(g_currentProcess->processId);
+    PCB_t* idleProcess = getIdleProcess();
+    pcb->cpsr = idleProcess->cpsr;
+    pcb->lr = idleProcess->lr;
+    pcb->processId = idleProcess->processId;
+    pcb->registers = idleProcess->registers;
+    pcb->status = idleProcess->status;
+    /*while (1) {
 
-    while (1) {
-
-    }
+    }*/
 }
 
 void scheduler_stopProcess(ProcessId_t processId) {

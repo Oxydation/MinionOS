@@ -87,14 +87,6 @@ void isr_fiq(void) {
 #pragma INTERRUPT (isr_undef, UDEF)
 void isr_undef(void) {
 
-    uint8_t faultStatus = mmu_getDataFaultStatus();
-    uint32_t faultAddress = mmu_getDataFaultAddress();
-
-    if (faultStatus == TRANSLATION_FAULT_SECTION) {
-        mmu_handleSectionTranslationFault(faultAddress);
-    }
-
-    asm_loadContext(&g_pcb);
 }
 #pragma INTERRUPT (isr_undef, DABT)
 void isr_dabt(void) {
@@ -102,7 +94,12 @@ void isr_dabt(void) {
     uint8_t faultStatus = mmu_getDataFaultStatus();
     uint32_t faultAddress = mmu_getDataFaultAddress();
 
-    if (faultStatus == TRANSLATION_FAULT_SECTION) {
+    if (faultAddress == NULLPOINTER)
+    {
+        processManager_terminateCurrentProcess(&g_pcb);
+    }
+    else if (faultStatus == TRANSLATION_FAULT_SECTION)
+    {
         mmu_handleSectionTranslationFault(faultAddress);
     }
 
@@ -115,7 +112,12 @@ void isr_pabt(void) {
     uint8_t faultStatus = mmu_getInstructionFaultStatus();
     uint32_t faultAddress = mmu_getInstructionFaultAddress();
 
-    if (faultStatus == TRANSLATION_FAULT_SECTION) {
+    if (faultAddress == NULLPOINTER)
+    {
+       processManager_terminateCurrentProcess(&g_pcb);
+    }
+    else if (faultStatus == TRANSLATION_FAULT_SECTION)
+    {
         mmu_handleSectionTranslationFault(faultAddress);
     }
 

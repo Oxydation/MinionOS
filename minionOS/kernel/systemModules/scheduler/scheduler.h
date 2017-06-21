@@ -27,6 +27,7 @@ PCB_t * scheduler_getCurrentProcess(void);
 
 PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint32_t cpsr);
 void scheduler_stopProcess(ProcessId_t processId);
+void scheduler_terminateCurrentProcess(PCB_t* pcb);
 
 void scheduler_blockProcess(ProcessId_t processId);
 void scheduler_unblockProcess(ProcessId_t processId);

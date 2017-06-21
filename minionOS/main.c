@@ -28,7 +28,7 @@ int main(void)
     process2();
     process1();
 
-    useLoopInProcesses = 0;
+    useLoopInProcesses = 1;
 
     mmu_initMMU();
 
