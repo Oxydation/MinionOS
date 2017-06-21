@@ -2,7 +2,6 @@
 #include <drivers/dmx/mhx25/dmxMhx25.h>
 #include <stdio.h>
 #include <inttypes.h>
-
 #include <kernel/common/mmio.h>
 #include <kernel/devices/omap3530/includes/beagleBoardC4.h>
 #include <kernel/devices/omap3530/includes/modeSwitch.h>
@@ -48,8 +47,8 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    processManager_loadProcess(&process1 + 0x4, 0x80607500);
-    //processManager_loadProcess(&process2 + 0x4, 0x8060FF00);
+    //processManager_loadProcess(&process1 + 0x4, 0x80607500);
+    processManager_loadProcess(&process2 + 0x4, 0x8060FF00);
 
     _enable_interrupts();
     _enable_IRQ();
@@ -65,15 +64,6 @@ int main(void)
     }
 }
 
-typedef struct
-{
-    uint8_t * question;
-    uint8_t * answer1;
-    uint8_t * answer2;
-    uint8_t * answer3;
-    uint8_t correctAnswerNumber;
-} QuizQuestion_t;
-
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
@@ -86,71 +76,6 @@ void process1(void)
                                  .dimmer = 100, .colour = YellowGreen, .gobo =
                                          Gobo5,
                                  .goboRotation = 150, .shutter = 5 };
-
-    int quizHandle = sysCalls_openFile("QUIZ.TXT");
-
-    if (quizHandle < 0)
-    {
-        // not able to open file
-        return;
-    }
-    uint8_t quizFile[1400] = { 0 };
-    sysCalls_readFile(quizHandle, &quizFile, 1400);
-    uint16_t amountChars = 1390;
-    QuizQuestion_t questions[20];
-
-    int currPos = 0;
-    int currentQuizQuestion = 0;
-    while (amountChars > currPos)
-    {
-        int column = 0;
-
-        // Rows
-        while (amountChars > currPos && quizFile[currPos] != 10 && column < 5)
-        {
-            uint8_t * currentColumnContent;
-            currentColumnContent = (uint8_t*) malloc(60 * sizeof(uint8_t));
-
-            // seems to have no more memory available :SS
-            if(currentColumnContent == 0x00){
-                uart_transmit(UART3, "no memory available\n", 20);
-                return;
-            }
-            int pos = 0;
-
-            while (amountChars > currPos && quizFile[currPos] != '\t' && quizFile[currPos] != 10)
-            {
-                currentColumnContent[pos++] = quizFile[currPos++];
-            }
-            currPos++;
-
-            uart_transmit(UART3, currentColumnContent, pos);
-
-            switch (column)
-            {
-            case 0:
-                questions[currentQuizQuestion].question = currentColumnContent;
-                break;
-            case 1:
-                questions[currentQuizQuestion].answer1 = currentColumnContent;
-                break;
-            case 2:
-                questions[currentQuizQuestion].answer2 = currentColumnContent;
-                break;
-            case 3:
-                questions[currentQuizQuestion].answer3 = currentColumnContent;
-                break;
-            case 4:
-                questions[currentQuizQuestion].correctAnswerNumber =
-                        *currentColumnContent;
-
-                currentQuizQuestion++;
-                break;
-            }
-
-            column++;
-        }
-    }
 
     while (1)
     {
@@ -175,11 +100,5 @@ void process1(void)
 #pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80608000
 void process2(void)
 {
-    volatile unsigned long i = 0;
-    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
-
-    while (1)
-    {
-        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    }
+    shell_loop();
 }

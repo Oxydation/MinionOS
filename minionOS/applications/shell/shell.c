@@ -3,6 +3,7 @@
 #include "minionIO.h"
 #include "ls.h"
 #include "cat.h"
+#include "applications/game123/game123.h"
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -34,6 +35,8 @@ static int execute(int argc, char* argv[]) {
         return ls_main(argc, argv);
     } else if (strcmp(argv[0], "cat") == 0) {
         return cat_main(argc, argv);
+    } else if (strcmp(argv[0], "123") == 0){
+        return game123_main(argc, argv);
     } else if (strcmp(argv[0], "argv") == 0) {
         char buf[80];
         sprintf(buf, "%d arguments read.", argc);
