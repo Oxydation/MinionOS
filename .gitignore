@@ -13,3 +13,4 @@ RemoteSystemsTempFiles
 **/._.DS_Store
 **/.iml
 **/.idea/
+**/Release/

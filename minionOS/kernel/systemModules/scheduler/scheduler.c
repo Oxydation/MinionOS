@@ -54,8 +54,8 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
 
     // 1. Step: Create PCB
     PCB_t newProcessPcb = { .lr = ((uint32_t)startAddress + 0x4), .processId = processId,
-                            .registers.R13 = stackPointer, .registers.R14 = startAddress, //registers.R14 = (uint32_t*)fPointer,
-                            .cpsr = cpsr };
+                            .registers.R13 = stackPointer, .registers.R14 = (uint32_t)fPointer, //.registers.R14 = startAddress, //registers.R14 = (uint32_t*)fPointer,
+                            .cpsr = cpsr, .status = WAITING };
     // 2. Step store into pcb array
     g_processes[processId] = newProcessPcb;
 
@@ -66,7 +66,12 @@ PCB_t* scheduler_startProcess(uint32_t startAddress, uint32_t stackPointer, uint
 }
 
 static void scheduler_terminateCurrentProcess(void) {
-    scheduler_stopProcess(g_currentProcess->processId);
+    g_currentProcess->status = DEAD;
+    mmu_killProcess(g_currentProcess->processId);
+
+    while (1) {
+
+    }
 }
 
 void scheduler_stopProcess(ProcessId_t processId) {
@@ -78,6 +83,7 @@ void scheduler_stopProcess(ProcessId_t processId) {
         // Load other process
         if (g_queueReady.size != 0) {
             g_currentProcess = getNextProcess();
+            g_currentProcess->status = RUNNING;
             mmu_switchProcess(g_currentProcess);
             asm_loadContext(g_currentProcess);
         }
@@ -93,23 +99,28 @@ void scheduler_stopProcess(ProcessId_t processId) {
 
 static void handleSchedulerTick(PCB_t * currentPcb)
 {
-    fPointer = &scheduler_terminateCurrentProcess;
-
     if (g_queueReady.size > 0 && g_currentProcess == NULL)
     {
         g_currentProcess = getNextProcess();
+        g_currentProcess->status = RUNNING;
         copyPcb(g_currentProcess, currentPcb);
         currentPcb->processId = g_currentProcess->processId;
         mmu_switchProcess(currentPcb);
     }
     else if (g_queueReady.size > 0 && g_currentProcess != NULL)
     {
-        // Save old process and add to ready queue
-        copyPcb(currentPcb, g_currentProcess);
-        addReadyProcess(g_currentProcess);
+        if (g_currentProcess->status != DEAD) {
+            // Save old process and add to ready queue
+            g_currentProcess->status = WAITING;
+            copyPcb(currentPcb, g_currentProcess);
+            addReadyProcess(g_currentProcess);
+        } else {
+            g_currentProcess->processId = 0;
+        }
 
         // Load new process
         g_currentProcess = getNextProcess();
+        g_currentProcess->status = RUNNING;
         copyPcb(g_currentProcess, currentPcb);
         currentPcb->processId = g_currentProcess->processId;
         mmu_switchProcess(currentPcb);
