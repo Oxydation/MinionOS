@@ -85,7 +85,7 @@ static void initStdStreams() {
 void vfs_init(void) {
     vfs_addFileSystem(&deviceDriverFs);
     vfs_addFileSystem(&sdCardFs);
-    vfs_addFileSystem(&processFs);
+    //vfs_addFileSystem(&processFs);
 
     int i;
     for (i = 0; i < fileSystemCount; ++i) {
