@@ -83,9 +83,6 @@ void scheduler_terminateCurrentProcess(PCB_t* pcb) {
     pcb->processId = idleProcess->processId;
     pcb->registers = idleProcess->registers;
     pcb->status = idleProcess->status;
-    /*while (1) {
-
-    }*/
 }
 
 void scheduler_stopProcess(ProcessId_t processId) {
