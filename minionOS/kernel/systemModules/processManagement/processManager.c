@@ -21,6 +21,10 @@ void processManager_killProcess(ProcessId_t processId) {
     scheduler_stopProcess(processId);
 }
 
+void processManager_terminateCurrentProcess(PCB_t* pcb) {
+    scheduler_terminateCurrentProcess(pcb);
+}
+
 static uint32_t calcStackPointer(uint32_t virtualStartAddress, uint32_t nrOfNeededBytes) {
     return virtualStartAddress + nrOfNeededBytes + STACK_SIZE;
 }

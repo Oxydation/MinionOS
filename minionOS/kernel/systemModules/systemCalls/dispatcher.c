@@ -1,4 +1,4 @@
-#include "kernel/systemModules/systemCalls/systemCallNumber.h"
+#include "systemCallNumber.h"
 #include "kernel/systemModules/systemCalls/dispatcher.h"
 #include "drivers/led/ledControl.h"
 #include "kernel/systemModules/filesystem/vfs.h"

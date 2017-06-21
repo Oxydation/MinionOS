@@ -15,27 +15,20 @@
 
 MEMORY
 {
-
-
 #ifndef DSP_CORE  /* ARM memory map */
-    SRAM:           o = 0x40200000  l = 0x0000FFC0  /* 64kB Internal SRAM */
-    INTVEC:			o = 0x4020FFC0	l = 0x0000003F  /* 64B interrupt vector table */
+
+    SRAM:           o = 0x40200000  l = 0x00010000  /* 64kB Internal SRAM */
     IVASHL2RAM:     o = 0x5C7F8000  l = 0x00008000  /* 32kB Shared IVA L2 RAM */
     IVASHL2RAM_C:   o = 0x5C800000  l = 0x00010000  /* 64kB Shared IVA L2 Cache RAM */
     IVASHL1PRAM:    o = 0x5CE00000  l = 0x00008000  /* 32kB Shared IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x5CF04000  l = 0x0000C000  /* 48kB Shared IVA L1 Data RAM */
     IVASHL1DRAM_C:  o = 0x5CF10000  l = 0x00008000  /* 32kB Shared IVA L1 Data Cache RAM */
-    DDR0_OS:        o = 0x80000000  l = 0x00500000  /* 5 MB for operating system */
-    DDR0_PT:		o = 0x80500000  l = 0x00100000  /* 128 KB for page tables (master & L2) */
- 	DDR0_PROC1:		o = 0x80600000	l = 0x00100000	/* 1 MB for task 1 */
- 	DDR0_PROC2:		o = 0x80700000	l = 0x00100000	/* 1 MB for task 2 */
- 	DDR0_PROC3:		o = 0x80800000	l = 0x00100000	/* 1 MB for task 3 */
- 	DDR0_REM:		o = 0x80900000	l = 0x3F700000	/* 1016 MB DDR0 remaining */
+    DDR0:           o = 0x80000000  l = 0x40000000  /* 1GB external DDR Bank 0 */
     DDR1:           o = 0xC0000000  l = 0x40000000  /* 1GB external DDR Bank 1 */
 
 #else             /* DSP memory map */
 
-    IVASHL2RAM:     o = 0x007F8000  l = 0x10008000  /* 32kB IVA L2 RAM */
+    IVASHL2RAM:     o = 0x007F8000  l = 0x00008000  /* 32kB IVA L2 RAM */
     IVASHL2RAM_C:   o = 0x00800000  l = 0x00010000  /* 64kB IVA L2 Cache RAM */
     IVASHL1PRAM:    o = 0x00E00000  l = 0x00008000  /* 32kB IVA L1 Program RAM */
     IVASHL1DRAM:    o = 0x00F04000  l = 0x0000C000  /* 48kB IVA L1 Data RAM */
@@ -44,30 +37,22 @@ MEMORY
 #endif
 }
 
-stackSize = 0x20000; // 1048kB
-
 SECTIONS
 {
-	.intvecs	   >  INTVEC
-	.ISR		   >  SRAM
-	.process1	   > DDR0_PROC1
-	.process2	   > DDR0_PROC2
-	.process3	   > DDR0_PROC3
-
 #ifndef DSP_CORE   /* ARM memory map */
 
-    .text          >  DDR0_OS
-    .stack         >  DDR0_OS
-    .bss           >  DDR0_OS
-    .cio           >  DDR0_OS
-    .const         >  DDR0_OS
-    .data          >  DDR0_OS
-    .switch        >  DDR0_OS
-    .sysmem        >  DDR0_OS
-    .far           >  DDR0_OS
-    .args          >  DDR0_OS
-    .ppinfo        >  DDR0_OS
-    .ppdata        >  DDR0_OS
+    .text          >  SRAM
+    .stack         >  SRAM
+    .bss           >  SRAM
+    .cio           >  SRAM
+    .const         >  SRAM
+    .data          >  SRAM
+    .switch        >  SRAM
+    .sysmem        >  SRAM
+    .far           >  SRAM
+    .args          >  SRAM
+    .ppinfo        >  SRAM
+    .ppdata        >  SRAM
   
     /* TI-ABI or COFF sections */
     .pinit         >  SRAM
@@ -81,24 +66,6 @@ SECTIONS
     .rodata        >  SRAM
     .c6xabi.exidx  >  SRAM
     .c6xabi.extab  >  SRAM
-
-    /* Stacks */
-   	.stacks > DDR0_OS {
-       . = align(4);
-       . = . + stackSize;
-       __stackUsr = .; /* User stack */
-       . = . + stackSize;
-       __stackIrq = .; /* IRQ Interrupt Stack */
-       . = . + stackSize;
-        __stackFiq = .; /* FIQ Interrupt Stack */
-       . = . + stackSize;
-       __stackSvc = .; /* Supervisor Interrupt Stack */
-       . = . + stackSize;
-       __stackAbt = .; /* Abort Interrupt Stack */
-       . = . + stackSize;
-        __stackDbt = .; /* Dbt Interrupt Stack */
-       . = . + stackSize;
-   }
 
 #else              /* DSP memory map */
 

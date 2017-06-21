@@ -164,7 +164,7 @@ void mmu_handleSectionTranslationFault(uint32_t faultAddress) {
     uint32_t vAddress;
     uint32_t pAddress;
 
-    index = faultAddress / SECTION_SIZE;      // get index of page to map by dividing through section size
+    index = (faultAddress - VIRTUAL_PROCESS_START_ADDRESS) / SECTION_SIZE;      // get index of page to map by dividing through section size
 
     vAddress = (uint32_t)g_currentMMUProcess->region.vAddress + index * SECTION_SIZE;
     pAddress = (uint32_t)g_currentMMUProcess->region.pAddress + index * SECTION_SIZE;
