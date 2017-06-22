@@ -54,7 +54,7 @@ int main(void)
     scheduler_init();
 
     //loader_loadProcess("/LEDON.OUT");
-    //loader_loadProcess("/LEDOFF.OUT");
+    //loader_loadProcess("/LEDOFF.HEX");
     /* physicalStartAddress, nrOfNeededBytes */
     processManager_loadProcess(0x80600000, 1000);
     processManager_loadProcess(0x80700000, 1000);

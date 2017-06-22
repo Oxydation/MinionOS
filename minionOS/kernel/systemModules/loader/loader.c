@@ -7,6 +7,9 @@
 
 #include "kernel/systemModules/loader/loader.h"
 
+static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set);
+static uint32_t getNrOfBytesNecessary(IntelHexSet_t* intelHexSet);
+
 int8_t loader_loadProcess(const char* fileName) {
 
     int32_t fileHandle = sysCalls_openFile(fileName);
@@ -32,9 +35,16 @@ int8_t loader_loadProcess(const char* fileName) {
         pBuffer = (uint32_t*)((uint32_t)pBuffer + i*1024);
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
 
+    uint32_t nrOfEntries = intelHexParser_getNumberOfIntelHexEntries(buffer, nrOfBytesInFile);
+    IntelHexEntry_t entries[nrOfEntries];
+
+    IntelHexSet_t data = intelHexParser_parseIntelHexData(buffer, nrOfBytesInFile, entries);
+
+    uint32_t nrOfBytesNeeded = getNrOfBytesNecessary(&data);
+
     // get physical memory for executable and copy it there
-    uint32_t* pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesInFile);
-    memcpy(pAddress, buffer, nrOfBytesInFile);
+    uint32_t* pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesNeeded);
+    copyFileToMemory((uint32_t)pAddress, &data);
 
     processManager_loadProcess((uint32_t)pAddress, nrOfBytesInFile);
 
