@@ -28,10 +28,10 @@ DmxDataTMH7_t g_tmhData[3] = {
           .dimmingIntensity = 80, .colorMacro = 0, .ledCircuit = 255, .speed =
                   50, } };
 
-DmxDataMhX25_t g_mhxData = { .pan = 255, .tilt = 100, .speed = 190, .dimmer =
+DmxDataMhX25_t g_mhxData = { .pan = 255, .tilt = 100, .speed = 10, .dimmer =
                                      100,
-                             .colour = YellowGreen, .gobo = Gobo5,
-                             .goboRotation = 150, .shutter = 5 };
+                             .colour = RainbowClockwise, .gobo = Gobo2Shake,
+                             .goboRotation = 240, .shutter = 200 };
 
 DmxDataMhX25_t g_mhxDataReset = { .pan = 0, .tilt = 0, .speed = 190,
                                   .dimmer = 0, .colour = YellowGreen, .shutter =
@@ -53,7 +53,7 @@ typedef struct
 
 static QuizQuestion_t g_questions[30];
 
-static uint16_t readFile(uint8_t * target)
+static uint16_t readQuizFile(uint8_t * target)
 {
     int quizHandle = sysCalls_openFile("QUIZ.TXT");
     uint16_t size = 1400;
@@ -69,7 +69,7 @@ static uint16_t readFile(uint8_t * target)
     return size;
 }
 
-static uint8_t parseData(const uint8_t * data, uint16_t amountChars,
+static uint8_t parseQuizData(const uint8_t * data, uint16_t amountChars,
                          QuizQuestion_t * questions)
 {
     int currPos = 0;
@@ -134,22 +134,7 @@ static uint8_t parseData(const uint8_t * data, uint16_t amountChars,
 
 static void highlightAnswer(uint8_t answerNumber)
 {
-//    switch (answerNumber)
-//    {
-//    case 1:
-//        //dmx_createMhX25Packet(1, &dataMhx25, &packet);
-//        dmx_createTmh7Packet(13, &data, &packet);
-//        break;
-//    case 2:
-//        //dmx_createMhX25Packet(1, &dataMhx25, &packet);
-//        dmx_createTmh7Packet(13, &data, &packet);
-//        break;
-//        //dmx_createMhX25Packet(1, &dataMhx25, &packet);
-//        dmx_createTmh7Packet(13, &data, &packet);
-//    case 3:
-//        break;
-//    }
-    dmx_createMhX25Packet(1, &g_mhxData, &packet);
+    dmx_createMhX25Packet(1, &g_mhxDataReset, &packet);
     dmx_createTmh7Packet(13, &g_tmhData[answerNumber - 1], &packet);
     sysCalls_ctrlDmx(&packet, packetSize);
 }
@@ -159,6 +144,21 @@ static void resetMovingHeads(void)
     dmx_createMhX25Packet(1, &g_mhxDataReset, &packet);
     dmx_createTmh7Packet(13, &g_tmhDataReset, &packet);
     sysCalls_ctrlDmx(&packet, packetSize);
+}
+
+
+static void discoLight(uint8_t rounds){
+    int counter = 0;
+    while (counter < rounds)
+    {
+        g_mhxData.tilt = 90 + rand() % 40;
+        g_mhxData.pan =  rand() % 255;
+        dmx_createMhX25Packet(1, &g_mhxData, &packet);
+        dmx_createTmh7Packet(13, &g_tmhData[counter % 3], &packet);
+        sysCalls_ctrlDmx(&packet, packetSize);
+        delay(600000);
+        counter++;
+    }
 }
 
 static void playGame(QuizQuestion_t * questions, uint8_t amountOfQuestions)
@@ -178,24 +178,9 @@ static void playGame(QuizQuestion_t * questions, uint8_t amountOfQuestions)
         // Show question
         minionIO_writeln(currentQuestion->question);
 
-// Discoooo Pogo
-//        dmx_createMhX25Packet(1, &dataMhx25, &packet);
-//        dmx_createTmh7Packet(13, &data, &packet);
-//        sysCalls_ctrlDmx(&packet, packetSize);
-        int counter = 0;
-        g_mhxData.tilt = 150;
-        while (counter < 100)
-        {
-            g_mhxData.pan += 3;
-            dmx_createMhX25Packet(1, &g_mhxData, &packet);
-            dmx_createTmh7Packet(13, &g_tmhData[counter % 3], &packet);
-            sysCalls_ctrlDmx(&packet, packetSize);
-            delay(400000);
-            counter++;
-        }
-
+        discoLight(20);
         resetMovingHeads();
-        delay(2000000);
+        delay(3000000);
 
         minionIO_writeln(currentQuestion->answer1);
         highlightAnswer(1);
@@ -208,7 +193,9 @@ static void playGame(QuizQuestion_t * questions, uint8_t amountOfQuestions)
         minionIO_writeln(currentQuestion->answer3);
         highlightAnswer(3);
 
-// wait for enter
+        delay(5000000);
+        discoLight(25);
+
         minionIO_skipLn();
 
         char buf[15];
@@ -218,22 +205,23 @@ static void playGame(QuizQuestion_t * questions, uint8_t amountOfQuestions)
         highlightAnswer(currentQuestion->correctAnswerNumber);
         delay(1000000);
 
-// wait for enter for next question
+        // wait for enter for next question
         minionIO_skipLn();
+        resetMovingHeads();
     }
 }
 
 int game123_main(int argc, char* argv[])
 {
     uint8_t quizFile[1400] = { 0 };
-    uint16_t amountChars = readFile(&quizFile);
+    uint16_t amountChars = readQuizFile(&quizFile);
 
     if (amountChars == -1)
     {
         return 1;
     }
 
-    uint8_t amountOfQuestions = parseData(&quizFile, amountChars, &g_questions);
+    uint8_t amountOfQuestions = parseQuizData(&quizFile, amountChars, &g_questions);
     uint8_t i = 0;
     while (i++ < 200)
     {
