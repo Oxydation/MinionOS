@@ -33,7 +33,7 @@ int main(void)
     process2();
     process1();
 
-    useLoopInProcesses = 1;
+    useLoopInProcesses = 0;
 
     mmu_initMMU();
 
