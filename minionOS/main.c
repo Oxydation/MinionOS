@@ -19,22 +19,20 @@
 
 #define USE_SYSTEMTMR   1
 
-/*
 void process1(void);
 void process2(void);
 void process3(void);
-*/
 
 static int useLoopInProcesses = 0;
 
 int main(void)
 {
     _disable_interrupts();
-/*
+
     process3();
     process2();
     process1();
-*/
+
     useLoopInProcesses = 1;
 
     mmu_initMMU();
@@ -55,12 +53,12 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    loader_loadProcess("/LEDON.OUT");
-    loader_loadProcess("/LEDOFF.OUT");
+    //loader_loadProcess("/LEDON.OUT");
+    //loader_loadProcess("/LEDOFF.OUT");
     /* physicalStartAddress, nrOfNeededBytes */
-    //processManager_loadProcess(0x80600000, 1000);
-    //processManager_loadProcess(0x80700000, 1000);
-    //processManager_loadProcess(0x80800000, 1000);
+    processManager_loadProcess(0x80600000, 1000);
+    processManager_loadProcess(0x80700000, 1000);
+    processManager_loadProcess(0x80800000, 1000);
 
     _enable_interrupts();
     _enable_IRQ();
@@ -76,7 +74,7 @@ int main(void)
     }
 }
 
-/*
+
 #pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
 void process1(void)
 {
@@ -128,4 +126,3 @@ void process3(void)
         bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
     }
 }
-*/
