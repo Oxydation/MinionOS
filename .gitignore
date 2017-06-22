@@ -9,3 +9,4 @@ RemoteSystemsTempFiles
 .metadata
 **/.iml
 **/.idea/
+*.vs
