@@ -42,3 +42,73 @@ int8_t loader_loadProcess(const char* fileName) {
 }
 
 
+static uint32_t getNrOfBytesNecessary(IntelHexSet_t* intelHexSet)
+{
+    uint32_t startAddress = 0xFFFFFFFF;
+    uint32_t endAddress = 0x0000000;
+    uint32_t counter = 0;
+    uint32_t baseAddress = 0;
+    uint16_t nrOfBytesNeededAfterEndAddress = 0;
+
+    while (counter < intelHexSet->nrOfRecords)
+    {
+        IntelHexEntry_t* entry = &intelHexSet->entries[counter];
+        if (entry->recordType == EXTENDED_LINEAR_ADDRESS_RECORD)
+        {
+            uint32_t address = hexParser_parseHex16ToInt(entry->data);
+            baseAddress = address << 16;
+
+            if (baseAddress >= 0x40000000)
+            {
+                break;
+            }
+        }
+        else if (entry->recordType == DATA_RECORD)
+        {
+            uint32_t address = baseAddress + entry->address;
+            if (address < startAddress)
+            {
+                startAddress = address;
+            }
+
+            if (address > endAddress)
+            {
+                endAddress = address;
+                nrOfBytesNeededAfterEndAddress = entry->dataLengthInBytes;
+            }
+        }
+        counter++;
+    }
+
+    uint32_t nrOfBytesNeeded = endAddress - startAddress + nrOfBytesNeededAfterEndAddress;
+    return nrOfBytesNeeded;
+}
+
+static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set)
+{
+    uint32_t counter = 0;
+    uint32_t baseAddress = 0;
+
+    while (counter < set->nrOfRecords)
+    {
+        IntelHexEntry_t* entry = &set->entries[counter];
+        if (entry->recordType == EXTENDED_LINEAR_ADDRESS_RECORD)
+        {
+            uint32_t address = hexParser_parseHex16ToInt(entry->data);
+            baseAddress = address << 16;
+
+            if (baseAddress >= 0x40000000)
+            {
+                break;
+            }
+        }
+        else if (entry->recordType == DATA_RECORD)
+        {
+            uint32_t address = baseAddress + entry->address;
+            uint32_t addressToCopy = pAddress + address - VIRTUAL_PROCESS_START_ADDRESS;
+            memcpy((uint32_t*)addressToCopy, entry->data, entry->dataLengthInBytes);
+        }
+        counter++;
+    }
+}
+
