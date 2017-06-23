@@ -53,6 +53,9 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
+    sysCalls_enableLed(1, LED_0);
+    sysCalls_enableLed(1, LED_1);
+
     loader_loadProcess("/LEDON.HEX");
     loader_loadProcess("/LEDOFF.HEX");
     /* physicalStartAddress, nrOfNeededBytes */

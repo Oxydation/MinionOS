@@ -10,8 +10,12 @@
 
 #include <inttypes.h>
 
-uint8_t hexParser_parseHex4ToInt(uint8_t i);
-uint8_t hexParser_parseHex8ToInt(uint8_t* i);
-uint32_t hexParser_parseHex16ToInt(uint8_t* i);
+uint8_t hexIntParser_parseHex4ToInt(uint8_t i);
+uint8_t hexIntParser_parseHex8ToInt(uint8_t* i);
+uint32_t hexIntParser_parseHex16ToInt(uint8_t* i);
+uint8_t hexIntParser_parseIntToHex8(uint8_t* i);
+uint16_t hexIntParser_parseIntToHex16(uint8_t* i);
+uint32_t hexIntParser_parseIntToHex24(uint8_t* i);
+uint32_t hexIntParser_parseIntToHex32(uint8_t* i);
 
 #endif /* KERNEL_COMMON_HEXINTPARSER_H_ */

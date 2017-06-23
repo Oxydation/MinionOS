@@ -20,9 +20,9 @@
 typedef struct {
     uint8_t dataLength;
     uint8_t checksum;
-    uint16_t dataLengthInBytes;
-    uint32_t address;
     uint16_t recordType;
+    uint32_t address;
+    uint8_t dataLengthInBytes;
     uint8_t* data;
 } IntelHexEntry_t;
 
@@ -33,5 +33,7 @@ typedef struct {
 
 IntelHexSet_t intelHexParser_parseIntelHexData(uint8_t data[], uint32_t length, IntelHexEntry_t entries[]);
 uint32_t intelHexParser_getNumberOfIntelHexEntries(uint8_t* data, uint32_t length);
+void intelHexParser_parseFileToHex(uint8_t* buffer, uint32_t fileLength);
+void intelHexParser_parseIntelHexDataToInt32(uint8_t* sourceBuffer, uint32_t* targetBuffer, uint32_t dataLength);
 
 #endif /* KERNEL_SYSTEMMODULES_LOADER_INTELHEXPARSER_H_ */

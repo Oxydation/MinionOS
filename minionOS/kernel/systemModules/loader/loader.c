@@ -35,6 +35,8 @@ int8_t loader_loadProcess(const char* fileName) {
         pBuffer = (uint32_t*)((uint32_t)pBuffer + i*1024);
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
 
+    intelHexParser_parseFileToHex(buffer, nrOfBytesInFile);
+
     uint32_t nrOfEntries = intelHexParser_getNumberOfIntelHexEntries(buffer, nrOfBytesInFile);
     IntelHexEntry_t entries[nrOfEntries];
 
@@ -65,7 +67,7 @@ static uint32_t getNrOfBytesNecessary(IntelHexSet_t* intelHexSet)
         IntelHexEntry_t* entry = &intelHexSet->entries[counter];
         if (entry->recordType == EXTENDED_LINEAR_ADDRESS_RECORD)
         {
-            uint32_t address = hexParser_parseHex16ToInt(entry->data);
+            uint32_t address = hexIntParser_parseHex16ToInt(entry->data);
             baseAddress = address << 16;
 
             if (baseAddress >= 0x40000000)
@@ -76,6 +78,7 @@ static uint32_t getNrOfBytesNecessary(IntelHexSet_t* intelHexSet)
         else if (entry->recordType == DATA_RECORD)
         {
             uint32_t address = baseAddress + entry->address;
+
             if (address < startAddress)
             {
                 startAddress = address;
@@ -104,7 +107,7 @@ static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set)
         IntelHexEntry_t* entry = &set->entries[counter];
         if (entry->recordType == EXTENDED_LINEAR_ADDRESS_RECORD)
         {
-            uint32_t address = hexParser_parseHex16ToInt(entry->data);
+            uint32_t address = hexIntParser_parseHex16ToInt(entry->data);
             baseAddress = address << 16;
 
             if (baseAddress >= 0x40000000)
@@ -115,8 +118,16 @@ static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set)
         else if (entry->recordType == DATA_RECORD)
         {
             uint32_t address = baseAddress + entry->address;
-            uint32_t addressToCopy = pAddress + address - VIRTUAL_PROCESS_START_ADDRESS;
-            memcpy((uint32_t*)addressToCopy, entry->data, entry->dataLengthInBytes);
+            uint32_t addressToCopy = pAddress + address - VIRTUAL_MEMORY_START_ADDRESS;
+            uint32_t lengthOfDataArray = entry->dataLengthInBytes/8;
+            uint32_t remainder = entry->dataLengthInBytes % 8;
+            if (remainder > 0)
+            {
+                lengthOfDataArray++;
+            }
+            uint32_t data[lengthOfDataArray];
+            intelHexParser_parseIntelHexDataToInt32(entry->data, data, entry->dataLengthInBytes);
+            memcpy((uint32_t*)addressToCopy, data, entry->dataLengthInBytes);
         }
         counter++;
     }
