@@ -4,10 +4,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#define MAX_MESSAGES        (10)
+#define MAX_QUEUED_PROCESSES        (10)
 
 typedef struct {
-    Message_t messages[MAX_MESSAGES];
+    Message_t messages[MAX_QUEUED_PROCESSES];
     unsigned int tail;
     unsigned int head;
 } MessageQueue_t;
@@ -39,9 +39,9 @@ const Message_t* ipc_receive() {
 // https://stackoverflow.com/questions/215557/how-do-i-implement-a-circular-list-ring-buffer-in-c
 
 static int enqueue(MessageQueue_t* queue, Message_t message) {
-    if (queue->tail != ((queue->head - 1 + MAX_MESSAGES) % MAX_MESSAGES)) {
+    if (queue->tail != ((queue->head - 1 + MAX_QUEUED_PROCESSES) % MAX_QUEUED_PROCESSES)) {
         queue->messages[queue->tail] = message;
-        queue->tail = (queue->tail + 1) % MAX_MESSAGES;
+        queue->tail = (queue->tail + 1) % MAX_QUEUED_PROCESSES;
         return SUCCESS;
     } else {
         return QUEUE_FULL;
@@ -51,7 +51,7 @@ static int enqueue(MessageQueue_t* queue, Message_t message) {
 static const Message_t* dequeue(MessageQueue_t* queue) {
     if (queue->tail != queue->head) {
         Message_t* message = &queue->messages[queue->head];
-        queue->head = (queue->head + 1) % MAX_MESSAGES;
+        queue->head = (queue->head + 1) % MAX_QUEUED_PROCESSES;
         return message;
     } else {
         return NULL;
