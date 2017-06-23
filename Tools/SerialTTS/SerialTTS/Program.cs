@@ -7,7 +7,7 @@ namespace SerialTTS
 {
     class Program
     {
-        static SerialPort sp = new SerialPort("COM5");
+        static SerialPort sp;
         static SpeechSynthesizer syntezier = new SpeechSynthesizer();
         static void InitSpeecher()
         {
@@ -20,7 +20,23 @@ namespace SerialTTS
         }
         static void Main(string[] args)
         {
-            InitSpeecher();            
+            InitSpeecher();
+
+            Console.WriteLine("Serial TTS v1.0");
+            foreach (var portName in SerialPort.GetPortNames())
+            {
+                Console.Write(portName + ", ");
+            }
+            Console.WriteLine();
+            Console.Write("Please enter a valid com port (e.g. COM5): ");
+
+            string port = Console.ReadLine();
+            if (!port.Contains("COM"))
+            {
+                port = "COM5";
+            }
+            sp = new SerialPort(port);
+
             sp.BaudRate = 115200;
             sp.StopBits = StopBits.One;
             sp.DataBits = 8;
@@ -33,8 +49,8 @@ namespace SerialTTS
             {
                 string output = Console.ReadLine();
                 Console.WriteLine(output);
-                sp.WriteLine(output);                
-            }            
+                sp.WriteLine(output);
+            }
         }
 
         private static void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -42,10 +58,11 @@ namespace SerialTTS
             SerialPort serialPort = (SerialPort)sender;
             if (serialPort.IsOpen)
             {
-                byte[] bytes = new byte[serialPort.BytesToRead];
-                serialPort.Read(bytes, 0, serialPort.BytesToRead);
-                string text = System.Text.Encoding.Default.GetString(bytes);
-                
+                // byte[] bytes = new byte[serialPort.BytesToRead];
+                // serialPort.Read(bytes, 0, serialPort.BytesToRead);
+                // string text = System.Text.Encoding.Default.GetString(bytes);
+                string text = serialPort.ReadLine();
+
                 Console.WriteLine(text);
                 syntezier.Speak(text);
             }
