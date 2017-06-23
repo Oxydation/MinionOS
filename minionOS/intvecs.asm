@@ -13,6 +13,7 @@
     B isr_pabt ; abort (prefetch) interrupt
     B isr_dabt ; abort (data) interrupt
     .word 0 ; reserved
+    .word 0 ; reserved
     B isr_irq ; IRQ interrupt
     B isr_fiq ; FIQ interrupt
     ; check page 153 of spnu151n

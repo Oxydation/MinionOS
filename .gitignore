@@ -7,5 +7,10 @@
 RemoteSystemsTempFiles
 .jxbrowser-data
 .metadata
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
 **/.iml
 **/.idea/
+**/Release/
