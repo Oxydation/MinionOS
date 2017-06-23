@@ -10,3 +10,4 @@ RemoteSystemsTempFiles
 **/.iml
 **/.idea/
 *.vs
+/Tools/SerialTTS/SerialTTS/obj

@@ -2,6 +2,8 @@
 using System.Globalization;
 using System.IO.Ports;
 using System.Speech.Synthesis;
+using System.Text;
+using System.Threading;
 
 namespace SerialTTS
 {
@@ -15,7 +17,6 @@ namespace SerialTTS
             syntezier.Rate = 0;
             var bla = syntezier.GetInstalledVoices(CultureInfo.GetCultureInfo("de-DE"));
             syntezier.SelectVoice(bla[0].VoiceInfo.Name);
-            //syntezier.Speak("Ob du wirklich richtig stehst, siehst du wenn das Licht angeht!");
 
         }
         static void Main(string[] args)
@@ -42,15 +43,36 @@ namespace SerialTTS
             sp.DataBits = 8;
             sp.Parity = Parity.None;
             sp.NewLine = "\r\n";
+           // sp.DataReceived += Sp_DataReceived;
+            Console.InputEncoding = Encoding.UTF8;
+            Console.OutputEncoding = Encoding.UTF8;
             sp.Open();
-            sp.DataReceived += Sp_DataReceived;
+            
+            Console.CancelKeyPress += Console_CancelKeyPress;
+            Thread thread = new Thread(() =>
+            {
+                while (true)
+                {
+                    string output = Console.ReadLine();
+                    Console.WriteLine(output);
+                    sp.WriteLine(output);
+                }
+            });
+            thread.Start();
 
             while (true)
             {
-                string output = Console.ReadLine();
-                Console.WriteLine(output);
-                sp.WriteLine(output);
+                string text = sp.ReadLine();
+
+                Console.WriteLine(text);
+                syntezier.SpeakAsync(text);
             }
+            Console.ReadLine();
+        }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            e.Cancel = true;
         }
 
         private static void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -64,7 +86,7 @@ namespace SerialTTS
                 string text = serialPort.ReadLine();
 
                 Console.WriteLine(text);
-                syntezier.Speak(text);
+                syntezier.SpeakAsync(text);
             }
         }
     }
