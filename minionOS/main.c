@@ -56,8 +56,10 @@ int main(void)
     sysCalls_enableLed(1, LED_0);
     sysCalls_enableLed(1, LED_1);
 
-    loader_loadProcess("/LEDON.HEX");
-    loader_loadProcess("/LEDOFF.HEX");
+    //loader_loadProcess("/LEDON.HEX");
+    //loader_loadProcess("/LEDOFF.HEX");
+    //loader_loadProcess("/CONSOLE.OUT", ELF);
+    loader_loadProcess("/LEDON.OUT", ELF);
     /* physicalStartAddress, nrOfNeededBytes */
     //processManager_loadProcess(0x80600000, 1000);
     //processManager_loadProcess(0x80700000, 1000);

@@ -14,7 +14,6 @@ IntelHexSet_t intelHexParser_parseIntelHexData(uint8_t data[], uint32_t length, 
     IntelHexSet_t set;
     uint32_t currentByte = 0;
     uint32_t startIndex = 0;
-    uint8_t valid = 1;
 
     uint32_t nrOfEntries = intelHexParser_getNumberOfIntelHexEntries(data, length);
     uint32_t currentEntry = 0;
@@ -61,18 +60,20 @@ IntelHexSet_t intelHexParser_parseIntelHexData(uint8_t data[], uint32_t length, 
 static IntelHexEntry_t intelHexParser_parseIntelHexEntry(uint8_t* data, uint32_t length)
 {
     IntelHexEntry_t entry;
-    //entry.dataLength = hexParser_parseHex8ToInt(data + 1);
-    //entry.dataLengthInBytes = entry.dataLength * 2;         // one data byte in intel hex is equal to two bytes
-    //entry.address = hexParser_parseHex16ToInt(data + 3);
-    //entry.recordType = hexParser_parseHex8ToInt(data + 7);
-    //entry.data = data + 9;
-    //entry.checksum = hexParser_parseHex8ToInt(data + 9 + entry.dataLengthInBytes);
+    entry.dataLength = hexIntParser_parseHex8ToInt(data + 1);
+    entry.dataLengthInBytes = entry.dataLength * 2;         // one data byte in intel hex is equal to two bytes
+    entry.address = hexIntParser_parseHex16ToInt(data + 3);
+    entry.recordType = hexIntParser_parseHex8ToInt(data + 7);
+    entry.data = data + 9;
+    entry.checksum = hexIntParser_parseHex8ToInt(data + 9 + entry.dataLengthInBytes);
+    /*
     entry.dataLength = hexIntParser_parseIntToHex8(data + 1);
     entry.dataLengthInBytes = entry.dataLength * 2;
     entry.address = hexIntParser_parseIntToHex16(data + 3);
     entry.recordType = hexIntParser_parseIntToHex8(data + 7);
     entry.data = data + 9;
     entry.checksum = hexIntParser_parseIntToHex8(data + 9 + entry.dataLengthInBytes);
+    */
     return entry;
 }
 

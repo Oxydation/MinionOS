@@ -15,42 +15,13 @@
 
 MEMORY
 {
-	PROCESS:			o = 0x00220000	l = 0x10000000
-	STACK_MEMORY:		o = 0x00200000	l = 0x00010000
-	SYSMEM_MEMORY:		o =	0x00210000	l = 0x00010000
-	ARGC_ARGV_MEMORY:	o = 0x00100000	l = 0x00010000
+	PROCESS:			o = 0x00100000	l = 0x3FF00000
 }
 
 SECTIONS
 {
-	ORDER
-	//.init_args	   >  ARGC_ARGV_MEMORY
-    .text          >  PROCESS {
-    	init.obj
-    	*(.text)
-    }
-    .stack         >  STACK_MEMORY
-    .bss           >  PROCESS
-    .cio           >  PROCESS
-    .const         >  PROCESS
-    .data          >  PROCESS
-    .switch        >  PROCESS
-    .sysmem        >  SYSMEM_MEMORY
-    .far           >  PROCESS
-    .args          >  PROCESS
-    .ppinfo        >  PROCESS
-    .ppdata        >  PROCESS
-  
-    /* TI-ABI or COFF sections */
-    .pinit         >  PROCESS
-    .cinit         >  PROCESS
-  
-    /* EABI sections */
-    .binit         >  PROCESS
-    .init_array    >  PROCESS
-    .neardata      >  PROCESS
-    .fardata       >  PROCESS
-    .rodata        >  PROCESS
-    .c6xabi.exidx  >  PROCESS
-    .c6xabi.extab  >  PROCESS
+	.text		> PROCESS
+	.data		> PROCESS
+	.bss		> PROCESS
+	.stack		> PROCESS
 }

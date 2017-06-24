@@ -10,7 +10,7 @@
 static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set);
 static uint32_t getNrOfBytesNecessary(IntelHexSet_t* intelHexSet);
 
-int8_t loader_loadProcess(const char* fileName) {
+int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
 
     int32_t fileHandle = sysCalls_openFile(fileName);
 
@@ -35,18 +35,27 @@ int8_t loader_loadProcess(const char* fileName) {
         pBuffer = (uint32_t*)((uint32_t)pBuffer + i*1024);
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
 
-    intelHexParser_parseFileToHex(buffer, nrOfBytesInFile);
+    uint32_t* pAddress;
 
-    uint32_t nrOfEntries = intelHexParser_getNumberOfIntelHexEntries(buffer, nrOfBytesInFile);
-    IntelHexEntry_t entries[nrOfEntries];
+    if (fileType == INTEL_HEX)
+    {
+        intelHexParser_parseFileToHex(buffer, nrOfBytesInFile);
 
-    IntelHexSet_t data = intelHexParser_parseIntelHexData(buffer, nrOfBytesInFile, entries);
+        uint32_t nrOfEntries = intelHexParser_getNumberOfIntelHexEntries(buffer, nrOfBytesInFile);
+        IntelHexEntry_t entries[nrOfEntries];
 
-    uint32_t nrOfBytesNeeded = getNrOfBytesNecessary(&data);
+        IntelHexSet_t data = intelHexParser_parseIntelHexData(buffer, nrOfBytesInFile, entries);
 
-    // get physical memory for executable and copy it there
-    uint32_t* pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesNeeded);
-    copyFileToMemory((uint32_t)pAddress, &data);
+        uint32_t nrOfBytesNeeded = getNrOfBytesNecessary(&data);
+
+        // get physical memory for executable and copy it there
+        pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesNeeded);
+        copyFileToMemory((uint32_t)pAddress, &data);
+    }
+    else if (fileType == ELF)
+    {
+        elfParser_loadElfFile(buffer);
+    }
 
     processManager_loadProcess((uint32_t)pAddress, nrOfBytesInFile);
 
@@ -125,9 +134,9 @@ static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set)
             {
                 lengthOfDataArray++;
             }
-            uint32_t data[lengthOfDataArray];
-            intelHexParser_parseIntelHexDataToInt32(entry->data, data, entry->dataLengthInBytes);
-            memcpy((uint32_t*)addressToCopy, data, entry->dataLengthInBytes);
+            //uint32_t data[lengthOfDataArray];
+            //intelHexParser_parseIntelHexDataToInt32(entry->data, data, entry->dataLengthInBytes);
+            memcpy((uint32_t*)addressToCopy, entry->data, entry->dataLengthInBytes);
         }
         counter++;
     }

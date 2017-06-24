@@ -14,9 +14,9 @@
 #include "kernel/devices/omap3530/includes/mmu.h"
 #include "kernel/hal/mmu/mmu.h"
 
-#define VIRTUAL_MEMORY_STACK_POINTER            0x0020FFFF
+#define VIRTUAL_MEMORY_STACK_POINTER            0x00140000
 #define VIRTUAL_MEMORY_START_ADDRESS            0x00100000
-#define VIRTUAL_PROCESS_START_ADDRESS           0x002200CC
+#define VIRTUAL_PROCESS_START_ADDRESS           0x0014033C
 #define BOOT_REGION_START_ADDRESS               0x40000000
 #define KERNEL_REGION_START_ADDRESS             0x80000000
 #define PAGE_TABLE_REGION_START_ADDRESS         0x80500000
