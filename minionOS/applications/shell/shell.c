@@ -66,7 +66,7 @@ void shell_loop() {
 
     // TODO send control chars to notify putty about local echo and local line edit
     minionIO_writeln("");
-    minionIO_writeln("Shell is ready");
+    minionIO_writeln("Minion OS Shell v1.0 initialized.");
     //        minionIO_write("         (_)     (_)                \n");
     //        minionIO_write(" _ __ ___  _ _ __  _  ___  _ __   ___  ___\n");
     //        minionIO_write("| '_ ` _ \| | '_ \| |/ _ \| '_ \ / _ \/ __|\n");
@@ -74,7 +74,7 @@ void shell_loop() {
     //        minionIO_write("|_| |_| |_|_|_| |_|_|\___/|_| |_|\___/ ___/\n");
 
     while (1) {
-     //  minionIO_writeln("> ");
+        minionIO_writeln("> ");
 
         // Read line with max 100 characters, else discard whole line
         int charsRead = minionIO_readln(lineBuffer, ARRAY_SIZE(lineBuffer));

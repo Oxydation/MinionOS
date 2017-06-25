@@ -5,7 +5,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe/Cortex_A8_0" value="${build_artifact:minionOS}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.Texas Instruments XDS100v2 USB Debug Probe/Cortex_A8_0" value="minionOS"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:minionOS}"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe/Cortex_A8_0" value="E:/FHV\Master\Semester2\OS\MinionOS\minionOS\Debug\minionOS.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe/Cortex_A8_0" value="D:/Seafile\Seafile\ITM\ITM2_SS2017\S1\MinionOS\minionOS\Debug\minionOS.out"/>
 <mapAttribute key="com.ti.ccstudio.debug.ui.displayFormats">
 <mapEntry key="Texas Instruments XDS100v2 USB Debug Probe/Cortex_A8_0@##separator##@0" value="Character"/>
 </mapAttribute>
