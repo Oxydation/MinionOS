@@ -42,6 +42,8 @@ typedef struct{
 
     // Use uint16 instead of uint8 because of memory alignment issues
     uint16_t isSlotTaken;
+
+    uint16_t clustersRead;
 }__attribute((packed)) FileDescriptor_t;
 
 // A struct that contains data for accessing the file system.
@@ -287,6 +289,7 @@ int16_t openFileEntry(uint8_t * fileName, uint8_t* extension, uint32_t addressOf
             fileSystemState.fileDescriptors[fileDescriptor].fileSize = currentEntry.file_size;
             // Slot taken
             fileSystemState.fileDescriptors[fileDescriptor].isSlotTaken = 1;
+            fileSystemState.fileDescriptors[fileDescriptor].clustersRead = 0;
 
             return fileDescriptor;
         }
@@ -399,9 +402,6 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
     // Position where file read was left off
     uint32_t resumePosition = fileSystemState.fileDescriptors[fileDescriptor].fileSize - bytesRemainingInFile;
 
-    // Tracks how many clusters have been read
-    uint16_t clustersRead = resumePosition/STORAGE_SECTOR_SIZE;
-
     if(resumePosition%STORAGE_SECTOR_SIZE!=0){
         // Read first sector
         if(readSector(localBuffer, getClusterAdressInBytes(currentCluster)+((resumePosition/STORAGE_SECTOR_SIZE)*STORAGE_SECTOR_SIZE)) != STORAGE_SECTOR_SIZE){
@@ -418,9 +418,10 @@ uint32_t fileSystem_readBytes(uint8_t fileDescriptor, uint8_t * buffer, uint32_t
         // if sector beginning, read sector
         if(i%STORAGE_SECTOR_SIZE==0){
             // Check if next cluster needs to be read. A cluster is made up of multiple sectors
-            if(i/(clusterSizeInBytes + (clusterSizeInBytes*clustersRead))>=1){
+            if(i/(clusterSizeInBytes + (clusterSizeInBytes*fileSystemState.fileDescriptors[fileDescriptor].clustersRead))>=1){
                 currentCluster = getNextClusterToRead(currentCluster);
-                clustersRead++;
+                fileSystemState.fileDescriptors[fileDescriptor].beginningOfFileAsClusterNumber = currentCluster;
+                fileSystemState.fileDescriptors[fileDescriptor].clustersRead++;
             }
 
             // Read a sector
