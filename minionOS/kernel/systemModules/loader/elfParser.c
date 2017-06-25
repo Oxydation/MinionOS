@@ -75,9 +75,9 @@ static uint8_t checkIfFileIsValid(Elf32_Ehdr* header)
 static Elf32_Shdr* getSectionHeader(Elf32_Ehdr* header, uint8_t index)
 {
     //uint32_t* pSectionHeaderTable = (uint32_t*)((uint32_t)header + header->e_shoff);
-    uint32_t* pSectionHeaderTable = (uint32_t*)((uint8_t*)header + header->e_shoff);
+    uint8_t* pSectionHeaderTable = ((uint8_t*)header + header->e_shoff);
     uint32_t offset = header->e_shentsize*index;
-    return (Elf32_Shdr*)((uint8_t*)pSectionHeaderTable + offset);
+    return (Elf32_Shdr*)(pSectionHeaderTable + offset);
 }
 
 static char* getSectionName(Elf32_Ehdr* header, uint8_t index)
