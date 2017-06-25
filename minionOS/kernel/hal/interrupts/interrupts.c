@@ -81,12 +81,14 @@ int isr_swi(SysCallArgs_t args) {
     __asm(" LDR r12, [lr,#-4]");            // load SWI instruction into R12
     __asm(" BIC r12, r12, #0xff000000");    // apply bit mask to R12 to only include SWI number
     __asm(" STR r12, [sp]");                // store R12 in swi
-    if (swi == SYSTEM_CALL_SWI_NUMBER) {
+
+    switch (swi) {
+    case SYSTEM_CALL_SWI_NUMBER:
         return dispatcher_dispatch(args);
-    } else if (swi == SWITCH_TO_IDLE_SWI_NUMBER) {
+    case SWITCH_TO_IDLE_SWI_NUMBER:
         scheduler_switchToIdleProcess(&g_pcb);
         return 0;
-    } else {
+    default:
         return -1;
     }
 }
@@ -100,7 +102,7 @@ void isr_fiq(void) {
 void isr_undef(void) {
 
 }
-#pragma INTERRUPT (isr_undef, DABT)
+#pragma INTERRUPT (isr_dabt, DABT)
 void isr_dabt(void) {
 
     uint8_t faultStatus = mmu_getDataFaultStatus();
@@ -118,7 +120,7 @@ void isr_dabt(void) {
     asm_loadContext(&g_pcb);
 }
 
-#pragma INTERRUPT (isr_undef, PABT)
+#pragma INTERRUPT (isr_pabt, PABT)
 void isr_pabt(void) {
 
     uint8_t faultStatus = mmu_getInstructionFaultStatus();
