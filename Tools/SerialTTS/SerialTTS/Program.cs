@@ -42,7 +42,7 @@ namespace SerialTTS
             sp.StopBits = StopBits.One;
             sp.DataBits = 8;
             sp.Parity = Parity.None;
-            sp.NewLine = "\r\n";
+            sp.NewLine = "\r";
            // sp.DataReceived += Sp_DataReceived;
             Console.InputEncoding = Encoding.UTF8;
             Console.OutputEncoding = Encoding.UTF8;
@@ -54,7 +54,7 @@ namespace SerialTTS
                 while (true)
                 {
                     string output = Console.ReadLine();
-                    Console.WriteLine(output);
+                    //Console.WriteLine(output);
                     sp.WriteLine(output);
                 }
             });
@@ -80,12 +80,17 @@ namespace SerialTTS
             SerialPort serialPort = (SerialPort)sender;
             if (serialPort.IsOpen)
             {
-                // byte[] bytes = new byte[serialPort.BytesToRead];
-                // serialPort.Read(bytes, 0, serialPort.BytesToRead);
-                // string text = System.Text.Encoding.Default.GetString(bytes);
                 string text = serialPort.ReadLine();
 
-                Console.WriteLine(text);
+                if(text.Contains("\n") || text.Contains("\r"))
+                {
+
+                    Console.Write(text);
+                }
+                else
+                {
+                    Console.WriteLine(text);
+                }
                 syntezier.SpeakAsync(text);
             }
         }
