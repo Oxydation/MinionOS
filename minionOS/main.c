@@ -16,6 +16,7 @@
 #include "kernel/hal/mmc_sd/sdCard.h"
 #include "kernel/hal/uart/uart.h"
 #include "kernel/systemModules/loader/loader.h"
+#include "systemCallApi.h"
 
 #define USE_SYSTEMTMR   1
 /*

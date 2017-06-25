@@ -1,5 +1,5 @@
 #include "cat.h"
-#include "applications/systemCallApi.h"
+#include "systemCallApi.h"
 #include "minionIO.h"
 
 int cat_main(int argc, char* argv[]) {

@@ -19,7 +19,6 @@ Development of a simple OS for a BeagleBoard C4 with a ARMv7 Cortex A8-Processor
 ### Low-Level
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) MMC_SD/SPI
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) UART 
-* ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) DMA (Audio) 
 
 ### High-Level
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) DMX 

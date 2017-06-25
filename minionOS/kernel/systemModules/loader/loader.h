@@ -9,7 +9,6 @@
 #define KERNEL_SYSTEMMODULES_LOADER_LOADER_H_
 
 #include <inttypes.h>
-#include "applications/systemCallApi.h"
 #include "kernel/systemModules/processManagement/processManager.h"
 #include "kernel/systemModules/loader/intelHexParser.h"
 #include "kernel/systemModules/loader/elfParser.h"
