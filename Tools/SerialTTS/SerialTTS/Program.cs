@@ -17,7 +17,6 @@ namespace SerialTTS
             syntezier.Rate = 0;
             var bla = syntezier.GetInstalledVoices(CultureInfo.GetCultureInfo("de-DE"));
             syntezier.SelectVoice(bla[0].VoiceInfo.Name);
-
         }
         static void Main(string[] args)
         {

@@ -60,6 +60,7 @@ void shell_loop() {
 
     // TODO send control chars to notify putty about local echo and local line edit
     minionIO_writeln("");
+    minionIO_writeln("Minion OS Shell v1.0 initialized.");
     while (1) {
         minionIO_write("> ");
 

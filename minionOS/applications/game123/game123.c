@@ -7,7 +7,7 @@
 
 #include "applications/shell/minionIO.h"
 #include <stdlib.h>
-#include "applications/systemCallApi.h"
+#include "systemCallApi.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>

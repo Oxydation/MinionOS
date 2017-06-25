@@ -19,4 +19,6 @@ void minionIO_write(const char* str);
 
 void minionIO_writeln(const char* str);
 
+void minionIO_skipLn(void);
+
 #endif /* APPLICATIONS_SHELL_MINIONIO_H_ */
