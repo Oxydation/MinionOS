@@ -7,6 +7,8 @@
 #define LED_0   0
 #define LED_1   1
 
+void sysCalls_ctrlDmx(const uint8_t * buffer, uint16_t bufferSize);
+
 void sysCalls_enableLed(bool turnOn, int led);
 
 int sysCalls_openFile(const char* fileName);
