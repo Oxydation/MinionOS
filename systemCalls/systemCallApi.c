@@ -1,10 +1,8 @@
-#include "systemCallApi.h"
 #include "systemCallArguments.h"
 #include "systemCallNumber.h"
+#include "systemCallApi.h"
 
-#define UNUSED_SWI_NUMBER 0
-
-#pragma SWI_ALIAS(makeSysCall, UNUSED_SWI_NUMBER);
+#pragma SWI_ALIAS(makeSysCall, SYSTEM_CALL_SWI_NUMBER);
 static int makeSysCall(SysCallArgs_t args);
 
 void sysCalls_enableLed(bool turnOn, int led) {

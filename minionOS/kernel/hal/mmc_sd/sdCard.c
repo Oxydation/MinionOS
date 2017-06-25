@@ -117,7 +117,7 @@ static void controllerBusConfiguration_Ch1(void){
 // stupid but necessary delay
 void delayAfterCommand(void){
     volatile int i = 0;
-    for(i = 0; i < 20000UL; i++);
+    for(i = 0; i < 4000UL; i++);
 }
 
 // Check if card is SDIO
