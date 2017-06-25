@@ -48,6 +48,8 @@ int main(void)
     loader_loadProcess("/LEDON.OUT", ELF);
     loader_loadProcess("/LEDOFF.OUT", ELF);
     //loader_loadProcess("/SHELL.OUT", ELF);
+    loader_loadProcess("/LED2ON.OUT", ELF);
+    loader_loadProcess("/LED2OFF.OUT", ELF);
 
     _enable_interrupts();
     _enable_IRQ();

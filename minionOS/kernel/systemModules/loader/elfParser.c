@@ -42,6 +42,16 @@ uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t*
                     uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
                     memcpy(addressToCopy, section, pSectionHeader->sh_size);
                 }
+                else if (strcmp(sectionName, ".cinit") == 0)
+                {
+                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
+                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
+                }
+                else if (strcmp(sectionName, ".const") == 0)
+                {
+                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
+                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
+                }
                 else if (strcmp(sectionName, ".bss") == 0)
                 {
                     // clear section data
