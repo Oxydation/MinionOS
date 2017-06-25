@@ -1,14 +1,48 @@
 #include "semaphore.h"
+#include <string.h>
+
+#define MAX_MANAGED_SEMAPHORES      16
+#define MAX_IDENTIFIER              100
 
 #define ATOMIC_START()              (_disable_interrupts())
 #define ATOMIC_END(previousState)   (_restore_interrupts(previousState))
 
 #define QUEUE_SUCCESS   0
 #define QUEUE_FULL      -1
-#define QUEUE_EMPTY     -2
+#define QUEUE_EMPTY     MAX_ALLOWED_PROCESSES + 1
+
+typedef struct {
+    char identifier[MAX_IDENTIFIER + 1];
+    Semaphore_t sem;
+} ManagedSemaphore_t;
+
+static ManagedSemaphore_t managedSemaphores[MAX_MANAGED_SEMAPHORES];
 
 static ProcessId_t dequeue(Semaphore_t* semaphore);
 static int enqueue(Semaphore_t* semaphore, ProcessId_t);
+
+Semaphore_t* semaphore_acquire(const char* identifier, int maxConcurrentAccess) {
+    if (strlen(identifier) > MAX_IDENTIFIER) {
+        return NULL;
+    }
+    int i;
+    int firstFree = -1;
+    for (i = 0; i < MAX_MANAGED_SEMAPHORES; i++) {
+        if (managedSemaphores[i].identifier[0] == '\0' && firstFree == -1) {
+            firstFree = i;
+        } else if (strcmp(managedSemaphores->identifier, identifier) == 0) {
+            return &managedSemaphores[i].sem;
+        }
+    }
+    if (firstFree != -1) {
+        ManagedSemaphore_t* managedSemaphore = &managedSemaphores[firstFree];
+        strcpy(managedSemaphore->identifier, identifier);
+        semaphore_init(&managedSemaphore->sem, maxConcurrentAccess);
+        return &managedSemaphore->sem;
+    } else {
+        return NULL;
+    }
+}
 
 void semaphore_init(Semaphore_t* semaphore, int maxConcurrentAccess) {
     semaphore->counter = maxConcurrentAccess;
@@ -49,7 +83,7 @@ static int enqueue(Semaphore_t* semaphore, ProcessId_t processId) {
 
 static ProcessId_t dequeue(Semaphore_t* semaphore) {
     if (semaphore->queue.tail != semaphore->queue.head) {
-        ProcessId_t processId= &semaphore->queue.processes[semaphore->queue.head];
+        ProcessId_t processId = semaphore->queue.processes[semaphore->queue.head];
         semaphore->queue.head = (semaphore->queue.head + 1) % MAX_QUEUED_PROCESSES;
         return processId;
     } else {

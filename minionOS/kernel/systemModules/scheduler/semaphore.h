@@ -1,7 +1,7 @@
 #ifndef KERNEL_SYSTEMMODULES_PROCESSMANAGEMENT_SEMAPHORE_H_
 #define KERNEL_SYSTEMMODULES_PROCESSMANAGEMENT_SEMAPHORE_H_
 
-#include "kernel/systemModules/scheduler/scheduler.h"
+#include "scheduler.h"
 
 #define MAX_QUEUED_PROCESSES    MAX_ALLOWED_PROCESSES
 
@@ -16,7 +16,9 @@ typedef struct {
     } queue;
 } Semaphore_t;
 
-void semaphore_acquire(const char* id);
+Semaphore_t* semaphore_acquire(const char* identifier, int maxConcurrentAccess);
+
+void semaphore_init(Semaphore_t* semaphore, int maxConcurrentAccess);
 
 void semaphore_P(Semaphore_t* semaphore);
 
