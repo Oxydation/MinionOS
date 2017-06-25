@@ -36,6 +36,8 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
 
     uint32_t* pAddress;
+    uint32_t nrOfBytesNeeded;
+    ElfFileInfo_t fileInfo;
 
     if (fileType == INTEL_HEX)
     {
@@ -46,7 +48,7 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
 
         IntelHexSet_t data = intelHexParser_parseIntelHexData(buffer, nrOfBytesInFile, entries);
 
-        uint32_t nrOfBytesNeeded = getNrOfBytesNecessary(&data);
+        nrOfBytesNeeded = getNrOfBytesNecessary(&data);
 
         // get physical memory for executable and copy it there
         pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesNeeded);
@@ -54,10 +56,12 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
     }
     else if (fileType == ELF)
     {
-        elfParser_loadElfFile(buffer);
+        nrOfBytesNeeded = elfParser_getNrOfBytesNecessary(buffer, VIRTUAL_MEMORY_START_ADDRESS);
+        pAddress = processManager_getPhysicalMemoryForProcess(nrOfBytesNeeded);
+        elfParser_loadElfFile(buffer, &fileInfo, pAddress, VIRTUAL_MEMORY_START_ADDRESS);
     }
 
-    processManager_loadProcess((uint32_t)pAddress, nrOfBytesInFile);
+    processManager_loadProcess((uint32_t)pAddress, nrOfBytesNeeded, fileInfo.stackPointer, fileInfo.entryPoint);
 
     return LOAD_PROCESS_OK;
 }

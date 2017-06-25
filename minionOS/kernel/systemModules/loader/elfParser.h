@@ -27,6 +27,11 @@ typedef uint32_t Elf32_Off;
 typedef int32_t  Elf32_Sword;
 typedef uint32_t Elf32_Word;
 
+typedef struct {
+    uint32_t stackPointer;
+    uint32_t entryPoint;
+} ElfFileInfo_t;
+
 /* ELF HEADER */
 /* identification indexes */
 #define EI_MAG0     0       // file identification
@@ -168,7 +173,8 @@ typedef struct {
 } Elf32_Phdr;
 
 /* functions */
-uint8_t elfParser_loadElfFile(uint8_t data[]);
+uint32_t elfParser_getNrOfBytesNecessary(uint8_t data[], uint32_t vMemoryStartAddress);
+uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t* pAddress, uint32_t vMemoryStartAddress);
 void printElf(uint8_t data[]);
 
 #endif /* KERNEL_SYSTEMMODULES_LOADER_ELFPARSER_H_ */

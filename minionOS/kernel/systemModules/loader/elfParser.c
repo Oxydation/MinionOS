@@ -17,7 +17,7 @@ static void printSectionHeaderTable(const Elf32_Ehdr* elfHeader);
 static void printProgramHeader(const Elf32_Ehdr* elfHeader, int index);
 static void printProgramHeaderTable(const Elf32_Ehdr* elfHeader);
 
-uint8_t elfParser_loadElfFile(uint8_t data[])
+uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t* pAddress, uint32_t vMemoryStartAddress)
 {
     Elf32_Ehdr* header = (Elf32_Ehdr*)data;
 
@@ -25,22 +25,82 @@ uint8_t elfParser_loadElfFile(uint8_t data[])
 
     if (valid)
     {
+        fileInfo->entryPoint = header->e_entry;
         Elf32_Half nrOfSections = header->e_shnum;
         Elf32_Half i;
-        for (i = 0; i < nrOfSections; i++)
+        for (i = 0; i < nrOfSections - 1; i++)
         {
             Elf32_Shdr* pSectionHeader = getSectionHeader(header, i);
 
             if (pSectionHeader->sh_size > 0)
             {
                 char* sectionName = getSectionName(header, pSectionHeader->sh_name);
-                int j = 0;
+
+                uint8_t* section = (uint8_t*)header + pSectionHeader->sh_offset;
+
+                if (strcmp(sectionName, ".text") == 0)
+                {
+                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);;
+                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
+                }
+                else if (strcmp(sectionName, ".data") == 0)
+                {
+                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
+                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
+                }
+                else if (strcmp(sectionName, ".bss") == 0)
+                {
+                    // clear section data
+                    uint8_t* currAddress = (uint8_t*)((uint32_t)pAddress + (uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
+                    uint8_t* endAddress = (uint8_t*)currAddress + pSectionHeader->sh_size;
+
+                    while (currAddress != endAddress)
+                    {
+                        *currAddress++ = 0;
+                    }
+                }
+                else if (strcmp(sectionName, ".stack") == 0)
+                {
+                    fileInfo->stackPointer = (uint32_t)((uint8_t*)pSectionHeader->sh_addr + pSectionHeader->sh_size);
+                }
             }
         }
-
         return ELF_FILE_LOADED;
     }
     return ELF_FILE_NOT_LOADED;
+}
+
+uint32_t elfParser_getNrOfBytesNecessary(uint8_t data[], uint32_t vMemoryStartAddress)
+{
+    Elf32_Ehdr* header = (Elf32_Ehdr*)data;
+    uint8_t valid = checkIfFileIsValid(header);
+    uint32_t endAddress = 0x0000000;
+
+    if (valid)
+    {
+        Elf32_Half nrOfSections = header->e_shnum;
+        Elf32_Half i;
+        for (i = 0; i < nrOfSections - 1; i++)
+        {
+            Elf32_Shdr* pSectionHeader = getSectionHeader(header, i);
+
+            if (pSectionHeader->sh_size > 0)
+            {
+                char* sectionName = getSectionName(header, pSectionHeader->sh_name);
+
+                if (strcmp(sectionName, ".text") == 0 || strcmp(sectionName, ".data") == 0 ||
+                        strcmp(sectionName, ".bss") == 0 || strcmp(sectionName, ".stack") == 0)
+                {
+                    if (pSectionHeader->sh_addr >= endAddress)
+                    {
+                        endAddress = (uint32_t)((uint8_t*)pSectionHeader->sh_addr + pSectionHeader->sh_size);
+                    }
+                }
+            }
+        }
+    }
+
+    return endAddress - vMemoryStartAddress;
 }
 
 static uint8_t checkIfFileIsValid(Elf32_Ehdr* header)
