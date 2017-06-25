@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
 
 #include <kernel/common/mmio.h>
 #include <kernel/devices/omap3530/includes/beagleBoardC4.h>
@@ -17,26 +15,12 @@
 #include "kernel/systemModules/filesystem/vfs.h"
 #include "kernel/hal/mmc_sd/sdCard.h"
 #include "kernel/hal/uart/uart.h"
-#include "kernel/hal/dmx/dmx.h"
-#include "global/types.h"
-
-#include "applications/systemCallApi.h"
-#include "applications/shell/shell.h"
-
-void process1(void);
-void process2(void);
-void process3(void);
-static int useLoopInProcesses = 0;
+#include "kernel/systemModules/loader/loader.h"
+#include "systemCallApi.h"
 
 int main(void)
 {
     _disable_interrupts();
-
-    process3();
-    process2();
-    process1();
-
-    useLoopInProcesses = 1;
 
     mmu_initMMU();
 
@@ -50,18 +34,20 @@ int main(void)
                                 .stopMode = STOP_1, .parityMode = NO_PARITY,
                                 .wordLength = LENGTH_8 };
 
-    // Initialization
-    dmx_init();
     uart_initModule(UART3, uartConfig);
     sdCard_initialize_Ch1();
     vfs_init();
     systemTimer_init(1000);
     scheduler_init();
 
-    /* physicalStartAddress, nrOfNeededBytes */
-    processManager_loadProcess(0x80600000, 1000);
-    processManager_loadProcess(0x80700000, 1000);
-    processManager_loadProcess(0x80800000, 1000);
+    sysCalls_enableLed(1, LED_0);
+    sysCalls_enableLed(1, LED_1);
+
+    loader_loadProcess("/LEDON.OUT", ELF);
+    loader_loadProcess("/LEDOFF.OUT", ELF);
+    //loader_loadProcess("/SHELL.OUT", ELF);
+    loader_loadProcess("/LED2ON.OUT", ELF);
+    loader_loadProcess("/LED2OFF.OUT", ELF);
 
     _enable_interrupts();
     _enable_IRQ();
@@ -74,57 +60,5 @@ int main(void)
     while (1)
     {
 
-    }
-}
-
-#pragma CODE_SECTION(process1,".process1") // DDR0_PROC1: o = 0x80600000
-void process1(void)
-{
-    volatile unsigned long i = 0;
-    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
-
-    if (useLoopInProcesses == 1) {
-        while (1) {
-            bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-        }
-    }
-    else
-    {
-        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    }
-
-}
-
-#pragma CODE_SECTION(process2,".process2") //  DDR0_PROC2: o = 0x80700000
-void process2(void)
-{
-    volatile unsigned long i = 0;
-    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
-
-    if (useLoopInProcesses == 1) {
-        while (1) {
-            bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-        }
-    }
-    else
-    {
-        bitSet(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-    }
-}
-
-#pragma CODE_SECTION(process3,".process3") //  DDR0_PROC3: o = 0x80800000
-void process3(void)
-{
-    volatile unsigned long i = 0;
-    uint32_t* out = (uint32_t*) (GPIO_BASE_ADDR(GPIO_USR1_LED) + GPIO_DATAOUT);
-
-    if (useLoopInProcesses == 1) {
-        while (1) {
-            bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
-        }
-    }
-    else
-    {
-        bitClear(*out, GPIO_PIN_POS(GPIO_USR1_LED));
     }
 }

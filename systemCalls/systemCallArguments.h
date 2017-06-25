@@ -3,6 +3,8 @@
 
 #include "systemCallNumber.h"
 
+#define SYSTEM_CALL_SWI_NUMBER  1
+
 typedef struct {
     SystemCallNumber systemCallNumber;
     int a;

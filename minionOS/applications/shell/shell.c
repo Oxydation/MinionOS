@@ -1,5 +1,5 @@
 #include "shell.h"
-#include "applications/systemCallApi.h"
+#include "systemCallApi.h"
 #include "minionIO.h"
 #include "ls.h"
 #include "cat.h"

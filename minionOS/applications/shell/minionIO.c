@@ -1,5 +1,5 @@
 #include "minionIO.h"
-#include "applications/systemCallApi.h"
+#include "systemCallApi.h"
 #include <string.h>
 
 char minionIO_read() {

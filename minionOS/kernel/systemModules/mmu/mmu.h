@@ -14,7 +14,9 @@
 #include "kernel/devices/omap3530/includes/mmu.h"
 #include "kernel/hal/mmu/mmu.h"
 
-#define VIRTUAL_PROCESS_START_ADDRESS           0x00100000
+#define VIRTUAL_MEMORY_STACK_POINTER            0x00140000
+#define VIRTUAL_MEMORY_START_ADDRESS            0x00100000
+#define VIRTUAL_PROCESS_START_ADDRESS           0x0014033C
 #define BOOT_REGION_START_ADDRESS               0x40000000
 #define KERNEL_REGION_START_ADDRESS             0x80000000
 #define PAGE_TABLE_REGION_START_ADDRESS         0x80500000
@@ -95,6 +97,7 @@ int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeeded
 void mmu_switchProcess(PCB_t* pcb);
 void mmu_killProcess(ProcessId_t processId);
 uint32_t* mmu_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes);
+int8_t mmu_mapRegionDirectly(uint32_t pAddress, uint32_t nrOfNeededBytes, uint16_t pageSize);
 
 /* functions for handling faults */
 void mmu_handleSectionTranslationFault(uint32_t faultAddress);

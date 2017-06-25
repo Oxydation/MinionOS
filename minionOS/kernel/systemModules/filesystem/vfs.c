@@ -1,6 +1,7 @@
 #include "vfs.h"
 #include "deviceDriverFs.h"
 #include "sdCardFs.h"
+#include "processFs.h"
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
@@ -58,11 +59,11 @@ void vfs_addFileSystem(FileSystem_t* fileSystem) {
 }
 
 const char* vfs_readdir(const char* dirName) {
-    static const char* previousDirectory;
+    static char previousDirectory[100];
     static int currentFs;
 
-    if (previousDirectory == NULL || previousDirectory != dirName || strcmp(previousDirectory, dirName) != 0) {
-        previousDirectory = dirName;
+    if (strcmp(dirName, previousDirectory) != 0) {
+        strncpy(previousDirectory, dirName, sizeof(previousDirectory) - 1);
         currentFs = 0;
     }
     const char* dirEntry;
@@ -70,8 +71,8 @@ const char* vfs_readdir(const char* dirName) {
         dirEntry = fileSystems[currentFs]->readdir(previousDirectory);
     } while (dirEntry == NULL && ++currentFs < fileSystemCount);
 
-    if (!dirEntry) {
-        previousDirectory = NULL;
+    if (dirEntry == NULL) {
+        previousDirectory[0] = '\0';
     }
 
     return dirEntry;
@@ -84,6 +85,7 @@ static void initStdStreams() {
 void vfs_init(void) {
     vfs_addFileSystem(&deviceDriverFs);
     vfs_addFileSystem(&sdCardFs);
+    //vfs_addFileSystem(&processFs);
 
     int i;
     for (i = 0; i < fileSystemCount; ++i) {
