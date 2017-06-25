@@ -3,6 +3,7 @@
 #include "minionIO.h"
 #include "ls.h"
 #include "cat.h"
+#include "applications/game123/game123.h"
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -34,6 +35,11 @@ static int execute(int argc, char* argv[]) {
         return ls_main(argc, argv);
     } else if (strcmp(argv[0], "cat") == 0) {
         return cat_main(argc, argv);
+    } else if (strcmp(argv[0], "123") == 0){
+        return game123_main(argc, argv);
+    } else if (strcmp(argv[0], "exit") == 0){
+        minionIO_write("\e[H");  // reset cursor
+        return game123_stopGame();
     } else if (strcmp(argv[0], "argv") == 0) {
         char buf[80];
         sprintf(buf, "%d arguments read.", argc);
@@ -60,8 +66,15 @@ void shell_loop() {
 
     // TODO send control chars to notify putty about local echo and local line edit
     minionIO_writeln("");
+    minionIO_writeln("Minion OS Shell v1.0 initialized.");
+    //        minionIO_write("         (_)     (_)                \n");
+    //        minionIO_write(" _ __ ___  _ _ __  _  ___  _ __   ___  ___\n");
+    //        minionIO_write("| '_ ` _ \| | '_ \| |/ _ \| '_ \ / _ \/ __|\n");
+    //        minionIO_write("| | | | | | | | | | | (_) | | | \ (_) |__ \\\n");
+    //        minionIO_write("|_| |_| |_|_|_| |_|_|\___/|_| |_|\___/ ___/\n");
+
     while (1) {
-        minionIO_write("> ");
+        minionIO_writeln("> ");
 
         // Read line with max 100 characters, else discard whole line
         int charsRead = minionIO_readln(lineBuffer, ARRAY_SIZE(lineBuffer));

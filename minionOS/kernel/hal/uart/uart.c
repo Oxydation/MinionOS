@@ -3,6 +3,7 @@
 #include "kernel/devices/omap3530/includes/uart.h"
 #include <inttypes.h>
 #include <stdbool.h>
+#include "global/delay/delay.h"
 
 typedef struct {
     uint8_t* MDR1;
@@ -52,6 +53,8 @@ typedef struct {
 static Uart_t modules[3] = { createUart(UART1_BASE), createUart(UART2_BASE),
         createUart(UART3_BASE) };
 
+static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config);
+
 static uint16_t calcDivisor(uint64_t baudRate, UartBaudMultiple_t baudMultiple) {
     uint8_t multiple;
     switch (baudMultiple) {
@@ -64,6 +67,7 @@ static uint16_t calcDivisor(uint64_t baudRate, UartBaudMultiple_t baudMultiple) 
     }
     return UART_OPERATING_FREQUENCY / (multiple * baudRate);
 }
+
 
 static void doSwReset(Uart_t uart) {
     // 17.5.1.1.1 Software Reset
@@ -111,6 +115,12 @@ static void setupFifoAndDma(Uart_t uart) {
     bitWrite(*uart.MCR, MCR_TCR_TLR, savedTcrTlr);
     // 12. Restore the UARTi.LCR_REG value saved in Step 1a
     *uart.LCR = savedLcr;
+}
+
+
+void uart_updateConfig(UartModule_t module, UartConfig_t config){
+    Uart_t uartModule = modules[module];
+    setupProtocolBaudAndInterrupt(uartModule, config);
 }
 
 static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config) {
@@ -250,12 +260,12 @@ static bool isReadyToTransmit(Uart_t uartModule) {
 }
 
 void uart_transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize) {
-    // TODO buffer overflow?
     Uart_t uartModule = modules[module];
     int i;
     for (i = 0; i < bufferSize; i++) {
         while (!isReadyToTransmit(uartModule));
         *uartModule.THR = buffer[i];
+        delay(15);
     }
 }
 

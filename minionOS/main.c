@@ -18,7 +18,9 @@
 #include "kernel/systemModules/loader/loader.h"
 #include "systemCallApi.h"
 
-#define USE_SYSTEMTMR   1
+UartConfig_t g_uartConfig = { .baudMultiple = x16, .baudRate = 115200,
+                                .stopMode = STOP_1, .parityMode = NO_PARITY,
+                                .wordLength = LENGTH_8 };
 
 int main(void)
 {
@@ -32,11 +34,7 @@ int main(void)
     gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
 
-    UartConfig_t uartConfig = { .baudMultiple = x16, .baudRate = 115200,
-                                .stopMode = STOP_1, .parityMode = NO_PARITY,
-                                .wordLength = LENGTH_8 };
-
-    uart_initModule(UART3, uartConfig);
+    uart_initModule(UART3, g_uartConfig);
     sdCard_initialize_Ch1();
     vfs_init();
     systemTimer_init(1000);
@@ -47,9 +45,7 @@ int main(void)
 
     loader_loadProcess("/LEDON.OUT", ELF);
     loader_loadProcess("/LEDOFF.OUT", ELF);
-    //loader_loadProcess("/SHELL.OUT", ELF);
-    loader_loadProcess("/LED2ON.OUT", ELF);
-    loader_loadProcess("/LED2OFF.OUT", ELF);
+   // loader_loadProcess("/SHELL.OUT", ELF);
 
     _enable_interrupts();
     _enable_IRQ();

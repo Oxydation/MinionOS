@@ -8,6 +8,11 @@ char minionIO_read() {
     return in;
 }
 
+void minionIO_skipLn(void){
+    char c;
+    while ((c = minionIO_read()) != EOL) ;
+}
+
 int minionIO_readln(char* buffer, unsigned int bufferSize) {
     int i = 0;
     char c;

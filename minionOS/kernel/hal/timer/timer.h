@@ -61,6 +61,7 @@ Timer_t * timer_create(TimerMode_t mode, ReloadType_t reloadType,
 void timer_clearInterruptFlag(Timer_t * timer);
 void timer_start(Timer_t * timer);
 void timer_stop(Timer_t * timer);
+void timer_resetCounter(Timer_t * timer);
 
 /* Important exernal device dependend implementations  */
 TimerNumber_t timer_getTimerNumberFromIrqSource(uint32_t irq_number);

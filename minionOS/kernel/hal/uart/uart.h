@@ -54,4 +54,6 @@ void uart_disableBreak(UartModule_t module);
 
 void uart_initModule(UartModule_t module, UartConfig_t config);
 
+void uart_updateConfig(UartModule_t module, UartConfig_t config);
+
 #endif
