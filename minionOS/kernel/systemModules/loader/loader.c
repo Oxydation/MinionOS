@@ -18,8 +18,8 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
         return NOT_ABLE_TO_LOAD_FILE;
     }
 
-    uint8_t buffer[BUFFER_SIZE];
-    uint8_t readBuffer[1024];
+    uint8_t buffer[BUFFER_SIZE] = {0};
+    uint8_t readBuffer[1024] = {0};
     uint32_t nrOfBytesInFile = 0;
     int32_t nrOfBytesRead;
     uint32_t* pBuffer = (uint32_t*)&buffer;
@@ -32,7 +32,7 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
         }
         nrOfBytesInFile += nrOfBytesRead;
         i++;
-        pBuffer = (uint32_t*)((uint32_t)pBuffer + i*1024);
+        pBuffer = (uint32_t*)((uint8_t*)pBuffer + 1024);
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
 
     uint32_t* pAddress;
