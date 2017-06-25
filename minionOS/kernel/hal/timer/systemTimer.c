@@ -28,7 +28,6 @@ static Timer_t * g_systemTimer;
 
 uint32_t g_current_ms = 0;
 
-
 void systemTimer_init(uint32_t interval_us)
 {
     g_systemTimer = timer_create(OVERFLOW, AUTORELOAD, interval_us,

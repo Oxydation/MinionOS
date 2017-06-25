@@ -1,16 +1,11 @@
+#include "systemCallApi.h"
 #include "systemCallArguments.h"
 #include "systemCallNumber.h"
-#include "applications/systemCallApi.h"
 
 #define UNUSED_SWI_NUMBER 0
 
 #pragma SWI_ALIAS(makeSysCall, UNUSED_SWI_NUMBER);
 static int makeSysCall(SysCallArgs_t args);
-
-void sysCalls_ctrlDmx(const uint8_t * buffer, uint16_t bufferSize){
-    SysCallArgs_t args = { SYSCALL_DMX_SEND, (int)buffer, bufferSize };
-    makeSysCall(args);
-}
 
 void sysCalls_enableLed(bool turnOn, int led) {
     SysCallArgs_t args = { SYSCALL_LED, turnOn, led };

@@ -31,6 +31,12 @@ struct Register
     uint32_t R14;   // LR
 };
 
+typedef enum {
+
+    UNINITIALIZED, RUNNING, WAITING, BLOCKED, DEAD
+
+} ProcessStatus_t;
+
 typedef struct PCB
 {
     uint32_t cpsr;
@@ -38,6 +44,7 @@ typedef struct PCB
     struct Register registers;
 
     ProcessId_t processId;
+    ProcessStatus_t status;
 } PCB_t;
 
 void copyPcb(PCB_t * source, PCB_t * target);
@@ -45,4 +52,5 @@ void copyPcb(PCB_t * source, PCB_t * target);
 extern void asm_saveContext(PCB_t * pcb);
 extern void asm_loadContext(PCB_t * pcb);
 extern void asm_continuePreviousProcess();
+
 #endif /* KERNEL_DEVICES_OMAP3530_INCLUDES_CONTEXTSWITCH_H_ */

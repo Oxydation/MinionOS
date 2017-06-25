@@ -11,6 +11,8 @@
 #include <inttypes.h>
 #include "../../global/bitManipulation.h"
 
+#define NULLPOINTER     0x00000000
+
 /**
  * Provides basic methods to set and get a value at a given address.
  */
