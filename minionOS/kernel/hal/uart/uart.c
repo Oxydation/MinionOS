@@ -4,6 +4,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include "delay/delay.h"
+#include "kernel/hal/interrupts/interrupts.h"
+#include "kernel/devices/omap3530/includes/interrupts.h"
 
 typedef struct {
     uint8_t* MDR1;
@@ -25,6 +27,7 @@ typedef struct {
     uint8_t* SCR;
     uint8_t* TCR;
     uint8_t* RHR;
+    uint8_t* IIR;
 } Uart_t;
 
 #define uartField(name, baseAddress) .name = (uint8_t*) (baseAddress + name##_OFF)
@@ -47,7 +50,8 @@ typedef struct {
         uartField(TLR, baseAddress),    \
         uartField(SCR, baseAddress),    \
         uartField(TCR, baseAddress),    \
-        uartField(RHR, baseAddress)     \
+        uartField(RHR, baseAddress),    \
+        uartField(IIR, baseAddress)     \
 }
 
 static Uart_t modules[3] = { createUart(UART1_BASE), createUart(UART2_BASE),
@@ -145,7 +149,7 @@ static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config) {
     // 8. Switch to register operational mode to access the UARTi.IER_REG register
     *uart.LCR = 0x0;
     // 9. Load the new interrupt configuration
-    // no interrupts
+    bitSet(*uart.IER, 0); // RHR
     // 10. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
     // 11. Restore the UARTi.EFR_REG[4] ENHANCED_EN value saved in Step 3a
@@ -247,12 +251,35 @@ static void setupHwFlowControl(Uart_t uart) {
     *uart.LCR = savedLcr;
 }
 
+uint8_t data[150];
+static void isr_handler(uint32_t source, PCB_t * currentPcb)
+{
+    UartModule_t module = uart_getModuleFromIrqSource(source);
+    //Uart_t uartModule = modules[module];
+    //g_timer[timerNumber].callback(currentPcb);
+
+    uint8_t isrTypeUart = uart_getInterruptType(module);
+    uart_read(module, &data);
+}
+
 void uart_initModule(UartModule_t module, UartConfig_t config) {
     Uart_t uartModule = modules[module];
     doSwReset(uartModule);
     setupFifoAndDma(uartModule);
     setupProtocolBaudAndInterrupt(uartModule, config);
     setupHwFlowControl(uartModule);
+
+    switch(module){
+    case UART1:
+        interrupts_registerHandler(&isr_handler, UART1_IRQ);
+        break;
+    case UART2:
+        interrupts_registerHandler(&isr_handler, UART2_IRQ);
+        break;
+    case UART3:
+        interrupts_registerHandler(&isr_handler, UART3_IRQ);
+        break;
+    }
 }
 
 static bool isReadyToTransmit(Uart_t uartModule) {
@@ -273,6 +300,11 @@ static bool hasReceived(Uart_t uartModule) {
     return bitRead(*uartModule.LSR, LSR_RX_FIFO_E);
 }
 
+bool uart_resetFifo(UartModule_t module){
+    Uart_t uartModule = modules[module];
+    return bitSet(*uartModule.FCR, 1);
+}
+
 void uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
     // TODO buffer overflow?
     Uart_t uartModule = modules[module];
@@ -283,6 +315,16 @@ void uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
     }
 }
 
+void uart_write(UartModule_t module, uint8_t c) {
+    Uart_t uartModule = modules[module];
+    *uartModule.THR = c;
+}
+
+void uart_read(UartModule_t module, uint8_t * c) {
+    Uart_t uartModule = modules[module];
+    *c = *uartModule.RHR;
+}
+
 void uart_enableBreak(UartModule_t module) {
     Uart_t uartModule = modules[module];
     bitSet(*uartModule.LCR, LCR_BREAK_EN);
@@ -291,4 +333,9 @@ void uart_enableBreak(UartModule_t module) {
 void uart_disableBreak(UartModule_t module) {
     Uart_t uartModule = modules[module];
     bitClear(*uartModule.LCR, LCR_BREAK_EN);
+}
+
+uint8_t uart_getInterruptType(UartModule_t module) {
+    Uart_t uartModule = modules[module];
+    return getBitRange(*uartModule.IIR, 5, 1);
 }

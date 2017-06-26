@@ -1,6 +1,7 @@
 #ifndef KERNEL_DEVICES_OMAP3530_INCLUDES_UART_H_
 #define KERNEL_DEVICES_OMAP3530_INCLUDES_UART_H_
 
+
 // Base addresses
 #define UART1_BASE       (0x4806A000)
 #define UART2_BASE       (0x4806C000)
@@ -28,6 +29,7 @@
 #define SCR_OFF     (0x40)
 #define TCR_OFF     (0x18)
 #define RHR_OFF     (0x0)
+#define IIR_OFF     (0x08)
 
 // Indices for register fields
 #define EFR_ENHANCED_EN     (4)
