@@ -33,15 +33,15 @@ int main(void)
     // Set output direction
     gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
-
+/*
     uart_initModule(UART3, g_uartConfig);
-    sdCard_initialize_Ch1();
+    sdCard_initialize_Ch1();*/
     vfs_init();
     systemTimer_init(1000);
     scheduler_init();
 
-    sysCalls_enableLed(1, LED_0);
-    sysCalls_enableLed(1, LED_1);
+  //  sysCalls_enableLed(1, LED_0);
+    //sysCalls_enableLed(1, LED_1);
 
     loader_loadProcess("/LEDON.OUT", ELF);
     loader_loadProcess("/LEDOFF.OUT", ELF);
