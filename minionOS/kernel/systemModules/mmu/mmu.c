@@ -16,13 +16,13 @@ static PageTable_t g_masterPTOS = { .vAddress = KERNEL_REGION_START_ADDRESS,
                                   .ptAddress = MASTER_PT_OS_START_ADDRESS,
                                   .masterPtAddress = MASTER_PT_OS_START_ADDRESS,
                                   .type = MASTER,
-                                  .dom = 0};
+                                  .dom = KERNEL_DOMAIN};
 
 static PageTable_t g_pageTablePT = { .vAddress = PAGE_TABLE_REGION_START_ADDRESS,
                                    .ptAddress = PAGETABLE_PT_START_ADDRESS,
                                    .masterPtAddress = MASTER_PT_OS_START_ADDRESS,
                                    .type = COARSE,
-                                   .dom = 0};
+                                   .dom = PT_DOMAIN};
 
 /* Page status arrays */
 static PageStatus_t g_bootRegionStatus[NR_OF_PAGES_IN_BOOT_REGION];                   // 1024 pages with 1 MB
@@ -33,26 +33,26 @@ static PageStatus_t g_processMemoryRegionStatus[NR_OF_PAGES_IN_PROCESSMEMORY_REG
 /* Region tables */
 /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, nrOfReservedPages, PADDRESS, &PT, page status */
 static Region_t g_bootRegion = { .vAddress = BOOT_REGION_START_ADDRESS, .pageSize = SECTION, .numPages = NR_OF_PAGES_IN_BOOT_REGION,
-                                 .AP = RWRW, .CB = WT, .reservedPages = 0, .pAddress = BOOT_REGION_START_ADDRESS,
+                                 .AP = RWNA, .CB = WT, .reservedPages = 0, .pAddress = BOOT_REGION_START_ADDRESS,
                                  .PT = &g_masterPTOS, .pageStatus = g_bootRegionStatus};
 
 static Region_t g_kernelRegion = { .vAddress = KERNEL_REGION_START_ADDRESS, .pageSize = SECTION, .numPages = NR_OF_PAGES_IN_KERNEL_REGION,
-                                   .AP = RWRW, .CB = WT, .reservedPages = 0, .pAddress = KERNEL_REGION_START_ADDRESS,
+                                   .AP = RWNA, .CB = WT, .reservedPages = 0, .pAddress = KERNEL_REGION_START_ADDRESS,
                                    .PT = &g_masterPTOS, .pageStatus = g_kernelRegionStatus};
 
 static Region_t g_pageTableRegion = { .vAddress = PAGE_TABLE_REGION_START_ADDRESS, .pageSize = SMALL_PAGE,
-                                      .numPages = NR_OF_PAGES_IN_PAGE_TABLE_REGION, .AP = RWRW, .CB = WT, .reservedPages = 0,
+                                      .numPages = NR_OF_PAGES_IN_PAGE_TABLE_REGION, .AP = RWRO, .CB = WT, .reservedPages = 0,
                                       .pAddress = PAGE_TABLE_REGION_START_ADDRESS, .PT = &g_pageTablePT,
                                       .pageStatus = g_pageTableRegionStatus};
 
 static Region_t g_processMemoryRegion = { .vAddress = PROCESSMEMORY_REGION_START_ADDRESS, .pageSize = SECTION,
-                                          .numPages = NR_OF_PAGES_IN_PROCESSMEMORY_REGION, .AP = RWRW, .CB = WT, .reservedPages = 0,
+                                          .numPages = NR_OF_PAGES_IN_PROCESSMEMORY_REGION, .AP = RWNA, .CB = WT, .reservedPages = 0,
                                           .pAddress = PROCESSMEMORY_REGION_START_ADDRESS, .PT = NULL,
                                           .pageStatus = g_processMemoryRegionStatus};
 
 /* declarations of static functions */
 static void mmu_initTTB(void);
-static void mmu_setAllDomainAccesses(void);
+static void mmu_setDomainAccesses(void);
 static void mmu_initAllPT(void);
 static int8_t mmu_initPT(PageTable_t* pt);
 static void mmu_mapAllRegions(void);
@@ -68,7 +68,9 @@ static int32_t mmu_getNrOfNeededPagesForProcess(uint32_t nrOfNeededBytes);
 static int32_t mmu_getNumberOfNeededPages(uint32_t nrOfNeededBytes, uint16_t pageSize);
 static void mmu_freePagesForProcess(Process_t* process);
 static void mmu_freePTOfProcess(Process_t* process);
-
+static int8_t mmu_unmapSectionTableRegion(Region_t* region, uint16_t nrOfPages);
+static int8_t mmu_unmapRegion(Region_t* region, uint16_t nrOfPages);
+static int8_t mmu_unmapDirectlyMappedRegion(uint32_t pAddress, uint32_t nrOfNeededBytes, uint16_t pageSize);
 
 void mmu_initMMU(void) {
 
@@ -88,7 +90,7 @@ void mmu_initMMU(void) {
     mmu_initTTB();
 
     /* set domain access */
-    mmu_setAllDomainAccesses();
+    mmu_setDomainAccesses();
 
     /* initialize system page tables */
     mmu_initAllPT();
@@ -105,10 +107,16 @@ void mmu_initMMU(void) {
     mmu_setMMUControl(enable, changeMask);
 }
 
-int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeededBytes, PCB_t* pPcb) {
+int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeededBytes, PCB_t* pPcb, bool clearDirectlyMappedRegion) {
 
     uint16_t nrOfNeededPagesForPT = 4;
     uint16_t nrOfNeededPagesForProcess = mmu_getNrOfNeededPagesForProcess(nrOfNeededBytes);
+    if (clearDirectlyMappedRegion)
+    {
+        mmu_unmapDirectlyMappedRegion(pAddress, nrOfNeededPagesForProcess, SECTION);
+        mmu_flushCache();
+        mmu_flushTLB();
+    }
 
     int16_t freePageIndexForPT = mmu_findFreePagesInRegion(&g_pageTableRegion, nrOfNeededPagesForPT);
     int16_t pageIndexOfProcess = mmu_getPageIndexInRegion(&g_processMemoryRegion, pAddress);
@@ -120,7 +128,7 @@ int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeeded
 
             pPT = (uint32_t*)((uint32_t)g_pageTableRegion.pAddress + freePageIndexForPT * SMALL_PAGE_SIZE);
 
-            PageTable_t taskPT = {vAddress, (uint32_t)pPT, (uint32_t)pPT, MASTER, 0};
+            PageTable_t taskPT = {vAddress, (uint32_t)pPT, (uint32_t)pPT, MASTER, PROCESS_DOMAIN};
 
             PageStatus_t* pPTStatus = (PageStatus_t*)(g_pageTableRegionStatus + freePageIndexForPT);
             Region_t taskPTRegion = {(uint32_t)pPT, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)pPT, &g_pageTablePT, pPTStatus};
@@ -149,6 +157,13 @@ int8_t mmu_mapRegionDirectly(uint32_t pAddress, uint32_t nrOfNeededBytes, uint16
     Region_t directlyMappedRegion = { .vAddress = pAddress, .pageSize = pageSize,  .numPages = nrOfNeededPages, .AP = RWRW, .CB = WT,
                                         .reservedPages = 0, .pAddress = pAddress, .PT = &g_masterPTOS};
     return mmu_mapRegion(&directlyMappedRegion, nrOfNeededPages, -1);
+}
+
+static int8_t mmu_unmapDirectlyMappedRegion(uint32_t pAddress, uint32_t nrOfNeededPages, uint16_t pageSize) {
+
+    Region_t directlyMappedRegion = { .vAddress = pAddress, .pageSize = pageSize,  .numPages = nrOfNeededPages, .AP = RWRW, .CB = WT,
+                                            .reservedPages = nrOfNeededPages, .pAddress = pAddress, .PT = &g_masterPTOS};
+    return mmu_unmapRegion(&directlyMappedRegion, nrOfNeededPages);
 }
 
 void mmu_switchProcess(PCB_t* pcb) {
@@ -265,6 +280,21 @@ static int8_t mmu_mapRegion(Region_t* region, uint16_t nrOfPages, int16_t proces
     }
 }
 
+static int8_t mmu_unmapRegion(Region_t* region, uint16_t nrOfPages)
+{
+    switch(region->PT->type) {
+        case MASTER: {
+            return mmu_unmapSectionTableRegion(region, nrOfPages);
+        }
+        case COARSE: {
+            return MAP_REGION_NOT_OK;
+        }
+        default: {
+            return MAP_REGION_NOT_OK;
+        }
+    }
+}
+
 static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, int16_t processId) {
 
     int16_t i;
@@ -297,6 +327,26 @@ static int8_t mmu_mapSectionTableRegion(Region_t* region, uint16_t nrOfPages, in
         pAddress += (1 << 20);                              /* jump to start of next 1 MB section */
     }
     region->reservedPages = region->reservedPages + nrOfPages;
+    return MAP_REGION_OK;
+}
+
+static int8_t mmu_unmapSectionTableRegion(Region_t* region, uint16_t nrOfPages)
+{
+    int16_t i;
+    uint32_t* pPTE;                                       /* pointer to page table entry */                                     /* physical address */
+    uint32_t tableIndex;
+
+    pPTE = (uint32_t*)region->PT->ptAddress;
+    tableIndex = region->vAddress;
+    tableIndex = tableIndex >> 20;                          /* take bits [31:20] as table index */
+    tableIndex = tableIndex << 2;
+    pPTE = (uint32_t*)((uint32_t)pPTE + tableIndex);    /* set to first PTE in region */
+
+    for (i = 0; i < nrOfPages; i++) {
+        uint32_t descriptor = mmu_createFirstLevelFaultDescriptor();
+        *pPTE++ = descriptor;
+    }
+    region->reservedPages = region->reservedPages - nrOfPages;
     return MAP_REGION_OK;
 }
 
@@ -369,7 +419,7 @@ static void mmu_attachPT(PageTable_t* pt, PageTable_t* masterPT) {
     *pMasterPTE = pteEntry;
 }
 
-static void mmu_setAllDomainAccesses(void) {
+static void mmu_setDomainAccesses(void) {
     uint32_t right = MASK_ALL_DOM;
     mmu_setDomainAccess(right, MASK_ALL_DOM);
 }

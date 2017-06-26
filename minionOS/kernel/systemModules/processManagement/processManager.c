@@ -7,11 +7,9 @@
 
 #include "processManager.h"
 
-static uint32_t calcStackPointer(uint32_t virtualStartAddress, uint32_t nrOfNeededBytes);
-
 int8_t processManager_loadProcess(uint32_t physicalStartAddress, uint32_t nrOfNeededBytes, uint32_t stackPointer, uint32_t entryPoint){
     PCB_t* pPcb = scheduler_startProcess(entryPoint, stackPointer, 0x60000110);
-    return mmu_initProcess(physicalStartAddress, VIRTUAL_MEMORY_START_ADDRESS, nrOfNeededBytes, pPcb);
+    return mmu_initProcess(physicalStartAddress, VIRTUAL_MEMORY_START_ADDRESS, nrOfNeededBytes, pPcb, 1);
 }
 
 uint32_t* processManager_getPhysicalMemoryForProcess(uint32_t nrOfNeededBytes) {
@@ -27,8 +25,4 @@ void processManager_killProcess(ProcessId_t processId) {
 
 void processManager_terminateCurrentProcess(PCB_t* pcb) {
     scheduler_terminateCurrentProcess(pcb);
-}
-
-static uint32_t calcStackPointer(uint32_t virtualStartAddress, uint32_t nrOfNeededBytes) {
-    return virtualStartAddress + nrOfNeededBytes + STACK_SIZE;
 }
