@@ -12,7 +12,6 @@
 #include "kernel/systemModules/processManagement/processManager.h"
 #include "kernel/systemModules/loader/intelHexParser.h"
 #include "kernel/systemModules/loader/elfParser.h"
-#include "systemCallApi.h"
 
 #define LOAD_PROCESS_OK         1
 #define NOT_ABLE_TO_LOAD_FILE   -1

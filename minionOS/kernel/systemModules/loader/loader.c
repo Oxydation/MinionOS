@@ -6,13 +6,14 @@
  */
 
 #include "kernel/systemModules/loader/loader.h"
+#include "kernel/systemModules/filesystem/vfs.h"
 
 static void copyFileToMemory(uint32_t pAddress, IntelHexSet_t* set);
 static uint32_t getNrOfBytesNecessary(IntelHexSet_t* intelHexSet);
 
 int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
 
-    int32_t fileHandle = sysCalls_openFile(fileName);
+    int32_t fileHandle = vfs_open(fileName);
 
     if (fileHandle < 0) {
         return NOT_ABLE_TO_LOAD_FILE;
@@ -26,7 +27,7 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
 
     int i = 0;
     do {
-        nrOfBytesRead = sysCalls_readFile(fileHandle, readBuffer, 1024);
+        nrOfBytesRead = vfs_read(fileHandle, readBuffer, 1024);
         if (nrOfBytesRead > 0) {
             memcpy(pBuffer, readBuffer, nrOfBytesRead);
         }
@@ -34,6 +35,8 @@ int8_t loader_loadProcess(const char* fileName, FileType_t fileType) {
         i++;
         pBuffer = (uint32_t*)((uint8_t*)pBuffer + 1024);
     } while (i < BUFFER_SIZE && nrOfBytesRead > 0);
+
+    vfs_close(fileHandle);
 
     uint32_t* pAddress;
     uint32_t nrOfBytesNeeded;
