@@ -16,13 +16,13 @@ static PageTable_t g_masterPTOS = { .vAddress = KERNEL_REGION_START_ADDRESS,
                                   .ptAddress = MASTER_PT_OS_START_ADDRESS,
                                   .masterPtAddress = MASTER_PT_OS_START_ADDRESS,
                                   .type = MASTER,
-                                  .dom = 0};
+                                  .dom = KERNEL_DOMAIN};
 
 static PageTable_t g_pageTablePT = { .vAddress = PAGE_TABLE_REGION_START_ADDRESS,
                                    .ptAddress = PAGETABLE_PT_START_ADDRESS,
                                    .masterPtAddress = MASTER_PT_OS_START_ADDRESS,
                                    .type = COARSE,
-                                   .dom = 0};
+                                   .dom = PT_DOMAIN};
 
 /* Page status arrays */
 static PageStatus_t g_bootRegionStatus[NR_OF_PAGES_IN_BOOT_REGION];                   // 1024 pages with 1 MB
@@ -52,7 +52,7 @@ static Region_t g_processMemoryRegion = { .vAddress = PROCESSMEMORY_REGION_START
 
 /* declarations of static functions */
 static void mmu_initTTB(void);
-static void mmu_setAllDomainAccesses(void);
+static void mmu_setDomainAccesses(void);
 static void mmu_initAllPT(void);
 static int8_t mmu_initPT(PageTable_t* pt);
 static void mmu_mapAllRegions(void);
@@ -88,7 +88,7 @@ void mmu_initMMU(void) {
     mmu_initTTB();
 
     /* set domain access */
-    mmu_setAllDomainAccesses();
+    mmu_setDomainAccesses();
 
     /* initialize system page tables */
     mmu_initAllPT();
@@ -120,7 +120,7 @@ int8_t mmu_initProcess(uint32_t pAddress, uint32_t vAddress, uint32_t nrOfNeeded
 
             pPT = (uint32_t*)((uint32_t)g_pageTableRegion.pAddress + freePageIndexForPT * SMALL_PAGE_SIZE);
 
-            PageTable_t taskPT = {vAddress, (uint32_t)pPT, (uint32_t)pPT, MASTER, 0};
+            PageTable_t taskPT = {vAddress, (uint32_t)pPT, (uint32_t)pPT, MASTER, PROCESS_DOMAIN};
 
             PageStatus_t* pPTStatus = (PageStatus_t*)(g_pageTableRegionStatus + freePageIndexForPT);
             Region_t taskPTRegion = {(uint32_t)pPT, SMALL_PAGE, nrOfNeededPagesForPT, RWRW, WT, 0, (uint32_t)pPT, &g_pageTablePT, pPTStatus};
@@ -369,7 +369,7 @@ static void mmu_attachPT(PageTable_t* pt, PageTable_t* masterPT) {
     *pMasterPTE = pteEntry;
 }
 
-static void mmu_setAllDomainAccesses(void) {
+static void mmu_setDomainAccesses(void) {
     uint32_t right = MASK_ALL_DOM;
     mmu_setDomainAccess(right, MASK_ALL_DOM);
 }
