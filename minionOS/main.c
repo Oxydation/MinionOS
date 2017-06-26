@@ -43,8 +43,8 @@ int main(void)
     sysCalls_enableLed(1, LED_0);
     sysCalls_enableLed(1, LED_1);
 
-    loader_loadProcess("/LEDON.OUT", ELF);
-    loader_loadProcess("/LEDOFF.OUT", ELF);
+    //loader_loadProcess("/LEDON.OUT", ELF);
+    //loader_loadProcess("/LEDOFF.OUT", ELF);
     //loader_loadProcess("/SHELL.OUT", ELF);
 
     _enable_interrupts();

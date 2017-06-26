@@ -251,13 +251,14 @@ static void setupHwFlowControl(Uart_t uart) {
     *uart.LCR = savedLcr;
 }
 
-uint8_t data[150;
+uint8_t data[150];
 static void isr_handler(uint32_t source, PCB_t * currentPcb)
 {
     UartModule_t module = uart_getModuleFromIrqSource(source);
     //Uart_t uartModule = modules[module];
     //g_timer[timerNumber].callback(currentPcb);
 
+    uint8_t isrTypeUart = uart_getInterruptType(module);
     uart_read(module, &data);
 }
 
