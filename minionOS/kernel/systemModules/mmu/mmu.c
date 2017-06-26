@@ -33,20 +33,20 @@ static PageStatus_t g_processMemoryRegionStatus[NR_OF_PAGES_IN_PROCESSMEMORY_REG
 /* Region tables */
 /* VADDRESS, PAGESIZE, NUMPAGES, AP, CB, nrOfReservedPages, PADDRESS, &PT, page status */
 static Region_t g_bootRegion = { .vAddress = BOOT_REGION_START_ADDRESS, .pageSize = SECTION, .numPages = NR_OF_PAGES_IN_BOOT_REGION,
-                                 .AP = RWRW, .CB = WT, .reservedPages = 0, .pAddress = BOOT_REGION_START_ADDRESS,
+                                 .AP = RWNA, .CB = WT, .reservedPages = 0, .pAddress = BOOT_REGION_START_ADDRESS,
                                  .PT = &g_masterPTOS, .pageStatus = g_bootRegionStatus};
 
 static Region_t g_kernelRegion = { .vAddress = KERNEL_REGION_START_ADDRESS, .pageSize = SECTION, .numPages = NR_OF_PAGES_IN_KERNEL_REGION,
-                                   .AP = RWRW, .CB = WT, .reservedPages = 0, .pAddress = KERNEL_REGION_START_ADDRESS,
+                                   .AP = RWNA, .CB = WT, .reservedPages = 0, .pAddress = KERNEL_REGION_START_ADDRESS,
                                    .PT = &g_masterPTOS, .pageStatus = g_kernelRegionStatus};
 
 static Region_t g_pageTableRegion = { .vAddress = PAGE_TABLE_REGION_START_ADDRESS, .pageSize = SMALL_PAGE,
-                                      .numPages = NR_OF_PAGES_IN_PAGE_TABLE_REGION, .AP = RWRW, .CB = WT, .reservedPages = 0,
+                                      .numPages = NR_OF_PAGES_IN_PAGE_TABLE_REGION, .AP = RWRO, .CB = WT, .reservedPages = 0,
                                       .pAddress = PAGE_TABLE_REGION_START_ADDRESS, .PT = &g_pageTablePT,
                                       .pageStatus = g_pageTableRegionStatus};
 
 static Region_t g_processMemoryRegion = { .vAddress = PROCESSMEMORY_REGION_START_ADDRESS, .pageSize = SECTION,
-                                          .numPages = NR_OF_PAGES_IN_PROCESSMEMORY_REGION, .AP = RWRW, .CB = WT, .reservedPages = 0,
+                                          .numPages = NR_OF_PAGES_IN_PROCESSMEMORY_REGION, .AP = RWNA, .CB = WT, .reservedPages = 0,
                                           .pAddress = PROCESSMEMORY_REGION_START_ADDRESS, .PT = NULL,
                                           .pageStatus = g_processMemoryRegionStatus};
 
