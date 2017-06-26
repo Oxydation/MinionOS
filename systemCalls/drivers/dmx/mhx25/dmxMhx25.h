@@ -8,8 +8,7 @@
 #ifndef DRIVERS_DMX_MHX25_DMXMHX25_H_
 #define DRIVERS_DMX_MHX25_DMXMHX25_H_
 
-#include "global/types.h"
-#include "kernel/hal/dmx/dmx.h"
+#include "types.h"
 
 #define DMX_CHANNELS_MHX25 12
 
@@ -80,6 +79,5 @@ typedef struct
 } DmxDataMhX25_t;
 
 void dmx_createMhX25Packet(uint16_t startChannel, const DmxDataMhX25_t * data, uint8_t * result);
-
 
 #endif /* DRIVERS_DMX_MHX25_DMXMHX25_H_ */

@@ -5,17 +5,18 @@
  *      Author: Mathias
  */
 
-#include "applications/shell/minionIO.h"
 #include <stdlib.h>
-#include "systemCallApi.h"
+#include <time.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <inttypes.h>
+#include "systemCallApi.h"
+#include "minionIO.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
 #include "drivers/dmx/mhx25/dmxMhx25.h"
 #include "delay/delay.h"
-#include <time.h>
+
 
 uint16_t packetSize = 40;
 uint8_t packet[40];

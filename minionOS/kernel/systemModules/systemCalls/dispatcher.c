@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "systemCallNumber.h"
 #include "kernel/systemModules/systemCalls/dispatcher.h"
 #include "drivers/led/ledControl.h"
@@ -5,6 +6,7 @@
 #include "kernel/hal/dmx/dmx.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
 #include "drivers/dmx/mhx25/dmxMhx25.h"
+
 
 int dispatcher_dispatch(SysCallArgs_t args) {
     switch (args.systemCallNumber) {

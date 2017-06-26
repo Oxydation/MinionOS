@@ -8,8 +8,7 @@
 #ifndef DRIVERS_DMX_DMXTMH7_H_
 #define DRIVERS_DMX_DMXTMH7_H_
 
-#include "global/types.h"
-#include "kernel/hal/dmx/dmx.h"
+#include "types.h"
 
 #define DMX_CHANNELS_TMH7 12
 
@@ -42,5 +41,6 @@ typedef struct
 } DmxDataTMH7_t;
 
 void dmx_createTmh7Packet(uint16_t startChannel, const DmxDataTMH7_t * data, uint8_t * result);
+
 
 #endif /* DRIVERS_DMX_DMXTMH7_H_ */

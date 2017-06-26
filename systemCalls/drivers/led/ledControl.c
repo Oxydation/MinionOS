@@ -6,9 +6,9 @@
  */
 
 #include "ledControl.h"
-#include "kernel/hal/led/led.h"
+#include "systemCallApi.h"
 
 void ledControl_activateLed(bool turnOn, int led) {
-    led_activateLed(turnOn, led);
+    sysCalls_enableLed(turnOn, led);
 }
 

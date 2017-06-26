@@ -10,7 +10,7 @@
 #include "kernel/hal/timer/timer.h"
 #include "kernel/hal/gpio/gpio.h"
 #include <kernel/devices/omap3530/includes/gpio.h>
-#include "global/delay/delay.h"
+#include "delay/delay.h"
 
 static UartConfig_t config = { .baudMultiple = x16, .baudRate = 250000,
                                .stopMode = STOP_1_5, .parityMode = NO_PARITY,
@@ -47,18 +47,6 @@ static void pad_setMode(GpioMode_t mode)
     }
 }
 
-/*
- * Writes the values 0...255 to channel 1...11
- */
-void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value)
-{
-    if (channel < 1)
-        channel = 1;
-    if (value > 255)
-        value = 255;
-
-    data[channel] = value;
-}
 
 void dmx_init()
 {

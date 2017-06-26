@@ -7,6 +7,8 @@
 
 #include <drivers/dmx/mhx25/dmxMhx25.h>
 
+static void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value);
+
 void dmx_createMhX25Packet(uint16_t startChannel, const DmxDataMhX25_t * data, uint8_t * result)
 {
     dmx_writeToChannel(result, startChannel, data->pan);
@@ -21,4 +23,17 @@ void dmx_createMhX25Packet(uint16_t startChannel, const DmxDataMhX25_t * data, u
     dmx_writeToChannel(result, startChannel + 9, data->goboRotation);
     dmx_writeToChannel(result, startChannel + 10, data->specialFunctions);
     dmx_writeToChannel(result, startChannel + 11, data->programmes);
+}
+
+/*
+ * Writes the values 0...255 to channel 1...11
+ */
+static void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value)
+{
+    if (channel < 1)
+        channel = 1;
+    if (value > 255)
+        value = 255;
+
+    data[channel] = value;
 }

@@ -21,6 +21,5 @@
 
 void dmx_init();
 void dmx_send(const uint8_t * data, uint16_t size);
-void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value);
 
 #endif /* KERNEL_HAL_DMX_DMX_H_ */

@@ -3,7 +3,7 @@
 #include "kernel/devices/omap3530/includes/uart.h"
 #include <inttypes.h>
 #include <stdbool.h>
-#include "global/delay/delay.h"
+#include "delay/delay.h"
 
 typedef struct {
     uint8_t* MDR1;

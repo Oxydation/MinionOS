@@ -6,6 +6,7 @@
  */
 #include "dmxTmh7.h"
 
+static void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value);
 void dmx_createTmh7Packet(uint16_t startChannel,
                                const DmxDataTMH7_t * data, uint8_t * result)
 {
@@ -19,3 +20,17 @@ void dmx_createTmh7Packet(uint16_t startChannel,
     dmx_writeToChannel(result, startChannel + 7, data->ledCircuit);
     dmx_writeToChannel(result, startChannel + 8, data->dimmingIntensity);
 }
+
+/*
+ * Writes the values 0...255 to channel 1...11
+ */
+static void dmx_writeToChannel(uint8_t * data, uint16_t channel, uint8_t value)
+{
+    if (channel < 1)
+        channel = 1;
+    if (value > 255)
+        value = 255;
+
+    data[channel] = value;
+}
+
