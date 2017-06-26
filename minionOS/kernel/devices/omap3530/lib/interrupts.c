@@ -49,7 +49,7 @@ void interrupts_getPendingIrqs(uint8_t* pendingIrqs)
 void interrupts_enableIrqSource(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;
-    uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
+    uint32_t bit = 1UL << (irq_source % REGISTER_SIZE);
     or32(INTCPS_MIR_CLEAR(bank), bit);
     clear32(INTCPS_ILR(bank), 0);
 }
@@ -57,7 +57,7 @@ void interrupts_enableIrqSource(uint8_t irq_source)
 void interrupts_disableIrqSource(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;
-    uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
+    uint32_t bit = 1UL << (irq_source % REGISTER_SIZE);
     set32(INTCPS_MIR_SET(bank), bit); //todo: check if set is correct
 }
 
@@ -67,7 +67,7 @@ void interrupts_disableIrqSource(uint8_t irq_source)
 uint8_t interrupts_getIrqSourceState(uint8_t irq_source)
 {
     uint8_t bank = irq_source / REGISTER_SIZE;
-    uint8_t bit = 1UL << (irq_source % REGISTER_SIZE);
+    uint32_t bit = 1UL << (irq_source % REGISTER_SIZE);
     if ((get32(INTCPS_MIR(bank)) & bit) == bit)
     {
         return FALSE;

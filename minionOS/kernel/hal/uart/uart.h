@@ -56,4 +56,12 @@ void uart_initModule(UartModule_t module, UartConfig_t config);
 
 void uart_updateConfig(UartModule_t module, UartConfig_t config);
 
+bool uart_resetFifo(UartModule_t uartModule);
+
+void uart_write(UartModule_t module, uint8_t c);
+
+void uart_read(UartModule_t module, uint8_t * c);
+
+extern UartModule_t uart_getModuleFromIrqSource(uint8_t source);
+
 #endif
