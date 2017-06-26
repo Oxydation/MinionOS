@@ -21,12 +21,13 @@ static ManagedSemaphore_t managedSemaphores[MAX_MANAGED_SEMAPHORES];
 static ProcessId_t dequeue(Semaphore_t* semaphore);
 static int enqueue(Semaphore_t* semaphore, ProcessId_t);
 
-Semaphore_t* semaphore_acquire(const char* identifier, int maxConcurrentAccess) {
+Semaphore_t* semaphore_acquire(const char* identifier) {
     if (strlen(identifier) > MAX_IDENTIFIER) {
         return NULL;
     }
     int i;
     int firstFree = -1;
+    // find previously acquired semaphore
     for (i = 0; i < MAX_MANAGED_SEMAPHORES; i++) {
         if (managedSemaphores[i].identifier[0] == '\0' && firstFree == -1) {
             firstFree = i;
@@ -34,10 +35,10 @@ Semaphore_t* semaphore_acquire(const char* identifier, int maxConcurrentAccess) 
             return &managedSemaphores[i].sem;
         }
     }
+    // allocate new semaphore
     if (firstFree != -1) {
         ManagedSemaphore_t* managedSemaphore = &managedSemaphores[firstFree];
         strcpy(managedSemaphore->identifier, identifier);
-        semaphore_init(&managedSemaphore->sem, maxConcurrentAccess);
         return &managedSemaphore->sem;
     } else {
         return NULL;
@@ -67,6 +68,27 @@ void semaphore_V(Semaphore_t* semaphore) {
         scheduler_unblockProcess(dequeue(semaphore));
     }
     ATOMIC_END(previousState);
+}
+
+void semaphore_managedP(const char* identifier) {
+    Semaphore_t* semaphore = semaphore_acquire(identifier);
+    if (semaphore) {
+        semaphore_P(semaphore);
+    }
+}
+
+void semaphore_managedV(const char* identifier) {
+    Semaphore_t* semaphore = semaphore_acquire(identifier);
+    if (semaphore) {
+        semaphore_V(semaphore);
+    }
+}
+
+void semaphore_managedInit(const char* identifier, int maxConcurrentAccess) {
+    Semaphore_t* semaphore = semaphore_acquire(identifier);
+    if (semaphore) {
+        semaphore_init(semaphore, maxConcurrentAccess);
+    }
 }
 
 // https://stackoverflow.com/questions/215557/how-do-i-implement-a-circular-list-ring-buffer-in-c

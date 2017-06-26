@@ -39,3 +39,18 @@ const char* sysCalls_readDirectory(const char* directoryName) {
     SysCallArgs_t args = { SYSCALL_READDIR, (int) directoryName };
     return (const char*) makeSysCall(args);
 }
+
+void sysCalls_initSemaphore(const char* identifier, int maxConcurrentAccess) {
+    SysCallArgs_t args = { SYSCALL_SEMAPHORE_INIT, (int) identifier, maxConcurrentAccess };
+    makeSysCall(args);
+}
+
+void sysCalls_pSemaphore(const char* identifier) {
+    SysCallArgs_t args = {SYSCALL_SEMAPHORE_P, (int) identifier };
+    makeSysCall(args);
+}
+
+void sysCalls_vSemaphore(const char* identifier) {
+    SysCallArgs_t args = { SYSCALL_SEMAPHORE_V, (int) identifier };
+    makeSysCall(args);
+}

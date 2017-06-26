@@ -21,4 +21,10 @@ const char* sysCalls_readDirectory(const char* directoryName);
 
 void sysCalls_closeFile(int fileDescriptor);
 
+void sysCalls_initSemaphore(const char* identifier, int maxConcurrentAccess);
+
+void sysCalls_pSemaphore(const char* identifier);
+
+void sysCalls_vSemaphore(const char* identifier);
+
 #endif /* APPLICATIONS_SYSTEMCALLAPI_H_ */
