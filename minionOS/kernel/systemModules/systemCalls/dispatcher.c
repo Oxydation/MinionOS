@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include "systemCallNumber.h"
 #include "kernel/systemModules/systemCalls/dispatcher.h"
-#include "drivers/led/ledControl.h"
+#include "kernel/hal/led/led.h"
 #include "kernel/systemModules/filesystem/vfs.h"
 #include "kernel/hal/dmx/dmx.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
@@ -14,7 +14,7 @@ int dispatcher_dispatch(SysCallArgs_t args) {
         dmx_send((uint8_t*) args.a, args.b);
         break;
     case SYSCALL_LED:
-        ledControl_activateLed((bool) args.a, args.b);
+        led_activateLed((bool) args.a, args.b);
         break;
     case SYSCALL_FILE_OPEN:
         return vfs_open((const char*) args.a);
