@@ -305,14 +305,13 @@ bool uart_resetFifo(UartModule_t module){
     return bitSet(*uartModule.FCR, 1);
 }
 
-void uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
-    // TODO buffer overflow?
+uint32_t uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {    // TODO buffer overflow?
     Uart_t uartModule = modules[module];
     int i;
-    for (i = 0; i < bufferSize; i++) {
-        while (!hasReceived(uartModule));
+    for (i = 0; i < bufferSize && hasReceived(uartModule); i++) {
         buffer[i] = *uartModule.RHR;
     }
+    return i;
 }
 
 void uart_write(UartModule_t module, uint8_t c) {

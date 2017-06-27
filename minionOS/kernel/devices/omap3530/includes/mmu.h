@@ -23,23 +23,16 @@
 #define WB      0x3     /* write back cache */
 
 /* domains */
-#define D0              0
-#define D1              2
-#define D2              4
-#define D3              6
-#define D4              8
-#define D5              10
-#define D6              12
-#define D7              14
-#define D8              16
-#define D9              18
-#define D10             20
-#define D11             22
-#define D12             24
-#define D13             26
-#define D14             28
-#define D15             30
+#define KERNEL_DOMAIN   0
+#define PT_DOMAIN       2
+#define PROCESS_DOMAIN  4
 #define MASK_ALL_DOM    0xffffffff
+#define MASK_NO_DOM     0x0
+
+/* domain access */
+#define DOM_AP_MANAGER      0x3
+#define DOM_AP_CLIENT       0x1
+#define DOM_AP_NO_ACCESS    0x0
 
 /* CP15 c1 control register */
 #define ENABLE_MMU          (1 << 0)

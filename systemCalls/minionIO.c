@@ -4,7 +4,7 @@
 
 char minionIO_read() {
     uint8_t in;
-    sysCalls_readFile(STDIN_FILENO, &in, sizeof(in));
+    while (sysCalls_readFile(STDIN_FILENO, &in, sizeof(in)) == 0);
     return in;
 }
 
