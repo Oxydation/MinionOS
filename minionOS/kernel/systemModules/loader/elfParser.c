@@ -25,6 +25,7 @@ uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t*
         for (i = 0; i < nrOfSections - 1; i++)
         {
             Elf32_Shdr* pSectionHeader = getSectionHeader(header, i);
+            char* sectionName = getSectionName(header, pSectionHeader->sh_name);
 
             if (pSectionHeader->sh_type == SHT_PROGBITS)
             {
@@ -32,14 +33,16 @@ uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t*
 
                 if (pSectionHeader->sh_size > 0)
                 {
-                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);;
-                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
+                    if (strcmp(sectionName, ".data") == 0 || strcmp(sectionName, ".text") == 0 ||
+                            strcmp(sectionName, ".const") == 0)
+                    {
+                        uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);;
+                        memcpy(addressToCopy, section, pSectionHeader->sh_size);
+                    }
                 }
             }
             else
             {
-                char* sectionName = getSectionName(header, pSectionHeader->sh_name);
-
                 if (strcmp(sectionName, ".bss") == 0)
                 {
                     // clear section data
