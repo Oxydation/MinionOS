@@ -3,6 +3,9 @@
 #include "minionIO.h"
 #include "ls.h"
 #include "cat.h"
+#include "start.h"
+#include "clear.h"
+#include "argv.h"
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -16,6 +19,19 @@
 
 #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 
+#define MAX_COMMAND_NAME_LENGTH     10
+#define MAX_COMMANDS                10
+
+typedef int (*MainFunc_t)(int argc, char* argv[]);
+
+typedef struct {
+    char name[MAX_COMMAND_NAME_LENGTH + 1];
+    MainFunc_t main;
+} Command_t;
+
+static Command_t commands[MAX_COMMANDS];
+static unsigned int commandCount;
+
 static int tokenize(char lineBuffer[], char* tokenBuffer[]) {
     int i = 0;
     tokenBuffer[i++] = strtok(lineBuffer, ARG_DELIMITER);
@@ -26,26 +42,13 @@ static int tokenize(char lineBuffer[], char* tokenBuffer[]) {
 }
 
 static int execute(int argc, char* argv[]) {
-    if (strcmp(argv[0], "clear") == 0) {
-        minionIO_write("\e[2J"); // clear terminal
-        minionIO_write("\e[H");  // reset cursor
-        return 0;
-    } else if (strcmp(argv[0], "ls") == 0) {
-        return ls_main(argc, argv);
-    } else if (strcmp(argv[0], "cat") == 0) {
-        return cat_main(argc, argv);
-    } else if (strcmp(argv[0], "argv") == 0) {
-        char buf[80];
-        sprintf(buf, "%d arguments read.", argc);
-        minionIO_writeln(buf);
-        int i;
-        for (i = 0; i < argc; ++i) {
-            minionIO_writeln(argv[i]);
+    int i;
+    for (i = 0; i < commandCount; i++) {
+        if (strcmp(argv[0], commands[i].name) == 0) {
+            return commands[i].main(argc, argv);
         }
-        return 0;
-    } else if (argc > 0) {
-        minionIO_writeln("Unknown command.");
     }
+    minionIO_writeln("Unknown command.");
     return -1;
 }
 
@@ -54,11 +57,30 @@ static void flushIn(char buffer[], int bufferSize) {
     while (minionIO_readln(buffer, bufferSize) >= MAX_LINE_LENGTH);
 }
 
+static void registerCommand(const char* name, MainFunc_t mainFunc) {
+    if (commandCount < MAX_COMMANDS) {
+        Command_t* command = &commands[commandCount++];
+        strcpy(command->name, name);
+        command->main = mainFunc;
+    } else {
+        minionIO_writeln("Tried to add command, but no more slots left.");
+    }
+}
+
+static void initCommands() {
+    registerCommand("ls", ls_main);
+    registerCommand("cat", cat_main);
+    registerCommand("start", start_main);
+    registerCommand("argv", argv_main);
+    registerCommand("clear", clear_main);
+}
+
 void shell_loop() {
     char lineBuffer[MAX_LINE_LENGTH + 1];
     char* tokenBuffer[MAX_TOKENS + 1];
 
-    // TODO send control chars to notify putty about local echo and local line edit
+    initCommands();
+
     minionIO_writeln("");
     minionIO_writeln("Minion OS Shell v1.0 initialized.");
     while (1) {

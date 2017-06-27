@@ -27,9 +27,9 @@ void led_activateLed(bool turnOn, int led){
     }
     gpio_pinMode(pin, OUTPUT);
     if (turnOn) {
-        gpio_digitalWrite(pin, HIGH);
-    } else {
         gpio_digitalWrite(pin, LOW);
+    } else {
+        gpio_digitalWrite(pin, HIGH);
     }
 }
 
