@@ -1,5 +1,6 @@
 #include "sdCardFs.h"
 #include "fileSystem.h"
+#include "kernel/hal/mmc_sd/sdCard.h"
 #include <stddef.h>
 
 int sdFs_open(const char* fileName) {
@@ -20,11 +21,12 @@ void sdFs_write(int fileDescriptor, const uint8_t* buffer, unsigned int bufferSi
 }
 
 const char* sdFs_readdir(const char* dirName) {
-    return fileSystem_getNextEntryInDirectory(dirName);
+    return (const char*) fileSystem_getNextEntryInDirectory((uint8_t*) dirName);
 }
 
 
 void sdFs_init() {
+    sdCard_initialize_Ch1();
     filesystem_Initialize();
 }
 
