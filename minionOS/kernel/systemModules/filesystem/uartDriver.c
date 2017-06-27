@@ -31,8 +31,7 @@ static void open1() {
     open(UART1, UART1_CONF);
 }
 static int read1(uint8_t* buffer, unsigned int bufferSize) {
-    uart_receive(UART1, buffer, bufferSize);
-    return bufferSize;
+    return uart_receive(UART1, buffer, bufferSize);
 }
 static void write1(const uint8_t* buffer, unsigned int bufferSize) {
     uart_transmit(UART1, buffer, bufferSize);
@@ -42,8 +41,7 @@ static void open2() {
     open(UART2, UART2_CONF);
 }
 static int read2(uint8_t* buffer, unsigned int bufferSize) {
-    uart_receive(UART2, buffer, bufferSize);
-    return bufferSize;
+    return uart_receive(UART2, buffer, bufferSize);
 }
 static void write2(const uint8_t* buffer, unsigned int bufferSize) {
     uart_transmit(UART2, buffer, bufferSize);
@@ -53,8 +51,7 @@ static void open3() {
     open(UART3, UART3_CONF);
 }
 static int read3(uint8_t* buffer, unsigned int bufferSize) {
-    uart_receive(UART3, buffer, bufferSize);
-    return bufferSize;
+    return uart_receive(UART3, buffer, bufferSize);
 }
 static void write3(const uint8_t* buffer, unsigned int bufferSize) {
     uart_transmit(UART3, buffer, bufferSize);
