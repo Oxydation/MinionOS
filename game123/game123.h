@@ -8,7 +8,7 @@
 #ifndef APPLICATIONS_GAME123_GAME123_H_
 #define APPLICATIONS_GAME123_GAME123_H_
 
-int game123_main(int argc, char* argv[]);
+int game123_main(void);
 int game123_stopGame();
 
 

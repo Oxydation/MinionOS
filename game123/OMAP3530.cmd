@@ -26,4 +26,5 @@ SECTIONS
 	.stack		> PROCESS
 	.cinit		> PROCESS
 	.const		> PROCESS
+	.sysmem		> PROCESS
 }

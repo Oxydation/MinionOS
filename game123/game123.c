@@ -310,7 +310,7 @@ int game123_stopGame()
     return 0;
 }
 
-int game123_main(int argc, char* argv[])
+int game123_main(void)
 {
     srand(time(NULL));
     minionIO_writeln("Das Spiel wird vorbereitet...Bitte warten...");
