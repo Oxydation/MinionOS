@@ -343,7 +343,7 @@ uint32_t sdCard_read512ByteBlock(uint8_t * buffer, uint32_t address){
                 buffer[i+2] = read_data >> 16;
                 buffer[i+1] = read_data >> 8;
                 buffer[i+0] = read_data;
-                delayAfterCommand();
+                //delayAfterCommand();
             }
         } else {
             // Error occured
