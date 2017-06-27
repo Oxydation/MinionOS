@@ -26,33 +26,21 @@ uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t*
         {
             Elf32_Shdr* pSectionHeader = getSectionHeader(header, i);
 
-            if (pSectionHeader->sh_size > 0)
+            if (pSectionHeader->sh_type == SHT_PROGBITS)
             {
-                char* sectionName = getSectionName(header, pSectionHeader->sh_name);
-
                 uint8_t* section = (uint8_t*)header + pSectionHeader->sh_offset;
 
-                if (strcmp(sectionName, ".text") == 0)
+                if (pSectionHeader->sh_size > 0)
                 {
                     uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);;
                     memcpy(addressToCopy, section, pSectionHeader->sh_size);
                 }
-                else if (strcmp(sectionName, ".data") == 0)
-                {
-                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
-                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
-                }
-                else if (strcmp(sectionName, ".cinit") == 0)
-                {
-                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
-                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
-                }
-                else if (strcmp(sectionName, ".const") == 0)
-                {
-                    uint32_t* addressToCopy = (uint32_t*)((uint32_t)pAddress +(uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
-                    memcpy(addressToCopy, section, pSectionHeader->sh_size);
-                }
-                else if (strcmp(sectionName, ".bss") == 0)
+            }
+            else
+            {
+                char* sectionName = getSectionName(header, pSectionHeader->sh_name);
+
+                if (strcmp(sectionName, ".bss") == 0)
                 {
                     // clear section data
                     uint8_t* currAddress = (uint8_t*)((uint32_t)pAddress + (uint32_t)pSectionHeader->sh_addr - vMemoryStartAddress);
@@ -66,6 +54,14 @@ uint8_t elfParser_loadElfFile(uint8_t data[], ElfFileInfo_t* fileInfo, uint32_t*
                 else if (strcmp(sectionName, ".stack") == 0)
                 {
                     fileInfo->stackPointer = (uint32_t)((uint8_t*)pSectionHeader->sh_addr + pSectionHeader->sh_size);
+                }
+                else if (strcmp(sectionName, ".cinit") == 0)
+                {
+                    // do nothing
+                }
+                else if (strcmp(sectionName, ".sysmem") == 0)
+                {
+                    // do nothing
                 }
             }
         }
