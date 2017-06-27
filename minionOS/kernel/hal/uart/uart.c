@@ -273,14 +273,14 @@ static bool hasReceived(Uart_t uartModule) {
     return bitRead(*uartModule.LSR, LSR_RX_FIFO_E);
 }
 
-void uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
+uint32_t uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize) {
     // TODO buffer overflow?
     Uart_t uartModule = modules[module];
     int i;
-    for (i = 0; i < bufferSize; i++) {
-        while (!hasReceived(uartModule));
+    for (i = 0; i < bufferSize && hasReceived(uartModule); i++) {
         buffer[i] = *uartModule.RHR;
     }
+    return i;
 }
 
 void uart_enableBreak(UartModule_t module) {

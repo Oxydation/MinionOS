@@ -44,7 +44,7 @@ typedef struct {
 } UartConfig_t;
 
 
-void uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize);
+uint32_t uart_receive(UartModule_t module, uint8_t* buffer, uint32_t bufferSize);
 
 void uart_transmit(UartModule_t module, const uint8_t* buffer, uint32_t bufferSize);
 
