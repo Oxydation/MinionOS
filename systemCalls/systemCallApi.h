@@ -21,6 +21,6 @@ const char* sysCalls_readDirectory(const char* directoryName);
 
 void sysCalls_closeFile(int fileDescriptor);
 
-void sysCalls_loadProgramm(const char* fileName);
+int sysCalls_loadProgramm(const char* fileName);
 
 #endif /* APPLICATIONS_SYSTEMCALLAPI_H_ */

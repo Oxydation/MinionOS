@@ -3,6 +3,7 @@
 #include "minionIO.h"
 #include "ls.h"
 #include "cat.h"
+#include "start.h"
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
@@ -43,6 +44,8 @@ static int execute(int argc, char* argv[]) {
             minionIO_writeln(argv[i]);
         }
         return 0;
+    } else if (strcmp(argv[0], "start" == 0)) {
+        return start_main(argc, argv);
     } else if (argc > 0) {
         minionIO_writeln("Unknown command.");
     }

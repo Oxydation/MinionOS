@@ -40,7 +40,7 @@ const char* sysCalls_readDirectory(const char* directoryName) {
     return (const char*) makeSysCall(args);
 }
 
-void sysCalls_loadProgramm(const char* fileName) {
+int sysCalls_loadProgramm(const char* fileName) {
     SysCallArgs_t args = { SYSCALL_LOAD_PROGRAM, (int) fileName };
-    makeSysCall(args);
+    return makeSysCall(args);
 }

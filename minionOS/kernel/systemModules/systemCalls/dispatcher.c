@@ -28,8 +28,7 @@ int dispatcher_dispatch(SysCallArgs_t args) {
     case SYSCALL_READDIR:
         return (int) vfs_readdir((const char*) args.a);
     case SYSCALL_LOAD_PROGRAM:
-        loader_loadProcess((const char*) args.a, ELF);
-        return 0;
+        return loader_loadProcess((const char*) args.a, ELF);
     }
     return -1;
 }
