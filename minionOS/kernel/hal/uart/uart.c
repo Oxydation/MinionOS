@@ -131,32 +131,45 @@ static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config) {
     // 17.5.1.1.3 Protocol, Baud Rate, and Interrupt Settings
     // 1. Disable UART to access UARTi.DLL_REG and UARTi.DLH_REG
     *uart.MDR1 = 0x7;
+    delay(15);
     // 2. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
+    delay(15);
     // 3. Enable access to UARTi.IER_REG[7:4]
     uint8_t savedEnhancedEn = bitRead(*uart.EFR, EFR_ENHANCED_EN);
     bitSet(*uart.EFR, EFR_ENHANCED_EN);
+    delay(15);
     // 4. Switch to register operational mode to access the UARTi.IER_REG register
     *uart.LCR = 0x0;
+    delay(15);
     // 5. Clear the UARTi.IER_REG (UARTi.IER_REG[4] SLEEP_MODE bit to 0 to change UARTi.DLL_REG and UARTi.DLH_REG)
     *uart.IER = 0x0;
+    delay(15);
     // 6. Switch to register configuration mode B to access the UARTi.DLL_REG and UARTi.DLH_REG registers
     *uart.LCR = 0x00BF;
+    delay(15);
     // 7. Load the new divisor value
     uint16_t divisor = calcDivisor(config.baudRate, config.baudMultiple);
     *uart.DLL = divisor;
+    delay(15);
     *uart.DLH = divisor >> 8;
+    delay(15);
     // 8. Switch to register operational mode to access the UARTi.IER_REG register
     *uart.LCR = 0x0;
+    delay(15);
     // 9. Load the new interrupt configuration
-    bitSet(*uart.IER, 0); // RHR
+    //bitSet(*uart.IER, 0); // RHR
     // 10. Switch to register configuration mode B to access the UARTi.EFR_REG register
     *uart.LCR = 0x00BF;
+    delay(15);
     // 11. Restore the UARTi.EFR_REG[4] ENHANCED_EN value saved in Step 3a
     bitWrite(*uart.EFR, EFR_ENHANCED_EN, savedEnhancedEn);
+    delay(15);
     // 12. Load the new protocol formatting (parity, stop bit, char length) and switch to register operational mode
     bitClear(*uart.LCR, LCR_DIV_EN);
+    delay(15);
     bitClear(*uart.LCR, LCR_BREAK_EN);
+    delay(15);
 
     switch (config.parityMode) {
     case NO_PARITY:
@@ -183,6 +196,7 @@ static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config) {
         bitSet(*uart.LCR, LCR_PARITY_TYPE2);
         break;
     }
+    delay(15);
 
     switch (config.wordLength) {
     case LENGTH_5:
@@ -202,6 +216,7 @@ static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config) {
         bitSet(*uart.LCR, LCR_CHAR_LENGTH_2);
         break;
     }
+    delay(15);
 
     switch (config.stopMode) {
     case STOP_1:
@@ -211,10 +226,14 @@ static void setupProtocolBaudAndInterrupt(Uart_t uart, UartConfig_t config) {
         bitSet(*uart.LCR, LCR_NB_STOP);
         break;
     }
+    delay(15);
     // 13. Load the new UART mode
     bitClear(*uart.MDR1, MDR1_MODE_SELECT_1);
+    delay(2000);
     bitClear(*uart.MDR1, MDR1_MODE_SELECT_2);
+    delay(2000);
     bitClear(*uart.MDR1, MDR1_MODE_SELECT_3);
+    delay(15);
 }
 
 static void setupHwFlowControl(Uart_t uart) {
@@ -269,17 +288,17 @@ void uart_initModule(UartModule_t module, UartConfig_t config) {
     setupProtocolBaudAndInterrupt(uartModule, config);
     setupHwFlowControl(uartModule);
 
-    switch(module){
-    case UART1:
-        interrupts_registerHandler(&isr_handler, UART1_IRQ);
-        break;
-    case UART2:
-        interrupts_registerHandler(&isr_handler, UART2_IRQ);
-        break;
-    case UART3:
-        interrupts_registerHandler(&isr_handler, UART3_IRQ);
-        break;
-    }
+//    switch(module){
+//    case UART1:
+//        interrupts_registerHandler(&isr_handler, UART1_IRQ);
+//        break;
+//    case UART2:
+//        interrupts_registerHandler(&isr_handler, UART2_IRQ);
+//        break;
+//    case UART3:
+//        interrupts_registerHandler(&isr_handler, UART3_IRQ);
+//        break;
+//    }
 }
 
 static bool isReadyToTransmit(Uart_t uartModule) {

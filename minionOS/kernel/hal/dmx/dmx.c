@@ -70,7 +70,7 @@ void dmx_send(const uint8_t * data, uint16_t size)
 
     // Send data
     pad_setMode(UART);
-    uart_updateConfig(UART2, config);
+    //uart_updateConfig(UART2, config);
     uart_transmit(UART2, data, size);
 
     delay(200);

@@ -34,27 +34,29 @@ int main(void)
     gpio_pinMode(GPIO_USR0_LED, OUTPUT);
     gpio_pinMode(GPIO_USR1_LED, OUTPUT);
 
+    dmx_init();
     uart_initModule(UART3, g_uartConfig);
     sdCard_initialize_Ch1();
     vfs_init();
     systemTimer_init(1000);
-    scheduler_init();
+    //scheduler_init();
 
     sysCalls_enableLed(1, LED_0);
     sysCalls_enableLed(1, LED_1);
 
-    loader_loadProcess("/LEDON.OUT", ELF);
-    loader_loadProcess("/LEDOFF.OUT", ELF);
+    //loader_loadProcess("/LEDON.OUT", ELF);
+    //loader_loadProcess("/LEDOFF.OUT", ELF);
     //loader_loadProcess("/GAME123.OUT", ELF);
 
     _enable_interrupts();
     _enable_IRQ();
 
     systemTimer_start();
-    scheduler_start();
+    //scheduler_start();
 
     modeSwitch_switchToUserMode();
 
+    game123_main(0, 0);
     while (1)
     {
 
