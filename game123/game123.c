@@ -91,7 +91,7 @@ static QuizQuestion_t g_questions[30];
 
 static uint16_t readQuizFile(uint8_t * target)
 {
-    int quizHandle = sysCalls_openFile("QUIZ.TXT");
+    int quizHandle = sysCalls_openFile("/QUIZ.TXT");
     uint16_t size = 1400;
 
     if (quizHandle < 0)
