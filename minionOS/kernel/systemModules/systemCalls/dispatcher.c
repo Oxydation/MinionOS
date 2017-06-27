@@ -5,6 +5,7 @@
 #include "kernel/hal/dmx/dmx.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
 #include "drivers/dmx/mhx25/dmxMhx25.h"
+#include "kernel/systemModules/loader/loader.h"
 
 int dispatcher_dispatch(SysCallArgs_t args) {
     switch (args.systemCallNumber) {
@@ -26,6 +27,9 @@ int dispatcher_dispatch(SysCallArgs_t args) {
         break;
     case SYSCALL_READDIR:
         return (int) vfs_readdir((const char*) args.a);
+    case SYSCALL_LOAD_PROGRAM:
+        loader_loadProcess((const char*) args.a, ELF);
+        return 0;
     }
     return -1;
 }
