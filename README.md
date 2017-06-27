@@ -10,9 +10,9 @@ Development of a simple OS for a BeagleBoard C4 with a ARMv7 Cortex A8-Processor
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Filesystem
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Scheduler 
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Virtual Memory 
-* ![#FFA500](https://placehold.it/15/FFA500/000000?text=+) Process Management
+* ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Process Management
 * ![#FFA500](https://placehold.it/15/FFA500/000000?text=+) Inter Process Communication
-* ![#FFA500](https://placehold.it/15/FFA500/000000?text=+) Basic User Apps 
+* ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Basic User Apps 
 * ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Shell
 
 ## Drivers
