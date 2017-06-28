@@ -3,6 +3,7 @@
 #include "kernel/hal/interrupts/interrupts.h"
 #include "kernel/hal/timer/systemTimer.h"
 #include "kernel/systemModules/mmu/mmu.h"
+#include "kernel/hal/dmx/dmx.h"
 #include "kernel/systemModules/scheduler/scheduler.h"
 #include "kernel/systemModules/filesystem/vfs.h"
 #include "kernel/systemModules/loader/loader.h"
@@ -26,8 +27,8 @@ int main(void)
 
     //loader_loadProcess("/LEDON.OUT", ELF);
     //loader_loadProcess("/LEDOFF.OUT", ELF);
-    //loader_loadProcess("/SHELL.OUT", ELF);
-    loader_loadProcess("/GAME123.OUT", ELF);
+    loader_loadProcess("/SHELL.OUT", ELF);
+    //loader_loadProcess("/GAME123.OUT", ELF);
 
     _enable_interrupts();
     _enable_IRQ();
