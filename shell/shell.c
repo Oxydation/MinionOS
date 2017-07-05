@@ -2,12 +2,12 @@
 #include "systemCallApi.h"
 #include "minionIO.h"
 #include "ls.h"
-#include "cat.h"
 #include "start.h"
 #include "clear.h"
 #include "argv.h"
+#include "read.h"
+#include "write.h"
 #include <string.h>
-#include <assert.h>
 #include <stdio.h>
 
 #define ARG_DELIMITER   " "
@@ -69,10 +69,11 @@ static void registerCommand(const char* name, MainFunc_t mainFunc) {
 
 static void initCommands() {
     registerCommand("ls", ls_main);
-    registerCommand("cat", cat_main);
+    registerCommand("read", read_main);
     registerCommand("start", start_main);
     registerCommand("argv", argv_main);
     registerCommand("clear", clear_main);
+    registerCommand("write", write_main);
 }
 
 void shell_loop() {

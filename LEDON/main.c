@@ -4,10 +4,10 @@
 
 #include "systemCallApi.h"
 
-int main(void)
-{
-    while (1)
-    {
-        sysCalls_enableLed(1, LED_0);
+int main(void) {
+    int file = sysCalls_openFile("/dev/led1");
+    while (1) {
+        sysCalls_writeFile(file, "1", 1);
     }
 }
+

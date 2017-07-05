@@ -22,9 +22,6 @@ int main(void)
     systemTimer_init(1000);
     scheduler_init();
 
-    sysCalls_enableLed(false, LED_0);
-    sysCalls_enableLed(false, LED_1);
-
     //loader_loadProcess("/LEDON.OUT", ELF);
     //loader_loadProcess("/LEDOFF.OUT", ELF);
     loader_loadProcess("/SHELL.OUT", ELF);

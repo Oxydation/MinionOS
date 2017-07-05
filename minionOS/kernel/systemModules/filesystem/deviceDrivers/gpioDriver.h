@@ -1,0 +1,9 @@
+#ifndef KERNEL_SYSTEMMODULES_FILESYSTEM_DEVICEDRIVERS_GPIODRIVER_H_
+#define KERNEL_SYSTEMMODULES_FILESYSTEM_DEVICEDRIVERS_GPIODRIVER_H_
+
+#include "../deviceDrivers/fileOperations.h"
+
+extern FileOperations_t led1Driver;
+extern FileOperations_t led2Driver;
+
+#endif /* KERNEL_SYSTEMMODULES_FILESYSTEM_DEVICEDRIVERS_GPIODRIVER_H_ */

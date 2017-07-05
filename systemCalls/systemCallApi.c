@@ -5,16 +5,6 @@
 #pragma SWI_ALIAS(makeSysCall, SYSTEM_CALL_SWI_NUMBER);
 static int makeSysCall(SysCallArgs_t args);
 
-void sysCalls_ctrlDmx(const uint8_t * buffer, uint16_t bufferSize){
-    SysCallArgs_t args = { SYSCALL_DMX_SEND, (int)buffer, bufferSize };
-    makeSysCall(args);
-}
-
-void sysCalls_enableLed(bool turnOn, int led) {
-    SysCallArgs_t args = { SYSCALL_LED, turnOn, led };
-    makeSysCall(args);
-}
-
 int sysCalls_openFile(const char* fileName) {
     SysCallArgs_t args = { SYSCALL_FILE_OPEN, (int) fileName };
     return makeSysCall(args);
