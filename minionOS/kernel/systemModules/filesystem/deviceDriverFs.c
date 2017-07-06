@@ -1,6 +1,8 @@
 #include "deviceDriverFs.h"
-#include "fileOperations.h"
-#include "uartDriver.h"
+#include "deviceDrivers/fileOperations.h"
+#include "deviceDrivers/uartDriver.h"
+#include "deviceDrivers/dmxDriver.h"
+#include "deviceDrivers/gpioDriver.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -52,17 +54,17 @@ void devFs_addDevice(const char* name, FileOperations_t* fileOperations) {
 }
 
 const char* devFs_readdir(const char* dirName) {
-    static const char* currentDir;
+    static char previousDir[100];
     static int successiveCall;
-    if (!currentDir || currentDir != dirName || strcmp(currentDir, dirName) != 0) {
-        currentDir = dirName;
+    if (strcmp(previousDir, dirName) != 0) {
+        strcpy(previousDir, dirName);
         successiveCall = 0;
     }
 
     const char* result;
-    if (strcmp("", dirName) == 0 || strcmp("/", dirName) == 0) {
+    if (strcmp("/", dirName) == 0) {
         result = successiveCall == 0 ? "dev" : NULL;
-    } else if (strcmp("/dev", dirName) == 0 || strcmp("/dev/", dirName) == 0) {
+    } else if (strcmp(DEVICES_FOLDER, dirName) == 0) {
         result = successiveCall < deviceCount ? devices[successiveCall].name : NULL;
     } else {
         result = NULL;
@@ -70,7 +72,7 @@ const char* devFs_readdir(const char* dirName) {
     if (result) {
         successiveCall += 1;
     } else {
-        currentDir = NULL;
+        previousDir[0] = '\0';
     }
     return result;
 }
@@ -80,6 +82,9 @@ void devFs_init() {
     devFs_addDevice("uart1", &devUart1);
     devFs_addDevice("uart2", &devUart2);
     devFs_addDevice("uart3", &devUart3);
+    devFs_addDevice("dmx", &dmxDriver);
+    devFs_addDevice("led1", &led1Driver);
+    devFs_addDevice("led2", &led2Driver);
 }
 
 FileSystem_t deviceDriverFs = {

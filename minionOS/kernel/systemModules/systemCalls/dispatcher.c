@@ -11,12 +11,6 @@
 
 int dispatcher_dispatch(SysCallArgs_t args) {
     switch (args.systemCallNumber) {
-    case SYSCALL_DMX_SEND:
-        dmx_send((uint8_t*) args.a, args.b);
-        break;
-    case SYSCALL_LED:
-        led_activateLed((bool) args.a, args.b);
-        break;
     case SYSCALL_FILE_OPEN:
         return vfs_open((const char*) args.a);
     case SYSCALL_FILE_READ:

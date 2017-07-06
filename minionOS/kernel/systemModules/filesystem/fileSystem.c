@@ -225,14 +225,14 @@ uint32_t getNextDirectory(uint8_t * dirName, uint32_t currentDirectory){
     uint8_t * dirExtension = "   ";
 
 
-    for(i=0; i < fileSystemState.maximumNumberOfEntriesInRoot; i+=sizeOfFatEntry){
+    for(i=0; i < fileSystemState.maximumNumberOfEntriesInRoot * sizeOfFatEntry; i+=sizeOfFatEntry){
 
         if(i%STORAGE_SECTOR_SIZE==0){
             // Read current directory
             readSector(buffer, currentDirectory+i);
         }
 
-        memcpy((void*)&currentEntry, buffer+i, sizeof(currentEntry));
+        memcpy((void*)&currentEntry, buffer+(i % STORAGE_SECTOR_SIZE), sizeof(currentEntry));
 
         if(compareFileNames(currentEntry.filename, currentEntry.ext, dirName, dirExtension)){
             // File found. Check if it is a directory. If yes, change the current directory global variable.

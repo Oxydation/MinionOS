@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <inttypes.h>
+#include <stddef.h>
 #include "systemCallApi.h"
 #include "minionIO.h"
 #include "drivers/dmx/tmh7/dmxTmh7.h"
@@ -88,6 +89,12 @@ typedef struct
 } QuizQuestion_t;
 
 static QuizQuestion_t g_questions[30];
+
+static int dmxFileHandle;
+
+static ctrlDmx(const uint8_t* buffer, uint32_t bufferSize) {
+    sysCalls_writeFile(dmxFileHandle, buffer, bufferSize);
+}
 
 static uint16_t readQuizFile(uint8_t * target)
 {
@@ -174,7 +181,7 @@ static void highlightAnswer(uint8_t answerNumber)
     dmx_createMhX25Packet(1, &g_mhxData123[answerNumber - 1], &packet);
     dmx_createTmh7Packet(13, &g_tmhData_1[answerNumber - 1], &packet);
     dmx_createTmh7Packet(25, &g_tmhData_2[answerNumber - 1], &packet);
-    sysCalls_ctrlDmx(&packet, packetSize);
+    ctrlDmx(&packet, packetSize);
 }
 
 static void resetMovingHeads(void)
@@ -182,7 +189,7 @@ static void resetMovingHeads(void)
     dmx_createMhX25Packet(1, &g_mhxDataReset, &packet);
     dmx_createTmh7Packet(13, &g_tmhDataReset, &packet);
     dmx_createTmh7Packet(25, &g_tmhDataReset, &packet);
-    sysCalls_ctrlDmx(&packet, packetSize);
+    ctrlDmx(&packet, packetSize);
 }
 
 static void discoLight(uint8_t rounds)
@@ -203,11 +210,13 @@ static void discoLight(uint8_t rounds)
         dmx_createMhX25Packet(1, &g_mhxData, &packet);
         dmx_createTmh7Packet(13, &g_tmhData_1[rand() % 3], &packet);
         dmx_createTmh7Packet(25, &g_tmhData_2[rand() % 3], &packet);
-        sysCalls_ctrlDmx(&packet, packetSize);
+        ctrlDmx(&packet, packetSize);
         delay(600000);
         counter++;
     }
 }
+
+static int game123_stopGame(void);
 
 static void playGame(QuizQuestion_t * questions, uint8_t amountOfQuestions)
 {
@@ -293,14 +302,19 @@ static void playGame(QuizQuestion_t * questions, uint8_t amountOfQuestions)
     game123_stopGame();
 }
 
-static void prepareDmx(void)
+static int prepareDmx(void)
 {
+    dmxFileHandle = sysCalls_openFile("/dev/dmx");
+    if (dmxFileHandle < 0) {
+        return -1;
+    }
     uint8_t i = 0;
     while (i++ < 200)
     {
         delay(2000);
-        sysCalls_ctrlDmx(&packet, packetSize);
+        ctrlDmx(&packet, packetSize);
     }
+    return 0;
 }
 
 int game123_stopGame()
@@ -314,7 +328,10 @@ int game123_main(void)
 {
     srand(time(NULL));
     minionIO_writeln("Das Spiel wird vorbereitet...Bitte warten...");
-    prepareDmx();
+    if (prepareDmx() < 0) {
+        minionIO_writeln("Fehler bei Spielvorbereitung.");
+        return -1;
+    }
 
     uint8_t quizFile[1400] = { 0 };
     uint16_t amountChars = readQuizFile(&quizFile);
@@ -329,5 +346,6 @@ int game123_main(void)
 
     playGame(&g_questions, amountOfQuestions);
 
+    sysCalls_closeFile(dmxFileHandle);
     return 0;
 }
